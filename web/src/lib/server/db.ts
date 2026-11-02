@@ -24,6 +24,7 @@ export type RecipeRow = {
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
+  downloads: number;
 };
 
 const DATA_DIR = process.env.DATA_DIR ?? path.join(process.cwd(), "data");
@@ -57,6 +58,9 @@ function open(): DatabaseSync {
     );
     CREATE INDEX IF NOT EXISTS recipes_status ON recipes(status, published_at);
   `);
+  // Additive migrations for existing databases.
+  const columns = (db.prepare("PRAGMA table_info(recipes)").all() as { name: string }[]).map((c) => c.name);
+  if (!columns.includes("downloads")) db.exec("ALTER TABLE recipes ADD COLUMN downloads INTEGER NOT NULL DEFAULT 0");
   seedIfEmpty(db);
   return db;
 }
@@ -87,6 +91,7 @@ function uniqueSlug(d: DatabaseSync, name: string, id: string) {
 type DBRow = {
   id: string; slug: string; name: string; summary: string; body: string; film_simulation: string; recipe_json: string;
   cover_file: string | null; cover_kind: string | null; status: string; created_at: string; updated_at: string; published_at: string | null;
+  downloads: number | null;
 };
 
 const toRow = (r: DBRow): RecipeRow => ({
@@ -94,7 +99,7 @@ const toRow = (r: DBRow): RecipeRow => ({
   filmSimulation: r.film_simulation as RecipeRow["filmSimulation"],
   recipe: FilmRecipeSchema.parse(JSON.parse(r.recipe_json)),
   coverFile: r.cover_file, coverKind: r.cover_kind as CoverKind | null, status: r.status as RecipeStatus,
-  createdAt: r.created_at, updatedAt: r.updated_at, publishedAt: r.published_at,
+  createdAt: r.created_at, updatedAt: r.updated_at, publishedAt: r.published_at, downloads: r.downloads ?? 0,
 });
 
 export function upsertRecipe(recipe: FilmRecipe, opts: { status?: RecipeStatus; body?: string } = {}, d = open()): RecipeRow {
@@ -150,4 +155,9 @@ export function deleteRecipe(slug: string) {
   if (row.coverFile) fs.rmSync(/*turbopackIgnore: true*/ path.join(UPLOAD_DIR, row.coverFile), { force: true });
   open().prepare("DELETE FROM recipes WHERE slug = ?").run(slug);
   return true;
+}
+
+/** Counts a FilmLab-file download (public, unauthenticated; best-effort). */
+export function countDownload(slug: string) {
+  open().prepare("UPDATE recipes SET downloads = downloads + 1 WHERE slug = ? AND status = 'published'").run(slug);
 }

@@ -1,46 +1,57 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { ImagePlus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import type { RecipeSettings } from "@/lib/recipe/schema";
 import { renderRecipe } from "@/lib/preview/render";
+import { CompareView } from "./compare-view";
+import { cn } from "@/lib/utils";
 
-const SAMPLES = [
+export const SAMPLES = [
   { id: "landscape", label: "Landscape", src: "/samples/landscape.jpg" },
   { id: "chart", label: "Colour chart", src: "/samples/chart.jpg" },
 ];
-const MAX_EDGE = 1200;
+const MAX_EDGE = 1400;
 
-async function loadImageData(src: string): Promise<ImageData> {
+export async function loadImageData(src: string, maxEdge = MAX_EDGE): Promise<ImageData> {
   const img = new Image();
   img.decoding = "async";
   img.src = src;
   await img.decode();
-  const scale = Math.min(1, MAX_EDGE / Math.max(img.naturalWidth, img.naturalHeight));
+  const scale = Math.min(1, maxEdge / Math.max(img.naturalWidth, img.naturalHeight));
   const w = Math.round(img.naturalWidth * scale), h = Math.round(img.naturalHeight * scale);
-  const canvas = new OffscreenCanvas(w, h);
-  const ctx = canvas.getContext("2d")!;
+  const ctx = new OffscreenCanvas(w, h).getContext("2d")!;
   ctx.drawImage(img, 0, 0, w, h);
   return ctx.getImageData(0, 0, w, h);
+}
+
+export function Chip({ active, children, onClick, className }: { active?: boolean; children: React.ReactNode; onClick?: () => void; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-200 active:scale-95",
+        active ? "border-primary bg-accent text-primary" : "border-hairline bg-surface text-foreground hover:border-white/25",
+        className,
+      )}
+    >
+      {children}
+    </button>
+  );
 }
 
 /**
  * Approximate, in-browser preview of a recipe on a sample image or the visitor's own photo.
  * The visitor's photo never leaves the browser.
  */
-export function RecipePreview({ settings }: { settings: RecipeSettings }) {
+export function RecipePreview({ settings, compact }: { settings: RecipeSettings; compact?: boolean }) {
   const [source, setSource] = useState(SAMPLES[0].src);
   const [ownName, setOwnName] = useState<string | null>(null);
   const [original, setOriginal] = useState<ImageData | null>(null);
-  const [split, setSplit] = useState(50);
-  // What the canvases currently show; "busy" while it lags behind the inputs.
-  const [rendered, setRendered] = useState<{ original: ImageData; settings: RecipeSettings } | null>(null);
-  const busy = !original || rendered?.original !== original || rendered?.settings !== settings;
-  const recipeCanvas = useRef<HTMLCanvasElement>(null);
-  const originalCanvas = useRef<HTMLCanvasElement>(null);
+  const [rendered, setRendered] = useState<{ for: ImageData; settings: RecipeSettings; out: ImageData } | null>(null);
+  const busy = !original || rendered?.for !== original || rendered?.settings !== settings;
 
   useEffect(() => {
     let cancelled = false;
@@ -50,16 +61,7 @@ export function RecipePreview({ settings }: { settings: RecipeSettings }) {
 
   useEffect(() => {
     if (!original) return;
-    const id = setTimeout(() => {
-      const out = renderRecipe(original, settings);
-      for (const [ref, data] of [[recipeCanvas, out], [originalCanvas, original]] as const) {
-        const c = ref.current;
-        if (!c) continue;
-        c.width = data.width; c.height = data.height;
-        c.getContext("2d")!.putImageData(data, 0, 0);
-      }
-      setRendered({ original, settings });
-    }, 0);
+    const id = setTimeout(() => setRendered({ for: original, settings, out: renderRecipe(original, settings) }), 0);
     return () => clearTimeout(id);
   }, [original, settings]);
 
@@ -71,37 +73,33 @@ export function RecipePreview({ settings }: { settings: RecipeSettings }) {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-card">
-        <canvas ref={recipeCanvas} className="block h-auto w-full" aria-label="Recipe preview" />
-        <canvas
-          ref={originalCanvas}
-          className="pointer-events-none absolute inset-0 block h-full w-full"
-          style={{ clipPath: `inset(0 ${100 - split}% 0 0)` }}
-          aria-label="Original"
-        />
-        <div className="pointer-events-none absolute inset-y-0 w-0.5 bg-white/90" style={{ left: `${split}%` }} />
-        <div className="absolute left-3 top-3 flex gap-2">
-          <Badge variant="secondary" className="bg-black/60 backdrop-blur">Approximate · In browser</Badge>
-          {busy && <Badge variant="secondary" className="bg-black/60">Rendering…</Badge>}
+    <div className="space-y-4">
+      <CompareView
+        original={original}
+        processed={rendered?.out ?? null}
+        badge={
+          <span className="flex items-center gap-2 rounded-full border border-hairline bg-black/60 px-3 py-1.5 text-xs font-semibold backdrop-blur">
+            <span className={cn("size-2 rounded-full", busy ? "animate-pulse bg-warning" : "bg-[#8bb3f2]")} />
+            {busy ? "Rendering…" : "Approximate · In browser"}
+          </span>
+        }
+      />
+      {!compact && (
+        <div className="flex flex-wrap items-center gap-2">
+          {SAMPLES.map((s) => (
+            <Chip key={s.id} active={source === s.src} onClick={() => { setSource(s.src); setOwnName(null); }}>{s.label}</Chip>
+          ))}
+          <label className={cn(
+            "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition-all active:scale-95",
+            ownName ? "border-primary bg-accent text-primary" : "border-hairline bg-surface hover:border-white/25",
+          )}>
+            <ImagePlus className="size-4" /> <span className="max-w-40 truncate">{ownName ?? "Try your photo"}</span>
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/heic" className="sr-only" onChange={onFile} />
+          </label>
         </div>
-        <div className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-black/55 px-2.5 py-1 text-xs">Original</div>
-        <div className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-black/55 px-2.5 py-1 text-xs">Recipe</div>
-      </div>
-      <Slider value={[split]} onValueChange={(v) => setSplit(Array.isArray(v) ? v[0] : v)} min={0} max={100} aria-label="Before and after divider" />
-      <div className="flex flex-wrap items-center gap-2">
-        {SAMPLES.map((s) => (
-          <Button key={s.id} size="sm" variant={source === s.src ? "default" : "secondary"} onClick={() => { setSource(s.src); setOwnName(null); }}>
-            {s.label}
-          </Button>
-        ))}
-        <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-secondary px-2.5 py-1.5 text-sm hover:bg-secondary/80">
-          <ImagePlus className="size-4" /> {ownName ? ownName : "Try your photo"}
-          <input type="file" accept="image/jpeg,image/png,image/webp,image/heic" className="sr-only" onChange={onFile} />
-        </label>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        Your photo stays in your browser. This is FilmLab&apos;s approximation (no clarity/sharpening on the web), not camera output.
+      )}
+      <p className="text-xs text-tertiary">
+        Drag the handle to compare. Your photo stays in your browser. This is FilmLab&apos;s approximation, not camera output.
       </p>
     </div>
   );
