@@ -1,0 +1,231 @@
+import SwiftUI
+import UniformTypeIdentifiers
+
+/// FilmLab recipe export file (versioned JSON).
+struct RecipeExportFile: FileDocument {
+    static var readableContentTypes: [UTType] { [.json] }
+    var data: Data
+    init(data: Data) { self.data = data }
+    init(configuration: ReadConfiguration) throws { data = configuration.file.regularFileContents ?? Data() }
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper { FileWrapper(regularFileWithContents: data) }
+}
+
+struct LibraryView: View {
+    @Environment(AppEnvironment.self) private var env
+    @State private var query = ""
+    @State private var favoritesOnly = false
+    @State private var selecting = false
+    @State private var selection: Set<UUID> = []
+    @State private var importing = false
+    @State private var exportDoc: RecipeExportFile?
+    @State private var message: String?
+    @State private var showSettings = false
+
+    private var recipes: [FilmRecipe] {
+        env.library.recipes.filter {
+            (!favoritesOnly || $0.isFavorite) && (query.isEmpty || $0.name.localizedCaseInsensitiveContains(query)
+                || $0.filmSimulation.displayName.localizedCaseInsensitiveContains(query))
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List {
+                if env.library.isReadOnly {
+                    ExperimentalBanner(text: "This library was saved by a newer FilmLab version and is read-only here. Update the app.")
+                }
+                if case .corrupt(let url) = env.library.loadResult {
+                    ExperimentalBanner(text: "Your library file was damaged and was set aside as \(url.lastPathComponent). A new library was started.")
+                }
+                Section {
+                    NavigationLink { SetsListView() } label: {
+                        Label("Sets (\(env.library.sets.count))", systemImage: "square.stack.3d.up")
+                    }
+                    .accessibilityIdentifier("openSets")
+                }
+                Section("Recipes") {
+                    if recipes.isEmpty {
+                        Text(env.library.recipes.isEmpty ? "Save recipes from Explore or Studio. They stay on this iPhone." : "No matches.")
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                    ForEach(recipes) { r in
+                        row(r)
+                    }
+                    .onDelete { idx in env.library.delete(Set(idx.map { recipes[$0].id })) }
+                }
+            }
+            .groupedListStyle()
+            .navigationTitle("Library")
+            .darkNavigationBar()
+            .searchable(text: $query)
+            .navigationDestination(for: UUID.self) { RecipeDetailView(recipeID: $0) }
+            .toolbar { toolbar }
+            .fileImporter(isPresented: $importing, allowedContentTypes: [.json]) { result in
+                guard case .success(let url) = result else { return }
+                let scoped = url.startAccessingSecurityScopedResource()
+                defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+                do {
+                    let r = try env.library.importRecipes(from: Data(contentsOf: url))
+                    message = "Imported \(r.added) recipe(s). \(r.addedAsCopies) added as copies, \(r.skippedIdentical) already present."
+                } catch {
+                    message = error.localizedDescription
+                }
+            }
+            .fileExporter(isPresented: Binding(get: { exportDoc != nil }, set: { if !$0 { exportDoc = nil } }),
+                          document: exportDoc, contentType: .json, defaultFilename: "FilmLab Recipes") { _ in exportDoc = nil }
+            .alert("Library", isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
+                Button("OK", role: .cancel) {}
+            } message: { Text(message ?? "") }
+            .sheet(isPresented: $showSettings) { SettingsView() }
+        }
+    }
+
+    private func row(_ r: FilmRecipe) -> some View {
+        HStack(spacing: 12) {
+            if selecting {
+                Image(systemName: selection.contains(r.id) ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(selection.contains(r.id) ? Theme.accent : Theme.textSecondary)
+                    .onTapGesture { toggle(r.id) }
+            }
+            Group {
+                if let t = env.thumbnails.thumbnail(for: r) { CGImageView(image: t, contentMode: .fill) } else { Theme.swatch(for: r.filmSimulation) }
+            }
+            .frame(width: 54, height: 54).clipShape(RoundedRectangle(cornerRadius: 8))
+            .onAppear { env.thumbnails.request(r) }
+            if selecting {
+                rowText(r).contentShape(Rectangle()).onTapGesture { toggle(r.id) }
+            } else {
+                NavigationLink(value: r.id) { rowText(r) }
+            }
+        }
+        .swipeActions(edge: .leading) {
+            Button { env.library.toggleFavorite(r.id) } label: { Image(systemName: "heart") }.tint(Theme.accent)
+        }
+    }
+
+    private func rowText(_ r: FilmRecipe) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack {
+                Text(r.name).font(.body.weight(.medium))
+                if r.isFavorite { Image(systemName: "heart.fill").font(.caption).foregroundStyle(Theme.accent) }
+            }
+            Text("\(r.filmSimulation.displayName) · \(r.provenance.kind == .filmLabOriginal ? "FilmLab" : "Yours")")
+                .font(.caption).foregroundStyle(Theme.textSecondary)
+        }
+    }
+
+    private func toggle(_ id: UUID) {
+        if selection.contains(id) { selection.remove(id) } else { selection.insert(id) }
+    }
+
+    @ToolbarContentBuilder private var toolbar: some ToolbarContent {
+        ToolbarItem(placement: .leadingBar) {
+            Button { showSettings = true } label: { Image(systemName: "gearshape") }
+                .accessibilityLabel("Settings")
+        }
+        ToolbarItem(placement: .trailingBar) {
+            Menu {
+                Toggle("Favorites only", isOn: $favoritesOnly)
+                Button(selecting ? "Done Selecting" : "Select", systemImage: "checkmark.circle") {
+                    selecting.toggle(); selection.removeAll()
+                }
+                if selecting {
+                    Button("Export Selected (\(selection.count))", systemImage: "square.and.arrow.up") { export(selection) }
+                        .disabled(selection.isEmpty)
+                    Button("Delete Selected (\(selection.count))", systemImage: "trash", role: .destructive) {
+                        env.library.delete(selection); selection.removeAll()
+                    }
+                    .disabled(selection.isEmpty)
+                }
+                Divider()
+                Button("Import Recipes…", systemImage: "square.and.arrow.down") { importing = true }
+                Button("Export All…", systemImage: "square.and.arrow.up") { export([]) }
+                    .disabled(env.library.recipes.isEmpty)
+            } label: { Image(systemName: "ellipsis.circle") }
+            .accessibilityLabel("Library actions")
+        }
+    }
+
+    private func export(_ ids: Set<UUID>) {
+        do { exportDoc = RecipeExportFile(data: try env.library.exportData(ids)) }
+        catch { message = error.localizedDescription }
+    }
+}
+
+struct SettingsView: View {
+    @Environment(AppEnvironment.self) private var env
+    @Environment(\.dismiss) private var dismiss
+    @State private var confirmText = ""
+    @State private var showWriteWarning = false
+
+    var body: some View {
+        @Bindable var settings = env.settings
+        NavigationStack {
+            Form {
+                Section("Studio") {
+                    Toggle("Show histogram", isOn: $settings.showHistogram)
+                    Toggle("Haptics", isOn: $settings.hapticsEnabled)
+                    Button("Clear preview caches") { Task { await env.renderer.clearCaches(includingDisk: true) } }
+                }
+                Section {
+                    Toggle("Experimental camera slot writes", isOn: Binding(
+                        get: { settings.experimentalSlotWrites },
+                        set: { on in
+                            if on { showWriteWarning = true } else { settings.experimentalSlotWrites = false; env.camera.refreshWritability() }
+                        }))
+                        .accessibilityIdentifier("experimentalWritesToggle")
+                } header: {
+                    Text("Hardware (experimental)")
+                } footer: {
+                    Text("Writing C1–C7 over USB uses unofficial, community-documented protocol details that have NOT been verified by FilmLab on an X-T30 III. It may change camera settings unexpectedly and may affect your warranty. Off by default. Demo mode never needs this.")
+                }
+                Section("About") {
+                    LabeledContent("Preview engine", value: FilmLookEngine.version)
+                    LabeledContent("Recipe format", value: "\(RecipeTransferDocument.formatID) v\(RecipeTransferDocument.currentSchemaVersion)")
+                    Text("FilmLab is not affiliated with FUJIFILM. Film simulation names are FUJIFILM trademarks, used to identify camera settings. Previews are approximations.")
+                        .font(.footnote).foregroundStyle(Theme.textSecondary)
+                }
+            }
+            .scrollContentBackground(.hidden)
+            .background(Theme.background)
+            .navigationTitle("Settings")
+            .inlineNavigationTitle()
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .sheet(isPresented: $showWriteWarning) {
+                NavigationStack {
+                    Form {
+                        Section {
+                            ExperimentalBanner(text: "Experimental hardware integration")
+                            Text("""
+                            • FilmLab will read and back up all seven custom slots before the first write in each session.
+                            • Every write shows a per-setting diff, needs an explicit tap, and is read back and verified.
+                            • There is no automatic rollback. If a write is interrupted, the slot's state is unknown until re-read.
+                            • Community sources warn that third-party USB access may affect your Fujifilm warranty.
+                            • Use a sacrificial slot for your first test.
+                            """).font(.footnote)
+                        }
+                        Section("Type ENABLE to continue") {
+                            TextField("ENABLE", text: $confirmText)
+                                .autocorrectionDisabled()
+                                .accessibilityIdentifier("enableWritesField")
+                        }
+                    }
+                    .navigationTitle("Enable Writes?")
+                    .inlineNavigationTitle()
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) { Button("Cancel") { showWriteWarning = false; confirmText = "" } }
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Enable") {
+                                settings.experimentalSlotWrites = true
+                                env.camera.refreshWritability()
+                                showWriteWarning = false
+                                confirmText = ""
+                            }
+                            .disabled(confirmText != "ENABLE")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
