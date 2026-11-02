@@ -5,13 +5,14 @@ import type { RecipeSettings } from "@/lib/recipe/schema";
 import { renderRecipe } from "@/lib/preview/render";
 import { CompareView } from "./compare-view";
 import { loadImageData } from "./recipe-preview";
+import { DEFAULT_PHOTO } from "@/lib/site-config";
 
-/** Large before/after preview on FilmLab's sample photo (used when a recipe has no cover). */
+/** Large before/after preview on the site's default photo (used when a recipe has no cover). */
 export function HeroPreview({ settings }: { settings: RecipeSettings }) {
   const [pair, setPair] = useState<{ o: ImageData; r: ImageData } | null>(null);
   useEffect(() => {
     let cancelled = false;
-    loadImageData("/samples/landscape.jpg", 1400).then((o) => {
+    loadImageData(DEFAULT_PHOTO, 1400).then((o) => {
       if (!cancelled) setPair({ o, r: renderRecipe(o, settings) });
     });
     return () => { cancelled = true; };

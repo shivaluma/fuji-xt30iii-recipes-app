@@ -6,8 +6,10 @@ import type { RecipeSettings } from "@/lib/recipe/schema";
 import { renderRecipe } from "@/lib/preview/render";
 import { CompareView } from "./compare-view";
 import { cn } from "@/lib/utils";
+import { DEFAULT_PHOTO } from "@/lib/site-config";
 
 export const SAMPLES = [
+  { id: "fuji", label: "Mt Fuji", src: DEFAULT_PHOTO },
   { id: "landscape", label: "Landscape", src: "/samples/landscape.jpg" },
   { id: "chart", label: "Colour chart", src: "/samples/chart.jpg" },
 ];

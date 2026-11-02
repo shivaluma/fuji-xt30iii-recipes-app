@@ -3,14 +3,15 @@
 import { useEffect, useRef } from "react";
 import type { RecipeSettings } from "@/lib/recipe/schema";
 import { renderRecipe } from "@/lib/preview/render";
+import { DEFAULT_PHOTO } from "@/lib/site-config";
 
 let samplePromise: Promise<ImageData> | null = null;
 function sample(): Promise<ImageData> {
   samplePromise ??= (async () => {
     const img = new Image();
-    img.src = "/samples/landscape.jpg";
+    img.src = DEFAULT_PHOTO;
     await img.decode();
-    const w = 420, h = Math.round((img.naturalHeight / img.naturalWidth) * w);
+    const w = 640, h = Math.round((img.naturalHeight / img.naturalWidth) * w);
     const c = new OffscreenCanvas(w, h);
     const ctx = c.getContext("2d")!;
     ctx.drawImage(img, 0, 0, w, h);
@@ -19,7 +20,7 @@ function sample(): Promise<ImageData> {
   return samplePromise;
 }
 
-/** Lazily renders the recipe on FilmLab's synthetic sample photo when scrolled into view. */
+/** Lazily renders the recipe on the site's default photo when scrolled into view. */
 export function RecipeThumb({ settings, className }: { settings: RecipeSettings; className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {

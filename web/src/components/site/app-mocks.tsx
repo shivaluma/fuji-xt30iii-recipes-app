@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { Check, ChevronLeft, Eye, Minus, MoreHorizontal, Plus, ScanText, Sparkles, Aperture, ChevronsUpDown, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DEFAULT_PHOTO } from "@/lib/site-config";
 
 /* Interactive replicas of FilmLab's own iOS screens (same tokens as Theme.swift). */
 
@@ -32,7 +33,7 @@ export function TuneMock() {
         <span className="grid size-9 place-items-center rounded-full bg-surface"><MoreHorizontal className="size-4" /></span>
       </div>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/samples/landscape.jpg" alt="" className="mx-3 mt-4 aspect-[4/3] rounded-[18px] object-cover saturate-[.85] contrast-[1.08] sepia-[.08]" />
+      <img src={DEFAULT_PHOTO} alt="" className="mx-3 mt-4 aspect-[4/3] rounded-[18px] object-cover saturate-[.85] contrast-[1.08] sepia-[.08]" />
       <div className="mt-5 flex gap-2 overflow-x-auto px-3 pb-2 [scrollbar-width:none]">
         {PARAMS.map((q, i) => (
           <button

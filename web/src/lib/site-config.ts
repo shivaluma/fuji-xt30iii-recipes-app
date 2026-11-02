@@ -10,3 +10,6 @@ export const HERO = {
   /** CSS object-position: keeps the subject in frame on wide and tall screens. */
   position: process.env.NEXT_PUBLIC_HERO_POSITION || "50% 40%",
 };
+
+/** Default photo for recipe thumbnails, recipe previews and app mock-ups (same as the hero). */
+export const DEFAULT_PHOTO = HERO.src;
