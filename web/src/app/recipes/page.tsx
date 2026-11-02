@@ -3,6 +3,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Search } from "lucide-react";
 import { RecipeCard } from "@/components/recipe/recipe-card";
+import { CameraFilter } from "@/components/recipe/camera-filter";
+import { GENERATIONS, GENERATION_LABEL, cameraById, compatibility, inferGeneration, type Generation } from "@/lib/recipe/cameras";
 import { Skeleton } from "@/components/ui/skeleton";
 import { FILM_SIMULATION_NAMES, FILM_SIMULATIONS, type FilmSimulation } from "@/lib/recipe/schema";
 import { publishedRecipes, toCard } from "@/lib/server/data";
@@ -18,12 +20,19 @@ async function Results({ searchParams }: { searchParams: PageProps<"/recipes">["
   const sp = await searchParams;
   const sim = typeof sp.sim === "string" && (FILM_SIMULATIONS as readonly string[]).includes(sp.sim) ? (sp.sim as FilmSimulation) : undefined;
   const q = typeof sp.q === "string" && sp.q.trim() ? sp.q.trim().slice(0, 80) : undefined;
-  const recipes = (await publishedRecipes(sim, q)).map(toCard);
+  const gen = (GENERATIONS as readonly string[]).includes(String(sp.gen)) ? (sp.gen as Generation) : undefined;
+  const camera = typeof sp.camera === "string" ? cameraById(sp.camera) : null;
+  const rows = (await publishedRecipes(sim, q))
+    .filter((r) => !gen || inferGeneration(r.recipe) === gen)
+    .filter((r) => !camera || compatibility(r.recipe.settings, camera).level !== "none");
+  const recipes = rows.map(toCard);
   const all = await publishedRecipes();
   const available = FILM_SIMULATIONS.filter((s) => all.some((r) => r.filmSimulation === s));
-  const qs = (next: { sim?: string }) => {
+  const qs = (next: { sim?: string; gen?: string }) => {
     const p = new URLSearchParams();
     if (next.sim) p.set("sim", next.sim);
+    if (next.gen) p.set("gen", next.gen);
+    else if (camera) p.set("camera", camera.id);
     if (q) p.set("q", q);
     const str = p.toString();
     return str ? `/recipes?${str}` : "/recipes";
@@ -41,6 +50,7 @@ async function Results({ searchParams }: { searchParams: PageProps<"/recipes">["
 
   return (
     <>
+      <div className="space-y-5">
       <div className="flex flex-col gap-5 border-y border-hairline py-6 lg:flex-row lg:gap-8 lg:items-center">
         <form action="/recipes" className="relative lg:w-80 lg:shrink-0">
           {sim && <input type="hidden" name="sim" value={sim} />}
@@ -49,12 +59,20 @@ async function Results({ searchParams }: { searchParams: PageProps<"/recipes">["
             className="h-11 w-full rounded-full bg-surface pl-11 pr-4 text-sm outline-none ring-foreground/20 transition-shadow placeholder:text-tertiary focus:ring-2" />
         </form>
         <div className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none] lg:mx-0 lg:px-0">
-          <Link href={qs({})} className={chip(!sim)}>All</Link>
-          {available.map((s) => <Link key={s} href={qs({ sim: s })} className={chip(sim === s)}>{FILM_SIMULATION_NAMES[s]}</Link>)}
+          <Link href={qs({ gen })} className={chip(!sim)}>All looks</Link>
+          {available.map((s) => <Link key={s} href={qs({ sim: s, gen })} className={chip(sim === s)}>{FILM_SIMULATION_NAMES[s]}</Link>)}
         </div>
       </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Link href={qs({ sim })} className={chip(!gen && !camera)}>All cameras</Link>
+        {GENERATIONS.map((g) => <Link key={g} href={qs({ sim, gen: g })} className={chip(gen === g)}>{GENERATION_LABEL[g]}</Link>)}
+        <span className="mx-1 h-5 w-px bg-hairline" aria-hidden />
+        <CameraFilter value={camera?.id} />
+        {camera && <span className="text-sm text-muted-foreground">Recipes you can dial into your {camera.name}</span>}
+      </div>
+      </div>
       {recipes.length === 0 ? (
-        <p className="py-24 text-center text-muted-foreground">No recipes match{q ? ` “${q}”` : ""}.</p>
+        <p className="py-24 text-center text-muted-foreground">No recipes match{q ? ` “${q}”` : ""}{camera ? ` for the ${camera.name}` : ""}.</p>
       ) : (
         <div className="grid gap-x-8 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 lg:gap-x-10 lg:gap-y-20">
           {recipes.map((r, i) => (
@@ -73,7 +91,7 @@ export default function RecipesPage({ searchParams }: PageProps<"/recipes">) {
     <div className="mx-auto max-w-6xl space-y-16 px-5 pt-12 sm:px-8 sm:pt-20 lg:px-10">
       <div className="flex flex-wrap items-end justify-between gap-4 animate-in fade-in slide-in-from-bottom-4 fill-mode-both duration-700 motion-reduce:animate-none">
         <h1 className="font-display text-7xl font-normal uppercase leading-[0.85] tracking-[-0.055em] sm:text-9xl">Recipes</h1>
-        <p className="max-w-xs text-muted-foreground">Looks for the X‑T30 III. Preview any of them on your own photo.</p>
+        <p className="max-w-xs text-muted-foreground">Looks for Fujifilm X‑Trans IV and V cameras. Preview any of them on your own photo.</p>
       </div>
       <Suspense fallback={<div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">{Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className="aspect-[4/3] rounded-[var(--fl-radius-card)]" />)}</div>}>
         <Results searchParams={searchParams} />

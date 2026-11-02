@@ -23,6 +23,11 @@ final class AppSettings {
         set { KeychainStore.set(newValue, for: "adminToken"); webTokenRevision += 1 }
     }
     private(set) var webTokenRevision = 0
+    /// The body the user shoots with (catalog id). Drives validation, the Tune panel, the film
+    /// simulation picker and "Works on my camera". Defaults to the X-T30 III reference body.
+    var myCameraID: String { didSet { defaults.set(myCameraID, forKey: "myCameraID") } }
+    var myCamera: CameraModelInfo { CameraCatalog.info(id: myCameraID) ?? CameraCatalog.reference }
+    var myProfile: CameraProfile { myCamera.profile }
 
     var webClient: FilmLabWebClient? {
         _ = webTokenRevision
@@ -39,6 +44,8 @@ final class AppSettings {
         hasSeenOnboarding = defaults.bool(forKey: "hasSeenOnboarding")
         webBaseURL = defaults.string(forKey: "webBaseURL") ?? ""
         autoAIExtraction = defaults.object(forKey: "autoAIExtraction") as? Bool ?? true
+        let savedCamera = defaults.string(forKey: "myCameraID")
+        myCameraID = savedCamera.flatMap { CameraCatalog.info(id: $0)?.id } ?? CameraCatalog.reference.id
     }
 }
 

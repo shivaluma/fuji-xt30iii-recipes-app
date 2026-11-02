@@ -1,11 +1,12 @@
 import { useSyncExternalStore } from "react";
 import type { FilmRecipe, FilmSimulation, RecipeSettings } from "@/lib/recipe/schema";
 import type { ExtractionDraft, ExtractionIssue } from "@/lib/extract/mapping";
+import { generationFromText, inferGeneration, recognizeCamera, REFERENCE_CAMERA, type Generation } from "@/lib/recipe/cameras";
 
 export type ExtractMeta = { provider: string; model: string; attempts: number; latencyMs: number; usage: { inputTokens: number | null; outputTokens: number | null; costUSD: number | null } };
 
 export type Summary = {
-  id: string; slug: string; name: string; summary: string; status: "draft" | "published"; filmSimulation: FilmSimulation; settings: RecipeSettings;
+  id: string; slug: string; name: string; summary: string; status: "draft" | "published"; filmSimulation: FilmSimulation; settings: RecipeSettings; xTransGeneration: Generation | null;
   cover: { url: string; kind: string } | null; publishedAt: string | null; updatedAt: string;
 };
 
@@ -22,6 +23,8 @@ export type Draft = {
   /** Set when editing a saved recipe: keeps its id (and so its slug). */
   existing?: { recipe: FilmRecipe; status: "draft" | "published"; slug: string };
   name: string; summary: string; credit: string; cameraModel: string; body: string; tags: string[];
+  /** Explicit X-Trans family; null = infer from the simulation and camera. */
+  xTransGeneration: Generation | null;
   settings: RecipeSettings;
   uncertain: string[]; issues: ExtractionIssue[]; raw: { field: string; text: string }[]; meta: ExtractMeta | null;
   /** Photos to upload once the draft is saved (new recipes only). */
@@ -82,8 +85,10 @@ export async function prepareImage(file: File, maxEdge = 2000): Promise<{ base64
 }
 
 export function draftFromExtraction(d: ExtractionDraft, meta: ExtractMeta | null): Draft {
+  const camera = recognizeCamera(d.cameraModel);
   return {
-    name: d.name ?? "", summary: "", credit: d.credit ?? "", cameraModel: d.cameraModel ?? "", body: d.notes.join("\n"), tags: [],
+    name: d.name ?? "", summary: "", credit: d.credit ?? "", cameraModel: camera?.name ?? d.cameraModel ?? "", body: d.notes.join("\n"), tags: [],
+    xTransGeneration: generationFromText(d.cameraModel) ?? camera?.generation ?? null,
     settings: d.settings!, uncertain: d.uncertainFields, issues: d.issues, raw: d.extracted.raw, meta,
     photos: [], coverPhotoId: null,
   };
@@ -93,7 +98,8 @@ export function draftFromRecipe(recipe: FilmRecipe, status: "draft" | "published
   return {
     existing: { recipe, status, slug },
     name: recipe.name, summary: recipe.summary, credit: recipe.provenance.author ?? "",
-    cameraModel: recipe.compatibleCameras.find((c) => c !== "X-T30 III") ?? "", body, tags: recipe.tags,
+    cameraModel: recipe.compatibleCameras.find((c) => recognizeCamera(c)?.id !== REFERENCE_CAMERA.id) ?? (recipe.compatibleCameras.length === 1 ? recipe.compatibleCameras[0] : ""),
+    body, tags: recipe.tags, xTransGeneration: recipe.xTransGeneration ?? null,
     settings: recipe.settings, uncertain: [], issues: [], raw: [], meta: null,
     photos: [], coverPhotoId: null,
   };
@@ -111,7 +117,8 @@ export function recipeFromDraft(draft: Draft): FilmRecipe {
     tags: draft.tags,
     moods: base?.moods ?? [],
     isFavorite: base?.isFavorite ?? false,
-    compatibleCameras: ["X-T30 III", ...(draft.cameraModel && draft.cameraModel !== "X-T30 III" ? [draft.cameraModel] : [])],
+    compatibleCameras: madeFor(draft),
+    xTransGeneration: draft.xTransGeneration ?? inferGeneration({ settings: draft.settings, compatibleCameras: madeFor(draft) }),
     provenance: base
       ? { ...base.provenance, author: draft.credit.trim() || null }
       : { kind: "imported", author: draft.credit.trim() || null, note: `Imported with AI extraction on the web${draft.cameraModel ? `; source made for ${draft.cameraModel}` : ""}.` },
@@ -119,6 +126,12 @@ export function recipeFromDraft(draft: Draft): FilmRecipe {
     updatedAt: now,
   } as FilmRecipe;
 }
+
+/** The camera the recipe was made on, by its catalog name when recognised. */
+const madeFor = (d: Draft) => (d.cameraModel.trim() ? [recognizeCamera(d.cameraModel)?.name ?? d.cameraModel.trim()] : []);
+
+/** The family the draft will be saved with (explicit, else inferred). */
+export const draftGeneration = (d: Draft) => d.xTransGeneration ?? inferGeneration({ settings: d.settings, compatibleCameras: madeFor(d) });
 
 export async function saveDraft(token: string, draft: Draft, status: "draft" | "published") {
   const saved = await api<{ recipes: Summary[] }>("/api/recipes", token, jsonInit("POST", { recipe: recipeFromDraft(draft), status, body: draft.body }));

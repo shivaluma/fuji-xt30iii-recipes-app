@@ -2,6 +2,7 @@ import { z } from "zod";
 import { requireAdmin, rateLimit } from "@/lib/server/auth";
 import { runExtraction, ExtractionError } from "@/lib/extract/service";
 import { isSupportedImageType } from "@/lib/extract/providers/types";
+import { generationFromText, inferGeneration, recognizeCamera } from "@/lib/recipe/cameras";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const JsonBody = z.object({
@@ -50,8 +51,13 @@ export async function POST(request: Request) {
       image: image && isSupportedImageType(image.mediaType) ? { data: image.data, mediaType: image.mediaType } : undefined,
       text,
     });
+    const d = result.draft;
+    const camera = recognizeCamera(d.cameraModel);
+    // X-Trans family: as written in the source, else the recognised camera's, else implied by the simulation.
+    const xTransGeneration = generationFromText(d.cameraModel) ?? camera?.generation
+      ?? (d.settings ? inferGeneration({ settings: d.settings, compatibleCameras: [] }) : null);
     return Response.json({
-      draft: { ...result.draft, model: result.model },
+      draft: { ...d, model: result.model, cameraModel: camera?.name ?? d.cameraModel, xTransGeneration },
       meta: { provider: result.provider, model: result.model, attempts: result.attempts, latencyMs: result.latencyMs, usage: result.usage },
     });
   } catch (error) {

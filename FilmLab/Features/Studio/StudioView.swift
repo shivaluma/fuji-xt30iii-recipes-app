@@ -154,7 +154,7 @@ struct StudioView: View {
             VStack(alignment: .leading, spacing: 18) {
                 modeBar.padding(.horizontal, 16)
                 simulationStrip
-                TunePanel(settings: $studio.recipe.settings, hapticsEnabled: env.settings.hapticsEnabled)
+                TunePanel(settings: $studio.recipe.settings, hapticsEnabled: env.settings.hapticsEnabled, profile: env.settings.myProfile)
                 recipeCarousel
                 Text("Previews are approximate on-device renderings by FilmLab, not Fujifilm's imaging engine. Nothing is sent to the camera from Studio unless you choose Render with Camera.")
                     .font(.caption2).foregroundStyle(Theme.textTertiary)
@@ -230,25 +230,41 @@ struct StudioView: View {
 
     private var simulationStrip: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("FILM SIMULATION").font(Theme.Font.eyebrow).tracking(1.2).foregroundStyle(Theme.textSecondary)
-                .padding(.horizontal, Theme.gutter)
+            let profile = env.settings.myProfile
+            HStack {
+                Text("FILM SIMULATION").font(Theme.Font.eyebrow).tracking(1.2).foregroundStyle(Theme.textSecondary)
+                Spacer()
+                Text(profile.displayName).font(.caption2).foregroundStyle(Theme.textTertiary)
+            }
+            .padding(.horizontal, Theme.gutter)
             ScrollViewReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        ForEach(CameraProfile.xt30III.filmSimulations) { sim in
+                        // The body's simulations first; ones it lacks stay visible but disabled.
+                        ForEach(FilmSimulation.allCases) { sim in
+                            let available = profile.filmSimulations.contains(sim)
                             Button {
                                 env.studio.setFilmSimulation(sim)
                             } label: {
                                 SimulationChip(sim: sim, selected: env.studio.recipe.filmSimulation == sim)
+                                    .opacity(available ? 1 : 0.35)
                             }
                             .buttonStyle(PressScaleStyle())
+                            .disabled(!available)
                             .id(sim)
                             .accessibilityIdentifier("sim-\(sim.rawValue)")
+                            .accessibilityHint(available ? "" : "Not available on \(profile.modelName)")
                         }
                     }
                     .padding(.horizontal, Theme.gutter)
                 }
                 .onAppear { proxy.scrollTo(env.studio.recipe.filmSimulation, anchor: .center) }
+            }
+            if !profile.filmSimulations.contains(env.studio.recipe.filmSimulation) {
+                Label("\(env.studio.recipe.filmSimulation.displayName) isn't available on \(profile.modelName). The preview still shows it; your camera can't shoot it.",
+                      systemImage: "exclamationmark.triangle")
+                    .font(.caption).foregroundStyle(Theme.warning)
+                    .padding(.horizontal, Theme.gutter)
             }
         }
     }

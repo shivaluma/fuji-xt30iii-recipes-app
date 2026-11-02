@@ -6,7 +6,7 @@
   - The iOS app target has **not been compiled for iOS** or run on a simulator.
   - All app sources *were* type-checked against the macOS 14 SDK, including all SwiftUI views,
     with strict concurrency on.
-  - The 82 unit tests ran on macOS through `scripts/test-cli.sh`.
+  - The 115 unit tests ran on macOS through `scripts/test-cli.sh`.
   - Code inside `#if os(iOS)` has **not** been compiled:
     - ImageCaptureCore authorization;
     - navigation-bar modifiers;
@@ -35,6 +35,17 @@
 
   FilmLab never writes the disputed codes.
 - The slot-name limit (25 chars, limited ASCII) comes from community notes; the manual is silent.
+- **Other camera bodies (see `docs/cameras.md`).**
+  - Profiles for the 16 non-reference bodies are **community-reported (3P)**:
+    - film simulations;
+    - missing features (e.g. no CLASSIC Neg. on the X‑T3/X‑T30);
+    - whole-step Highlight/Shadow on early X‑Trans IV.
+  - They were not checked against each owner's manual. Firmware updates (e.g. REALA ACE on the X‑T5/X‑H2/X‑S20) can change them.
+  - Enum values (white balance modes, DR, grain options) are assumed to match the X‑T30 III's on every body.
+  - Smooth Skin Effect isn't modelled as a recipe setting on any body.
+- **USB slot access is X‑T30 III only.**
+  - Other recognised bodies connect as *profile only*: FilmLab neither reads nor writes their slots.
+  - Reason: selecting a slot is itself a PTP property write, and the property map is unreported on those bodies.
 - FS1–FS3 (FS RECIPE) are not readable or writable by FilmLab.
 
 ## Preview fidelity

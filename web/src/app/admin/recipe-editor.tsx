@@ -9,7 +9,8 @@ import {
   WHITE_BALANCES, WHITE_BALANCE_NAMES, normalize, validate, type FieldKey, type RecipeSettings,
 } from "@/lib/recipe/schema";
 import { cn } from "@/lib/utils";
-import { TAGS, type Draft } from "./lib";
+import { TAGS, draftGeneration, type Draft } from "./lib";
+import { CAMERAS, GENERATION_LABEL, REFERENCE_CAMERA, recognizeCamera, worksOn } from "@/lib/recipe/cameras";
 
 const ENUMS: Partial<Record<FieldKey, readonly string[]>> = {
   grainRoughness: EFFECT_LEVELS, grainSize: GRAIN_SIZES, colorChrome: EFFECT_LEVELS, colorChromeFXBlue: EFFECT_LEVELS,
@@ -101,7 +102,26 @@ export function RecipeEditor({
           </div>
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="space-y-2"><Label htmlFor="ed-credit">Credit</Label><Input id="ed-credit" value={draft.credit} onChange={(e) => set({ credit: e.target.value })} placeholder="@handle or name" className="h-10 rounded-xl" /></div>
-            <div className="space-y-2"><Label htmlFor="ed-camera">Made for camera</Label><Input id="ed-camera" value={draft.cameraModel} onChange={(e) => set({ cameraModel: e.target.value })} placeholder="X-T30 III" className="h-10 rounded-xl" /></div>
+            <div className="space-y-2">
+              <Label htmlFor="ed-camera">Made on camera</Label>
+              <Input id="ed-camera" list="ed-camera-list" value={draft.cameraModel} placeholder="e.g. X100VI" className="h-10 rounded-xl"
+                onChange={(e) => set({ cameraModel: e.target.value })}
+                onBlur={(e) => { const c = recognizeCamera(e.target.value); if (c && c.name !== e.target.value) set({ cameraModel: c.name }); }} />
+              <datalist id="ed-camera-list">{CAMERAS.map((c) => <option key={c.id} value={c.name} />)}</datalist>
+              {draft.cameraModel.trim() && !recognizeCamera(draft.cameraModel) && <p className="text-xs text-amber-700">Not a camera FilmLab knows — saved as written.</p>}
+            </div>
+          </div>
+          <div className="space-y-2.5">
+            <Label>X-Trans family</Label>
+            <div className="inline-flex rounded-full bg-surface p-1 text-sm">
+              {([null, "V", "IV"] as const).map((g) => (
+                <button key={g ?? "auto"} type="button" aria-pressed={draft.xTransGeneration === g} onClick={() => set({ xTransGeneration: g })}
+                  className={cn("rounded-full px-4 py-1.5 transition-colors", draft.xTransGeneration === g ? "bg-background shadow-sm" : "text-muted-foreground hover:text-foreground")}>
+                  {g ? GENERATION_LABEL[g] : `Auto${!draft.xTransGeneration && draftGeneration(draft) ? ` · ${GENERATION_LABEL[draftGeneration(draft)!]}` : ""}`}
+                </button>
+              ))}
+            </div>
+            <p className="text-xs text-tertiary">Auto uses REALA ACE / NOSTALGIC Neg. (X‑Trans V only) or the camera above. X‑Trans IV recipes also work on X‑Trans V bodies.</p>
           </div>
           <div className="space-y-2"><Label htmlFor="ed-summary">Summary</Label><Input id="ed-summary" value={draft.summary} onChange={(e) => set({ summary: e.target.value })} placeholder="One line about the look" className="h-10 rounded-xl" /></div>
           <div className="space-y-2.5">
@@ -166,6 +186,7 @@ export function RecipeEditor({
           {validation.length > 0 && (
             <ul className="space-y-1 text-sm text-destructive">{validation.map((i) => <li key={i.field} className="flex items-center gap-1.5"><X className="size-3.5" />{i.message}</li>)}</ul>
           )}
+          <CompatSummary draft={draft} />
         </section>
 
         <section className="space-y-2">
@@ -184,6 +205,21 @@ export function RecipeEditor({
           {footer}
         </div>
       </div>
+    </div>
+  );
+}
+
+function CompatSummary({ draft }: { draft: Draft }) {
+  const all = worksOn(draft.settings);
+  const none = all.filter((c) => c.level === "none");
+  const partial = all.filter((c) => c.level === "partial");
+  const reference = all.find((c) => c.camera.id === REFERENCE_CAMERA.id)!;
+  return (
+    <div className="rounded-[20px] bg-surface p-5 text-sm">
+      <p className="font-medium">Works on {all.length - none.length} of {all.length} cameras</p>
+      {partial.length > 0 && <p className="mt-1.5 text-muted-foreground">With changes: {partial.map((c) => c.camera.name).join(", ")}</p>}
+      {none.length > 0 && <p className="mt-1.5 text-muted-foreground">Not available: {none.map((c) => c.camera.name).join(", ")}</p>}
+      {reference.level !== "full" && <p className="mt-1.5 text-amber-700">{reference.issues.map((i) => i.message).join(" ")}</p>}
     </div>
   );
 }

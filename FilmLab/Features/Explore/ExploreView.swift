@@ -23,6 +23,40 @@ struct Situation: Identifiable, Hashable {
     ]
 }
 
+/// Recipe-family filter for Explore/Library.
+enum GenerationFilter: Hashable {
+    case all, generation(XTransGeneration), worksOnMyCamera
+
+    func matches(_ r: FilmRecipe, profile: CameraProfile) -> Bool {
+        switch self {
+        case .all: true
+        case .generation(let g): r.inferredGeneration == g
+        case .worksOnMyCamera: r.compatibility(with: profile).isUsable
+        }
+    }
+}
+
+/// Chip row: All · X-Trans V · X-Trans IV · Works on <my camera>.
+struct GenerationFilterBar: View {
+    @Binding var filter: GenerationFilter
+    var cameraName: String
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                FilterChip(title: "All cameras", isOn: filter == .all) { filter = .all }
+                ForEach(XTransGeneration.allCases) { g in
+                    FilterChip(title: g.displayName, isOn: filter == .generation(g)) { filter = filter == .generation(g) ? .all : .generation(g) }
+                }
+                FilterChip(title: "Works on my \(cameraName)", isOn: filter == .worksOnMyCamera) {
+                    filter = filter == .worksOnMyCamera ? .all : .worksOnMyCamera
+                }
+            }
+            .padding(.horizontal, Theme.gutter)
+        }
+        .accessibilityIdentifier("generationFilter")
+    }
+}
+
 /// Searchable local catalog (FilmLab originals + your library). No web scraping.
 struct ExploreView: View {
     @Environment(AppEnvironment.self) private var env
@@ -31,6 +65,7 @@ struct ExploreView: View {
     @State private var situation: Situation?
     @State private var moods: Set<RecipeMood> = []
     @State private var simulation: FilmSimulation?
+    @State private var generation: GenerationFilter = .all
     @State private var showFilters = false
     @State private var showImport = false
     @FocusState private var searchFocused: Bool
@@ -40,7 +75,7 @@ struct ExploreView: View {
         return library.catalog + library.recipes.filter { r in !library.catalog.contains { $0.id == r.id } }
     }
 
-    private var isFiltering: Bool { !query.isEmpty || situation != nil || !moods.isEmpty || simulation != nil }
+    private var isFiltering: Bool { !query.isEmpty || situation != nil || !moods.isEmpty || simulation != nil || generation != .all }
 
     private var results: [FilmRecipe] {
         pool.filter { r in
@@ -50,6 +85,7 @@ struct ExploreView: View {
             && (situation?.matches(r) ?? true)
             && (moods.isEmpty || !moods.isDisjoint(with: r.moods))
             && (simulation == nil || r.filmSimulation == simulation)
+            && generation.matches(r, profile: env.settings.myProfile)
         }
     }
 
@@ -79,6 +115,7 @@ struct ExploreView: View {
                     }
                     if searching { searchField }
                     situations
+                    GenerationFilterBar(filter: $generation, cameraName: env.settings.myCamera.name)
                     if isFiltering {
                         resultsGrid
                     } else {
@@ -169,7 +206,7 @@ struct ExploreView: View {
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(title: "\(results.count) recipe\(results.count == 1 ? "" : "s")",
                           subtitle: situation.map { "\($0.emoji) \($0.title)" },
-                          actionTitle: "Clear", action: { query = ""; situation = nil; moods = []; simulation = nil })
+                          actionTitle: "Clear", action: { query = ""; situation = nil; moods = []; simulation = nil; generation = .all })
             if results.isEmpty {
                 ContentUnavailableView.search(text: query)
             } else {
@@ -267,7 +304,9 @@ struct RecipeDetailView: View {
 
     private func content(_ r: FilmRecipe) -> some View {
         let saved = env.library.isSaved(r.id)
-        let issues = RecipeValidator(profile: .xt30III).validate(r.settings)
+        let profile = env.settings.myProfile
+        let compat = r.compatibility(with: profile)
+        let issues = RecipeValidator(profile: profile).validate(r.settings).filter { $0.severity != .info || !$0.isCapability }
         return List {
             Section {
                 VStack(alignment: .leading, spacing: 10) {
@@ -323,12 +362,24 @@ struct RecipeDetailView: View {
                     LabeledContent("Suggested exposure", value: (ev > 0 ? "+" : "") + String(format: "%.1f EV", ev))
                 }
             }
-            if !issues.isEmpty {
-                Section("Compatibility · \(CameraProfile.xt30III.modelName)") {
-                    ForEach(issues) { i in
-                        Label(i.message, systemImage: i.severity == .error ? "xmark.octagon" : "info.circle").font(.footnote)
+            Section("Compatibility") {
+                LabeledContent("Written for", value: writtenFor(r))
+                if saved, r.provenance.kind != .filmLabOriginal {
+                    Picker("X-Trans tag", selection: Binding(
+                        get: { r.xTransGeneration },
+                        set: { var c = r; c.xTransGeneration = $0; env.library.save(c) })) {
+                        Text("Not set").tag(XTransGeneration?.none)
+                        ForEach(XTransGeneration.allCases) { g in Text(g.displayName).tag(XTransGeneration?.some(g)) }
                     }
+                    .accessibilityIdentifier("generationTag")
                 }
+                Label("\(compat.label) on your \(profile.modelName)", systemImage: compatIcon(compat))
+                    .foregroundStyle(compatColor(compat))
+                ForEach(issues) { i in
+                    Label(i.message, systemImage: i.severity == .error ? "xmark.octagon" : "info.circle").font(.footnote)
+                        .foregroundStyle(i.severity == .error ? Theme.textPrimary : Theme.textSecondary)
+                }
+                NavigationLink("Check every camera") { CameraCompatibilityList(recipe: r) }
             }
             Section("Provenance") {
                 LabeledContent("Source", value: provenanceLabel(r.provenance.kind))
@@ -336,7 +387,6 @@ struct RecipeDetailView: View {
                 if let l = r.provenance.license { LabeledContent("Licence", value: l) }
                 if let u = r.provenance.sourceURL { Link(u.absoluteString, destination: u) }
                 if let n = r.provenance.note { Text(n).font(.footnote).foregroundStyle(Theme.textSecondary) }
-                LabeledContent("Cameras", value: r.compatibleCameras.joined(separator: ", "))
             }
         }
         .groupedListStyle()
@@ -346,6 +396,16 @@ struct RecipeDetailView: View {
             TextField("Name", text: $newName)
             Button("Cancel", role: .cancel) {}
             Button("Save") { var c = r; c.name = newName; env.library.save(c) }
+        }
+    }
+
+    private func writtenFor(_ r: FilmRecipe) -> String {
+        let cams = r.compatibleCameras.joined(separator: ", ")
+        switch (r.inferredGeneration, cams.isEmpty) {
+        case let (g?, false): return "\(cams) · \(g.displayName)"
+        case let (g?, true): return g.displayName
+        case (nil, false): return cams
+        case (nil, true): return "Unknown"
         }
     }
 
@@ -362,5 +422,58 @@ struct RecipeDetailView: View {
         case .imported: "Imported file"
         case .cameraSlot: "Read from camera"
         }
+    }
+}
+
+func compatIcon(_ c: RecipeCompatibility) -> String {
+    switch c {
+    case .supported: "checkmark.circle.fill"
+    case .worksWithChanges: "exclamationmark.circle"
+    case .notAvailable: "xmark.circle"
+    }
+}
+
+func compatColor(_ c: RecipeCompatibility) -> Color {
+    switch c {
+    case .supported: Theme.accent
+    case .worksWithChanges: Theme.warning
+    case .notAvailable: Theme.textTertiary
+    }
+}
+
+/// How one recipe fares on every catalog body, grouped by X-Trans generation.
+struct CameraCompatibilityList: View {
+    var recipe: FilmRecipe
+    var body: some View {
+        List {
+            ForEach(CameraCatalog.grouped(), id: \.generation) { group in
+                Section(group.generation.displayName) {
+                    ForEach(group.cameras) { cam in
+                        let c = recipe.compatibility(with: cam.profile)
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text(cam.name).font(.body.weight(.semibold))
+                                Spacer()
+                                Label(c.label, systemImage: compatIcon(c)).font(.footnote).foregroundStyle(compatColor(c))
+                            }
+                            switch c {
+                            case .supported: EmptyView()
+                            case .notAvailable(let why): Text(why).font(.caption).foregroundStyle(Theme.textSecondary)
+                            case .worksWithChanges(let issues):
+                                ForEach(issues) { Text($0.message).font(.caption).foregroundStyle(Theme.textSecondary) }
+                            }
+                        }
+                        .accessibilityElement(children: .combine)
+                    }
+                }
+            }
+            Section {
+                Text("Feature support for bodies other than the X-T30 III is community-reported, not verified by FilmLab. Firmware updates can add film simulations (e.g. REALA ACE).")
+                    .font(.footnote).foregroundStyle(Theme.textSecondary)
+            }
+        }
+        .groupedListStyle()
+        .navigationTitle("Camera compatibility")
+        .inlineNavigationTitle()
     }
 }

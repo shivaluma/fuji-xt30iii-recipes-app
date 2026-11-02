@@ -52,6 +52,8 @@ struct FilmLabWebClient: Sendable {
             var isRecipe: Bool
             var name: String?
             var cameraModel: String?
+            /// "IV" / "V" when the server reports it (newer servers); absent on older ones.
+            var xTransGeneration: String?
             var credit: String?
             var settings: RecipeSettings?
             var notes: [String]
@@ -86,7 +88,8 @@ struct FilmLabWebClient: Sendable {
         guard d.isRecipe, let settings = d.settings else { throw WebError.server("No recipe was found in that image or text.") }
         var draft = RecipeImportDraft()
         draft.name = d.name ?? ""
-        draft.cameraModel = d.cameraModel
+        draft.cameraModel = d.cameraModel.map { CameraCatalog.recognize($0)?.name ?? $0 }
+        draft.xTransGeneration = d.xTransGeneration.flatMap(XTransGeneration.init(rawValue:))
         draft.credit = d.credit
         draft.settings = settings.normalized()
         draft.filmSimulationFound = true

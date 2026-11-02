@@ -14,6 +14,8 @@ struct TuneParameter: Identifiable {
     let step: (RecipeSettings, Int) -> RecipeSettings
     let clear: (RecipeSettings) -> RecipeSettings
     let canStep: (RecipeSettings, Int) -> Bool
+    /// Set when the chosen camera body doesn't have this setting at all.
+    var unavailable: String? = nil
 }
 
 extension TuneParameter {
@@ -104,6 +106,30 @@ extension TuneParameter {
             })
     }
 
+    /// Recipe property behind each card (EXPOSURE is a preview-only note, so it has none).
+    static let propertyKeys: [String: RecipePropertyKey] = [
+        "highlight": .highlight, "shadow": .shadow, "color": .color, "cc": .colorChrome, "ccb": .colorChromeFXBlue,
+        "grain": .grainRoughness, "grainSize": .grainSize, "wb": .whiteBalance, "kelvin": .kelvin, "wbr": .wbShiftRed,
+        "wbb": .wbShiftBlue, "dr": .dynamicRange, "drp": .dRangePriority, "sharp": .sharpness, "nr": .highISONR,
+        "clarity": .clarity, "wc": .monochromaticWarmCool, "mg": .monochromaticMagentaGreen,
+    ]
+
+    /// Marks a parameter the body doesn't have: shown only when the recipe sets it, not steppable.
+    func unavailable(on profile: CameraProfile) -> TuneParameter {
+        let reason = "\(profile.modelName) doesn't have \(name). The recipe's value is kept for other cameras; clear it to drop it."
+        return TuneParameter(id: id, label: label, name: name, palette: palette, display: display, isSet: isSet,
+                             isApplicable: { _ in false }, naReason: { _ in reason }, step: { s, _ in s }, clear: clear,
+                             canStep: { _, _ in false }, unavailable: reason)
+    }
+
+    /// Parameters for one camera body: unsupported settings are marked unavailable.
+    static func all(for profile: CameraProfile) -> [TuneParameter] {
+        all(profile: profile).map { p in
+            guard let key = propertyKeys[p.id], !profile.isSupported(key) else { return p }
+            return p.unavailable(on: profile)
+        }
+    }
+
     /// All parameters in display order, using the profile's capability ranges.
     static func all(profile: CameraProfile = .xt30III) -> [TuneParameter] {
         func r(_ k: RecipePropertyKey) -> NumericRange { profile.capability(k)?.range ?? NumericRange(min: -4, max: 4, step: 1) }
@@ -158,8 +184,13 @@ extension TuneParameter {
 struct TunePanel: View {
     @Binding var settings: RecipeSettings
     var hapticsEnabled = true
+    /// The user's camera body: its ranges apply and settings it lacks are hidden (or shown
+    /// disabled when the recipe sets them).
+    var profile: CameraProfile = .xt30III
     @State private var selectedID = "highlight"
-    private let parameters = TuneParameter.all()
+    private var parameters: [TuneParameter] {
+        TuneParameter.all(for: profile).filter { $0.unavailable == nil || $0.isSet(settings) }
+    }
 
     private var selected: TuneParameter { parameters.first { $0.id == selectedID } ?? parameters[0] }
 
@@ -225,7 +256,14 @@ struct TunePanel: View {
 
     @ViewBuilder private var footnote: some View {
         let p = selected
-        if !p.isApplicable(settings) {
+        if let reason = p.unavailable {
+            VStack(spacing: 6) {
+                Text(reason).font(.caption).foregroundStyle(Theme.warning)
+                    .multilineTextAlignment(.center).padding(.horizontal, Theme.gutter)
+                Button("Clear \(p.name)") { settings = p.clear(settings) }
+                    .font(.caption.weight(.medium)).foregroundStyle(Theme.textSecondary)
+            }
+        } else if !p.isApplicable(settings) {
             Text(p.naReason(settings)).font(.caption).foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center).padding(.horizontal, Theme.gutter)
         } else if p.isSet(settings) {

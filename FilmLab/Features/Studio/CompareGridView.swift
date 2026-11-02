@@ -115,7 +115,8 @@ struct SaveRecipeSheet: View {
 
     var body: some View {
         let studio = env.studio
-        let issues = RecipeValidator(profile: .xt30III).validate(studio.recipe.settings)
+        let profile = env.settings.myProfile
+        let issues = RecipeValidator(profile: profile).validate(studio.recipe.settings)
         NavigationStack {
             Form {
                 Section("Name") {
@@ -129,7 +130,7 @@ struct SaveRecipeSheet: View {
                     }
                 }
                 if !issues.isEmpty {
-                    Section("Checks for \(CameraProfile.xt30III.modelName)") {
+                    Section("Checks for \(profile.modelName)") {
                         ForEach(issues) { i in
                             Label(i.message, systemImage: i.severity == .error ? "xmark.octagon" : "info.circle")
                                 .font(.footnote)
@@ -150,7 +151,7 @@ struct SaveRecipeSheet: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        var saved = studio.saveAsNew(name: name.trimmingCharacters(in: .whitespaces))
+                        var saved = studio.saveAsNew(name: name.trimmingCharacters(in: .whitespaces), writtenFor: env.settings.myCamera)
                         if !summary.isEmpty { saved.summary = summary; env.library.save(saved) }
                         dismiss()
                     }

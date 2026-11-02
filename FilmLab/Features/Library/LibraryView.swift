@@ -14,6 +14,7 @@ struct LibraryView: View {
     @Environment(AppEnvironment.self) private var env
     @State private var query = ""
     @State private var favoritesOnly = false
+    @State private var generation: GenerationFilter = .all
     @State private var selecting = false
     @State private var selection: Set<UUID> = []
     @State private var importing = false
@@ -26,6 +27,7 @@ struct LibraryView: View {
         env.library.recipes.filter {
             (!favoritesOnly || $0.isFavorite) && (query.isEmpty || $0.name.localizedCaseInsensitiveContains(query)
                 || $0.filmSimulation.displayName.localizedCaseInsensitiveContains(query))
+            && generation.matches($0, profile: env.settings.myProfile)
         }
     }
 
@@ -111,7 +113,7 @@ struct LibraryView: View {
                 Text(r.name).font(.body.weight(.medium))
                 if r.isFavorite { Image(systemName: "heart.fill").font(.caption).foregroundStyle(Theme.accent) }
             }
-            Text("\(r.filmSimulation.displayName) · \(r.provenance.kind == .filmLabOriginal ? "FilmLab" : "Yours")")
+            Text("\(r.filmSimulation.displayName)\(r.inferredGeneration.map { " · \($0.displayName)" } ?? "") · \(r.provenance.kind == .filmLabOriginal ? "FilmLab" : "Yours")")
                 .font(.caption).foregroundStyle(Theme.textSecondary)
         }
     }
@@ -128,6 +130,11 @@ struct LibraryView: View {
         ToolbarItem(placement: .trailingBar) {
             Menu {
                 Toggle("Favorites only", isOn: $favoritesOnly)
+                Picker("Cameras", selection: $generation) {
+                    Text("All cameras").tag(GenerationFilter.all)
+                    ForEach(XTransGeneration.allCases) { g in Text(g.displayName).tag(GenerationFilter.generation(g)) }
+                    Text("Works on my \(env.settings.myCamera.name)").tag(GenerationFilter.worksOnMyCamera)
+                }
                 Button(selecting ? "Done Selecting" : "Select", systemImage: "checkmark.circle") {
                     selecting.toggle(); selection.removeAll()
                 }
@@ -165,6 +172,22 @@ struct SettingsView: View {
         @Bindable var settings = env.settings
         NavigationStack {
             Form {
+                Section {
+                    Picker("My camera", selection: $settings.myCameraID) {
+                        ForEach(CameraCatalog.grouped(), id: \.generation) { group in
+                            Section(group.generation.displayName) {
+                                ForEach(group.cameras) { cam in Text(cam.name).tag(cam.id) }
+                            }
+                        }
+                    }
+                    .accessibilityIdentifier("myCameraPicker")
+                } header: {
+                    Text("Camera")
+                } footer: {
+                    let cam = settings.myCamera
+                    Text("\(cam.sensor) · \(cam.processor) · takes \(cam.generation.displayName) recipes. Studio, Tune and compatibility checks use this body. "
+                         + (cam.status >= .verifiedInDocs ? "Ranges checked against the owner's manual." : "Feature support is community-reported, not verified by FilmLab."))
+                }
                 Section("Studio") {
                     Toggle("Show histogram", isOn: $settings.showHistogram)
                     Toggle("Haptics", isOn: $settings.hapticsEnabled)
@@ -180,7 +203,7 @@ struct SettingsView: View {
                 } header: {
                     Text("Hardware (experimental)")
                 } footer: {
-                    Text("Writing C1–C7 over USB uses unofficial, community-documented protocol details that have NOT been verified by FilmLab on an X-T30 III. It may change camera settings unexpectedly and may affect your warranty. Off by default. Demo mode never needs this.")
+                    Text("Writing C1–C7 over USB uses unofficial, community-documented protocol details that have NOT been verified by FilmLab. It is offered only on the X-T30 III, the one body with community reports; other recognised cameras are read-only. It may change camera settings unexpectedly and may affect your warranty. Off by default. Demo mode never needs this.")
                 }
                 WebShowcaseSection()
                 Section("About") {

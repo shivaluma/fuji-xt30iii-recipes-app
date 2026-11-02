@@ -1,7 +1,9 @@
 # FilmLab
 
-FilmLab is a recipe studio for the FUJIFILM X‑T30 III. It runs on iPhone (iOS 17+, SwiftUI) and is
-a working name.
+FilmLab is a recipe studio for FUJIFILM **X‑Trans IV and X‑Trans V** cameras. It runs on iPhone
+(iOS 17+, SwiftUI) and is a working name. The X‑T30 III is the reference body: the only one with
+manual-checked ranges and (experimental) USB slot access. Other bodies are profiled from community
+reports. See `docs/cameras.md`.
 
 **Preview → Tune → Compare → Save → (optionally) Write to camera.** Previewing never touches the
 camera.
@@ -14,8 +16,13 @@ camera.
   - Compare 4 or 9 recipes in a grid.
   - Save, duplicate, or export an approximate JPEG.
   - Every preview is labelled **Approximate · On-device**.
+- **Cameras.** Pick *My camera* in Settings from 17 bodies (X‑Trans V: X‑T30 III, X‑M5, X‑S20, X‑T50,
+  X‑E5, X100VI, X‑T5, X‑H2, X‑H2S; X‑Trans IV: X‑T30 II, X‑T4, X‑S10, X‑E4, X100V, X‑Pro3, X‑T3, X‑T30).
+  - Studio, Tune and compatibility checks follow that body.
+  - Recipes carry an optional X‑Trans IV/V tag.
+  - Each recipe shows how it fares on every camera.
 - **Explore and Library.**
-  - 12 original FilmLab starter recipes, with search and filters (type, mood, simulation).
+  - 12 original FilmLab starter recipes, with search and filters (type, mood, simulation, X‑Trans generation, works on my camera).
   - Favourites, bulk export/delete, versioned JSON import/export, and provenance on every recipe.
 - **Sets.** Seven-slot arrangements for C1–C7, with reordering, preview in Compare, and
   slot-by-slot install.
@@ -32,6 +39,7 @@ camera.
   See `web/README.md`.
 - **Camera.**
   - Demo camera, or USB via ImageCaptureCore (experimental).
+  - Connected bodies are recognised from the catalog. Only the X‑T30 III gets slot access; other recognised bodies are *profile only*.
   - Model/firmware view, capability and verification view, read C1–C7, local backups and export.
   - Guarded single-slot writes: backup first, per-setting diff, explicit acknowledgement,
     read-back verification, and honest *outcome unknown* on interruption.
@@ -79,6 +87,7 @@ FILMLAB_RECORD_GOLDEN=1 ./scripts/test-cli.sh       # re-record golden-image fix
 
 - `docs/research.md`: sourced facts, each tagged DOC / 3P / DEV / NV
 - `docs/architecture.md`: modules, the pipeline order, the camera stack and its state machines
+- `docs/cameras.md`: supported bodies, X‑Trans IV/V, recognition, compatibility, verification status (catalog: `shared/camera-catalog.json`)
 - `docs/ptp-validation.md`: ordered hardware checks P1–P7 and a results log
 - `docs/device-test-matrix.md`: manual tests on real devices
 - `docs/known-limitations.md`: blockers and unverified assumptions

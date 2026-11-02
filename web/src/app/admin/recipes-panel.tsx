@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RecipeThumb } from "@/components/recipe/recipe-thumb";
 import { FILM_SIMULATION_NAMES, type FilmRecipe } from "@/lib/recipe/schema";
+import { GENERATION_LABEL } from "@/lib/recipe/cameras";
 import { cn } from "@/lib/utils";
 import { api, draftFromRecipe, jsonInit, preparePhoto, saveDraft, uploadPhotos, type Draft, type RemotePhoto, type Summary } from "./lib";
 import { RecipeEditor, draftProblems } from "./recipe-editor";
@@ -144,7 +145,7 @@ export function RecipesPanel({ token, version, onChange }: { token: string; vers
               <div className="min-w-0 flex-1">
                 <button type="button" onClick={() => openEditor(r.slug)} className="block max-w-full truncate text-left font-display text-xl tracking-[-0.02em] hover:opacity-70">{r.name}</button>
                 <p className="mt-1 truncate text-sm text-muted-foreground">
-                  {FILM_SIMULATION_NAMES[r.filmSimulation]} · updated {dateFmt.format(new Date(r.updatedAt))}
+                  {FILM_SIMULATION_NAMES[r.filmSimulation]}{r.xTransGeneration ? ` · ${GENERATION_LABEL[r.xTransGeneration]}` : ""} · updated {dateFmt.format(new Date(r.updatedAt))}
                 </p>
               </div>
               <span className={cn("hidden rounded-full px-2.5 py-1 text-xs font-medium sm:inline", r.status === "published" ? "bg-foreground text-background" : "bg-surface text-muted-foreground")}>

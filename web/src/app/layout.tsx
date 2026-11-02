@@ -10,8 +10,8 @@ const interTight = Inter_Tight({ variable: "--font-inter-tight", subsets: ["lati
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: { default: "FilmLab — film recipes for the X-T30 III", template: "%s · FilmLab" },
-  description: "Preview Fujifilm X-T30 III film simulation recipes on your own photos, read recipes from screenshots, and keep your C1–C7 slots organised. Unofficial; not affiliated with Fujifilm.",
+  title: { default: "FilmLab — film recipes for Fujifilm X-Trans IV & V", template: "%s · FilmLab" },
+  description: "Preview film simulation recipes for Fujifilm X-Trans IV and X-Trans V cameras on your own photos, see which bodies each recipe works on, and read recipes from screenshots. Unofficial; not affiliated with Fujifilm.",
 };
 
 const FOOTER_LINKS = [
@@ -29,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <footer className="mt-40 overflow-hidden sm:mt-56">
           <div className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10">
             <div className="grid gap-12 border-t border-hairline pt-16 sm:grid-cols-[2fr_1fr_1fr]">
-              <p className="max-w-sm text-muted-foreground">Film simulation recipes for the Fujifilm X‑T30 III. Preview first, shoot later.</p>
+              <p className="max-w-sm text-muted-foreground">Film simulation recipes for Fujifilm X‑Trans IV and V cameras. Preview first, shoot later.</p>
               {FOOTER_LINKS.map((col) => (
                 <div key={col.title} className="space-y-3.5 text-sm">
                   <div className="text-xs font-medium uppercase tracking-[.08em] text-tertiary">{col.title}</div>

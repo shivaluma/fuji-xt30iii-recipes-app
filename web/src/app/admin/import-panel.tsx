@@ -7,7 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { FILM_SIMULATION_NAMES } from "@/lib/recipe/schema";
 import type { ExtractionDraft } from "@/lib/extract/mapping";
 import { cn } from "@/lib/utils";
-import { ApiError, api, draftFromExtraction, jsonInit, pool, prepareImage, saveDraft, type Draft, type ExtractMeta } from "./lib";
+import { ApiError, api, draftFromExtraction, draftGeneration, jsonInit, pool, prepareImage, saveDraft, type Draft, type ExtractMeta } from "./lib";
+import { GENERATION_LABEL } from "@/lib/recipe/cameras";
 import { RecipeEditor, draftProblems } from "./recipe-editor";
 import { PendingPhotos } from "./photo-manager";
 
@@ -299,7 +300,7 @@ export function ImportPanel({ token, onSaved }: { token: string; onSaved: () => 
                     <div className="px-1 pb-1 pt-3">
                       <p className="truncate text-sm font-medium">{x.draft?.name || x.label}</p>
                       <p className="truncate text-xs text-muted-foreground">
-                        {x.error ?? (x.draft ? FILM_SIMULATION_NAMES[x.draft.settings.filmSimulation] : x.file ? "Image" : "Text")}
+                        {x.error ?? (x.draft ? `${FILM_SIMULATION_NAMES[x.draft.settings.filmSimulation]}${draftGeneration(x.draft) ? ` · ${GENERATION_LABEL[draftGeneration(x.draft)!].replace("X-Trans ", "")}` : ""}` : x.file ? "Image" : "Text")}
                       </p>
                     </div>
                   </button>

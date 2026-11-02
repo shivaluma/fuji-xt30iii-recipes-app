@@ -17,6 +17,8 @@ enum StarterRecipes {
         return FilmRecipe(
             id: UUID(uuidString: id)!,
             name: name, summary: summary, settings: s, tags: tags, moods: moods,
+            // X-Trans IV recipes also run on X-Trans V bodies; only V-only simulations make a V recipe.
+            xTransGeneration: sim == .realaAce || sim == .nostalgicNeg ? .v : .iv,
             provenance: RecipeProvenance(kind: .filmLabOriginal, author: author, license: license),
             createdAt: date, updatedAt: date)
     }

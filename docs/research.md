@@ -107,3 +107,8 @@ facts and cites them. reshipi's bundled donor RAF has unclear rights and was **n
    3P warning: read-back after every write, never write disputed codes, back up first.
 4. **C1–C7 ≠ FS1–FS3**, as the manual states. FilmLab only addresses C slots.
 5. **Support is modelled per property** (`CameraProfile`), each with its own `VerificationStatus`.
+6. **Other bodies (added 2026‑11‑02) are 3P.**
+   - X‑Trans IV/V profiles in `shared/camera-catalog.json` come from community recipe sources, which group recipes by processor generation. They are not from per-model manuals.
+   - Generation is a browsing/tagging label only; validation stays per property.
+   - PTP slot access is NV on every body except the X‑T30 III (3P via reshipi), so FilmLab only identifies those bodies.
+   - See `cameras.md`.

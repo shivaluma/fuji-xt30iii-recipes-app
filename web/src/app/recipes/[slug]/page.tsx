@@ -7,6 +7,8 @@ import { PhotoGallery } from "@/components/recipe/photo-gallery";
 import { RecipePreview } from "@/components/recipe/recipe-preview";
 import { SettingsGrid } from "@/components/recipe/settings-grid";
 import { ShareButton } from "@/components/recipe/share-button";
+import { WorksOn } from "@/components/recipe/works-on";
+import { GENERATION_LABEL, inferGeneration } from "@/lib/recipe/cameras";
 import { Reveal } from "@/components/site/reveal";
 import { FILM_SIMULATION_NAMES, type FieldKey } from "@/lib/recipe/schema";
 import { publishedRecipe, publishedRecipes } from "@/lib/server/data";
@@ -19,7 +21,9 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<"/recipes/[slug]">): Promise<Metadata> {
   const r = await publishedRecipe((await params).slug);
-  return r ? { title: r.name, description: r.summary || `${FILM_SIMULATION_NAMES[r.filmSimulation]} film recipe for the X-T30 III` } : {};
+  if (!r) return {};
+  const g = inferGeneration(r.recipe);
+  return { title: r.name, description: r.summary || `${FILM_SIMULATION_NAMES[r.filmSimulation]} film recipe for Fujifilm ${g ? GENERATION_LABEL[g] : "X-Trans"} cameras` };
 }
 
 const BEST_FOR: Record<string, string> = {
@@ -41,6 +45,8 @@ async function Recipe({ params }: { params: PageProps<"/recipes/[slug]">["params
   const bestFor = [...new Set([...r.tags, ...r.moods.map((m) => MOOD_FALLBACK[m]).filter(Boolean)])]
     .map((t) => BEST_FOR[t]).filter(Boolean);
   const author = r.provenance.author ?? (r.provenance.kind === "filmLabOriginal" ? "FilmLab" : null);
+  const generation = inferGeneration(r);
+  const madeFor = r.compatibleCameras.find((c) => c !== "X-T30 III") ?? null;
 
   return (
     <>
@@ -66,13 +72,17 @@ async function Recipe({ params }: { params: PageProps<"/recipes/[slug]">["params
 
         <div className="flex flex-col gap-12">
           <header>
-            <p className="text-xs font-medium uppercase tracking-[.08em] text-muted-foreground">{FILM_SIMULATION_NAMES[s.filmSimulation]}</p>
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-medium uppercase tracking-[.08em] text-muted-foreground">
+              {FILM_SIMULATION_NAMES[s.filmSimulation]}
+              {generation && <span className="rounded-full bg-foreground px-2.5 py-1 tracking-normal text-background normal-case">{GENERATION_LABEL[generation]}</span>}
+            </p>
             <h1 className="mt-3 font-display text-5xl font-normal leading-[0.92] tracking-[-0.05em] sm:text-6xl">{r.name}</h1>
             {r.summary && <p className="mt-6 text-lg leading-relaxed text-muted-foreground">{r.summary}</p>}
           </header>
 
-          <dl className="grid grid-cols-3 gap-6 border-y border-hairline py-6 text-sm">
+          <dl className="grid grid-cols-2 gap-6 border-y border-hairline py-6 text-sm sm:grid-cols-4">
             {author && <div><dt className="text-tertiary">Created by</dt><dd className="mt-1 truncate font-medium">{author}</dd></div>}
+            {madeFor && <div><dt className="text-tertiary">Made on</dt><dd className="mt-1 truncate font-medium">{madeFor}</dd></div>}
             {row.publishedAt && <div><dt className="text-tertiary">Published</dt><dd className="mt-1 font-medium">{dateFmt.format(new Date(row.publishedAt))}</dd></div>}
             <div><dt className="text-tertiary">Downloads</dt><dd className="mt-1 font-medium tabular-nums">{row.downloads}</dd></div>
           </dl>
@@ -102,6 +112,8 @@ async function Recipe({ params }: { params: PageProps<"/recipes/[slug]">["params
             <SettingsGrid settings={s} />
             <p className="mt-3 text-xs text-tertiary">“—” means the recipe doesn&apos;t set it, so the camera keeps its own value.</p>
           </section>
+
+          <WorksOn settings={s} />
 
           {r.provenance.note && <p className="text-xs text-tertiary">{r.provenance.note}</p>}
         </div>

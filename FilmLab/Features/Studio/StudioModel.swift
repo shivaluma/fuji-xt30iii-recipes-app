@@ -145,10 +145,15 @@ final class StudioModel {
     }
 
     @discardableResult
-    func saveAsNew(name: String) -> FilmRecipe {
+    /// Saves the working copy as a new Library recipe, recorded as written for `camera`.
+    /// The generation keeps the source recipe's tag unless a V-only film simulation forces V.
+    func saveAsNew(name: String, writtenFor camera: CameraModelInfo = CameraCatalog.reference) -> FilmRecipe {
         let base = library.recipe(baseRecipeID)
+        let vOnly = recipe.filmSimulation == .realaAce || recipe.filmSimulation == .nostalgicNeg
         var new = FilmRecipe(name: name.isEmpty ? "Untitled Recipe" : name, summary: recipe.summary,
                              settings: recipe.settings, tags: recipe.tags, moods: recipe.moods,
+                             compatibleCameras: [camera.name],
+                             xTransGeneration: vOnly ? .v : (recipe.xTransGeneration ?? camera.generation),
                              provenance: base.map {
                                  RecipeProvenance(kind: .duplicated, author: $0.provenance.author, sourceURL: $0.provenance.sourceURL,
                                                   license: $0.provenance.license, derivedFrom: $0.id, note: "Tuned from “\($0.name)” in Studio")

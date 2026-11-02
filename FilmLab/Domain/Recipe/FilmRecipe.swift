@@ -54,6 +54,9 @@ struct FilmRecipe: Codable, Identifiable, Equatable, Hashable, Sendable {
     var isFavorite: Bool
     /// Camera model identifiers this recipe was authored/validated for, e.g. "X-T30 III".
     var compatibleCameras: [String]
+    /// Recipe family the recipe was written for ("IV" / "V"); nil = unknown. Optional in JSON
+    /// (older files and apps omit it). Use `inferredGeneration` for display and filtering.
+    var xTransGeneration: XTransGeneration?
     var provenance: RecipeProvenance
     var createdAt: Date
     var updatedAt: Date
@@ -67,6 +70,7 @@ struct FilmRecipe: Codable, Identifiable, Equatable, Hashable, Sendable {
         moods: [RecipeMood] = [],
         isFavorite: Bool = false,
         compatibleCameras: [String] = [CameraProfile.xt30III.modelName],
+        xTransGeneration: XTransGeneration? = nil,
         provenance: RecipeProvenance = .userCreated,
         createdAt: Date = Date(),
         updatedAt: Date = Date()
@@ -79,6 +83,7 @@ struct FilmRecipe: Codable, Identifiable, Equatable, Hashable, Sendable {
         self.moods = moods
         self.isFavorite = isFavorite
         self.compatibleCameras = compatibleCameras
+        self.xTransGeneration = xTransGeneration
         self.provenance = provenance
         self.createdAt = createdAt
         self.updatedAt = updatedAt
@@ -96,6 +101,7 @@ struct FilmRecipe: Codable, Identifiable, Equatable, Hashable, Sendable {
             moods: moods,
             isFavorite: false,
             compatibleCameras: compatibleCameras,
+            xTransGeneration: xTransGeneration,
             provenance: RecipeProvenance(
                 kind: .duplicated,
                 author: provenance.author,

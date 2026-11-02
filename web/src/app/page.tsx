@@ -8,29 +8,29 @@ import { Reveal } from "@/components/site/reveal";
 import { TryIt } from "@/components/site/try-it";
 import { FILM_SIMULATION_NAMES, RecipeSettingsSchema, type FilmSimulation } from "@/lib/recipe/schema";
 import { publishedRecipes, toCard } from "@/lib/server/data";
+import { GENERATIONS, GENERATION_LABEL, camerasIn } from "@/lib/recipe/cameras";
 import { DEFAULT_PHOTO, HERO } from "@/lib/site-config";
 
 const look = (sim: FilmSimulation) => RecipeSettingsSchema.parse({ filmSimulation: sim });
 
 const FEATURES: { title: string; body: string; sim: FilmSimulation }[] = [
-  { title: "Preview before you shoot", body: "See any recipe on your own photos — all 20 X‑T30 III simulations, rendered on your device in real time.", sim: "classicChrome" },
-  { title: "Tune every setting", body: "Parameter cards with −/+ steppers, ranges taken from the camera, and hold‑to‑compare with the original.", sim: "nostalgicNeg" },
+  { title: "Preview before you shoot", body: "See any recipe on your own photos — every simulation from X‑Trans IV and V bodies, rendered on your device in real time.", sim: "classicChrome" },
+  { title: "Tune every setting", body: "Parameter cards with −/+ steppers and ranges from your camera — pick your body and FilmLab hides what it can’t do.", sim: "nostalgicNeg" },
   { title: "Screenshot to recipe", body: "Snap a recipe card, a forum post or a friend’s story. FilmLab reads it on‑device first; you review every field.", sim: "acrosR" },
   { title: "C1–C7, without the dread", body: "Arrange sets of seven, see a per‑setting diff, back up first. Camera writing is experimental and off by default.", sim: "eterna" },
 ];
 
-const CAMERAS = [
-  ["X‑T30 III", "Designed for", "X‑Trans CMOS 4 · X‑Processor 5"],
-  ["X‑T5 · X‑T50", "Recipes translate", "Unsupported settings are flagged"],
-  ["X‑S20 · X‑E5", "Recipes translate", "Unsupported settings are flagged"],
-  ["X100VI", "Recipes translate", "Unsupported settings are flagged"],
-];
+const GENERATION_BLURB = {
+  V: "X‑Processor 5 bodies: every simulation incl. REALA ACE and NOSTALGIC Neg. Includes X‑Trans 4‑sensor bodies like the X‑T30 III and X‑S20.",
+  IV: "X‑Processor 4 bodies: CLASSIC Neg. and Color Chrome FX Blue on most; X‑Trans IV recipes also work on X‑Trans V cameras.",
+} as const;
 
 const FAQ = [
   ["Is the preview what my camera will produce?", "No — it's FilmLab's own approximation, rendered on your device. It's great for comparing looks and choosing a starting point. Only a JPEG produced by the camera itself is the real thing, and FilmLab always labels which is which."],
   ["Does my photo get uploaded?", "Not for previews: the web demo renders in your browser and the app renders on your iPhone. Only when you choose AI recipe reading for a hard-to-read screenshot is that image sent to the FilmLab server for that one request, and it isn't stored."],
-  ["Which cameras are supported?", "FilmLab is built and tuned for the X-T30 III: its 20 film simulations, ranges and C1–C7 custom slots. Recipes for other X-Trans bodies usually translate, and FilmLab flags settings the X-T30 III doesn't have (like Smooth Skin)."],
-  ["Can it write recipes to my camera?", "Camera writing over USB-C is experimental and off by default. When enabled it backs up all seven slots, shows a per-setting diff, asks you to confirm, and reads the slot back to verify. FS1–FS3 dial positions are never touched."],
+  ["Which cameras are supported?", "Fujifilm X-Trans IV and X-Trans V bodies — from the X-T3 and X100V to the X-T5, X100VI and X-T30 III. Every recipe is tagged X-Trans IV or V and shows which cameras can take it as written, which need small changes, and which can't (e.g. REALA ACE on an X-T4). Feature lists for bodies other than the X-T30 III come from community reports."],
+  ["What's the difference between X-Trans IV and V recipes?", "It's about the image processor. X-Trans V (X-Processor 5) cameras add NOSTALGIC Neg. and REALA ACE, so recipes built on them won't work on X-Trans IV. X-Trans IV recipes generally work on X-Trans V bodies, although colours can render a little differently."],
+  ["Can it write recipes to my camera?", "Camera writing over USB-C is experimental, off by default and currently limited to the X-T30 III. When enabled it backs up all seven slots, shows a per-setting diff, asks you to confirm, and reads the slot back to verify. Other recognised bodies are read-only for now."],
   ["How do I import a recipe I found online?", "Take a screenshot (or paste the text) and FilmLab reads it — on-device first, with AI only when the on-device pass can't read everything. You review every field before saving."],
 ];
 
@@ -106,7 +106,7 @@ export default async function Home() {
 
         <div className={`mt-12 grid gap-6 border-t border-hairline pt-8 text-muted-foreground sm:grid-cols-[1.4fr_1fr] ${enter}`} style={{ animationDelay: "220ms" }}>
           <p className="max-w-xl text-lg leading-relaxed text-foreground sm:text-xl">
-            Preview film simulation recipes on your own photos, tune every setting, and keep your C1–C7 slots in order — made for the FUJIFILM X‑T30 III.
+            Preview film simulation recipes on your own photos, tune every setting, and keep your C1–C7 slots in order — for FUJIFILM X‑Trans IV and V cameras.
           </p>
           <p className="text-sm sm:text-right">Free · Previews stay on your device · Unofficial</p>
         </div>
@@ -167,16 +167,28 @@ export default async function Home() {
         <Reveal delay={0.08} className="mt-16"><TryIt /></Reveal>
       </section>
 
-      {/* CAMERAS — awards-style rows */}
-      <section className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10 pt-40 sm:pt-56">
-        <Reveal><SectionTitle>Cameras</SectionTitle></Reveal>
+      {/* CAMERAS — one row per X-Trans family */}
+      <section className="mx-auto max-w-6xl px-5 pt-40 sm:px-8 sm:pt-56 lg:px-10">
+        <Reveal><SectionTitle aside={<p className="max-w-xs text-muted-foreground">Pick your body in the app and every recipe shows what works on it.</p>}>Cameras</SectionTitle></Reveal>
         <div className="mt-16 border-t border-hairline">
-          {CAMERAS.map(([name, status, note], i) => (
-            <Reveal key={name}>
-              <div className="grid grid-cols-[1fr_auto] items-baseline gap-x-6 gap-y-1 border-b border-hairline py-7 sm:grid-cols-[1.2fr_1fr_1fr] sm:py-9">
-                <span className="font-display text-2xl font-normal tracking-[-0.03em] sm:text-3xl">{name}</span>
-                <span className={i === 0 ? "text-sm font-medium" : "text-sm text-muted-foreground"}>{status}</span>
-                <span className="col-span-2 text-sm text-tertiary sm:col-span-1 sm:text-right">{note}</span>
+          {GENERATIONS.map((g) => (
+            <Reveal key={g}>
+              <div className="grid gap-6 border-b border-hairline py-10 sm:grid-cols-[1fr_1.6fr] sm:gap-10 sm:py-12">
+                <div>
+                  <h3 className="font-display text-4xl font-normal tracking-[-0.04em] sm:text-5xl">{GENERATION_LABEL[g]}</h3>
+                  <p className="mt-4 max-w-sm leading-relaxed text-muted-foreground">{GENERATION_BLURB[g]}</p>
+                </div>
+                <ul className="grid grid-cols-2 content-start gap-x-8 sm:grid-cols-3">
+                  {camerasIn(g).map((c) => (
+                    <li key={c.id} className="border-b border-hairline py-3">
+                      <Link href={`/recipes?camera=${c.id}`} className="group flex items-baseline justify-between gap-2 transition-opacity hover:opacity-60">
+                        <span className="font-display text-xl tracking-[-0.02em]">{c.name}</span>
+                        <ArrowUpRight className="size-3.5 shrink-0 text-tertiary" />
+                      </Link>
+                      <p className="mt-0.5 truncate text-xs text-tertiary">{c.sensor.replace(/\s*\(.*\)/, "")}</p>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </Reveal>
           ))}

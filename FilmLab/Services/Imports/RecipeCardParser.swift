@@ -5,8 +5,10 @@ import CoreGraphics
 /// reviews before saving; fields that weren't read stay `.unset` and are listed in `missing`.
 struct RecipeImportDraft: Sendable {
     var name: String = ""
-    /// Camera the card says it was made for, e.g. "X-T30 III".
+    /// Camera the card says it was made for, e.g. "X-T30 III" (catalog name when recognised).
     var cameraModel: String?
+    /// "X-Trans IV/V" stated on the card or text, if any. See `resolvedGeneration`.
+    var xTransGeneration: XTransGeneration?
     /// Credit printed on the card (often the photographer's handle).
     var credit: String?
     /// App/brand footer seen on the card, kept only as a provenance note.
@@ -29,27 +31,49 @@ struct RecipeImportDraft: Sendable {
     /// "Label: value" settings that don't map to a FilmLab field (e.g. "Smooth Skin Effect: Strong").
     var otherSettings: [(label: String, value: String)] = []
 
-    /// Settings the X-T30 III doesn't have (kept, never applied).
+    /// Settings FilmLab doesn't store as recipe values (kept as notes, never applied).
     var unsupportedWarnings: [String] {
         otherSettings.compactMap { o in
             o.label.lowercased().contains("smooth skin")
-                ? "Smooth Skin Effect (\(o.value)) isn't available on the X-T30 III — it has Portrait Enhancer instead." : nil
+                ? "Smooth Skin Effect (\(o.value)) isn't a FilmLab recipe setting, so it's kept only as a note. The X-T30 III has Portrait Enhancer instead." : nil
         }
     }
 
     var isUsable: Bool { filmSimulationFound }
 
+    /// The body the recipe was written for, when it's in the catalog.
+    var recognizedCamera: CameraModelInfo? { cameraModel.flatMap(CameraCatalog.recognize) }
+
+    /// Stated generation, else V-only film simulation ⇒ V, else the recognised camera's generation.
+    var resolvedGeneration: XTransGeneration? {
+        if let xTransGeneration { return xTransGeneration }
+        if filmSimulationFound, settings.filmSimulation == .realaAce || settings.filmSimulation == .nostalgicNeg { return .v }
+        return recognizedCamera?.generation
+    }
+
+    /// "Written for X-S20 · X-Trans V", "X-Trans IV recipe", or nil when nothing is known.
+    var writtenForLabel: String? {
+        switch (cameraModel, resolvedGeneration) {
+        case let (cam?, gen?): "Written for \(cam) · \(gen.displayName)"
+        case let (cam?, nil): "Written for \(cam)"
+        case let (nil, gen?): "\(gen.displayName) recipe"
+        default: nil
+        }
+    }
+
     func recipe(now: Date = Date()) -> FilmRecipe {
         var note = "Imported from a recipe image"
         if let sourceNote { note += " (\(sourceNote))" }
         if let cameraModel { note += ". Card made for \(cameraModel)." }
-        let cameras = [CameraProfile.xt30III.modelName] + (cameraModel.map { $0 == CameraProfile.xt30III.modelName ? [] : [$0] } ?? [])
+        // Only record what the source says: the camera it names (if any) and its generation.
+        let cameras = cameraModel.map { [$0] } ?? []
         return FilmRecipe(
             name: name.isEmpty ? "Imported Recipe" : name,
             summary: notes.joined(separator: " · "),
             settings: settings.normalized(),
             tags: [],
             compatibleCameras: cameras,
+            xTransGeneration: resolvedGeneration,
             provenance: RecipeProvenance(kind: .imported, author: credit, note: note),
             createdAt: now, updatedAt: now)
     }
@@ -316,7 +340,13 @@ enum RecipeCardParser {
         }
     }
 
+    /// Header/label words that introduce the camera or generation ("Camera: X-S20", "Sensor: X-Trans V").
+    static let cameraLabels: Set<String> = ["camera", "cameras", "body", "model", "cameramodel", "sensor", "xtrans", "generation", "máyảnh", "máy"]
+
+    /// Catalog name for a recognised body ("FUJIFILM X-T30 Mark III" → "X-T30 III"); otherwise a
+    /// best-effort model string (e.g. GFX) so the source camera is still recorded.
     static func cameraModel(in s: String) -> String? {
+        if let known = CameraCatalog.recognize(s) { return known.name }
         let t = s.uppercased()
         let patterns = [#"X100[A-Z]*"#, #"X-[A-Z]{1,3}\d{1,3}[A-Z]?( (III|II|IV|V))?\b"#, #"GFX ?\d{2,3}[A-Z ]*(II)?"#]
         for p in patterns {
@@ -340,7 +370,13 @@ enum RecipeCardParser {
         var d = RecipeImportDraft()
         let lines = text.components(separatedBy: .newlines).map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
         for (i, line) in lines.enumerated() {
+            if d.xTransGeneration == nil { d.xTransGeneration = XTransGeneration.detect(in: line) }
             let parts = line.split(separator: ":", maxSplits: 1).map { String($0).trimmingCharacters(in: .whitespaces) }
+            if parts.count == 2, cameraLabels.contains(normalize(parts[0])) {
+                if d.cameraModel == nil { d.cameraModel = cameraModel(in: parts[1]) }
+                if d.cameraModel == nil, XTransGeneration.detect(in: line) == nil { d.otherSettings.append((parts[0], parts[1])) }
+                continue
+            }
             if parts.count == 2, let field = labelField(parts[0]) {
                 if !apply(field, value: parts[1], to: &d) { d.unrecognized.append(line) }
                 continue
@@ -444,7 +480,15 @@ enum RecipeCardParser {
             && blocks[$0].text.count <= 32 }) {
             d.credit = blocks[c].text.trimmingCharacters(in: .whitespaces); claimed.insert(c)
         }
-        for i in blocks.indices where !claimed.contains(i) { d.unrecognized.append(blocks[i].text) }
+        for i in blocks.indices where !claimed.contains(i) {
+            let text = blocks[i].text
+            if d.xTransGeneration == nil, let g = XTransGeneration.detect(in: text) { d.xTransGeneration = g; continue }
+            if d.cameraModel == nil, let cam = CameraCatalog.recognize(text) { d.cameraModel = cam.name; continue }
+            d.unrecognized.append(text)
+        }
+        if d.xTransGeneration == nil {
+            d.xTransGeneration = blocks.lazy.compactMap { XTransGeneration.detect(in: $0.text) }.first
+        }
         return d
     }
 

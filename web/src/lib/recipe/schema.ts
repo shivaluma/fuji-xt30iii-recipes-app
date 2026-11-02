@@ -93,6 +93,8 @@ export const FilmRecipeSchema = z.object({
   moods: z.array(z.enum(MOODS)).default([]),
   isFavorite: z.boolean().default(false),
   compatibleCameras: z.array(z.string()).default(["X-T30 III"]),
+  /** Recipe family ("X-Trans IV" / "X-Trans V"); null/absent = not tagged (see cameras.ts inferGeneration). */
+  xTransGeneration: z.enum(["IV", "V"]).nullish(),
   provenance: ProvenanceSchema,
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -139,7 +141,7 @@ export function normalize(s: RecipeSettings): RecipeSettings {
   return out;
 }
 
-/** X-T30 III ranges (manual where stated; see the iOS CameraProfile for provenance). */
+/** The widest legal ranges (X-Processor 5 bodies; X-T30 III manual where stated). Per-body limits: cameras.ts. */
 export const RANGES: Partial<Record<FieldKey, { min: number; max: number; step: number }>> = {
   kelvin: { min: 2500, max: 10000, step: 10 },
   wbShiftRed: { min: -9, max: 9, step: 1 },

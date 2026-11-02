@@ -33,7 +33,7 @@ enum VerificationStatus: String, Codable, Sendable, Comparable {
         case .notVerified: "Not verified"
         case .reportedByThirdParty: "Reported by third party"
         case .verifiedInDocs: "Verified in Apple/Fujifilm docs"
-        case .verifiedOnDevice: "Verified on our physical X-T30 III"
+        case .verifiedOnDevice: "Verified on a physical camera by FilmLab"
         }
     }
 
@@ -74,6 +74,9 @@ enum CameraConnectionState: Equatable, Sendable {
     case connected(CameraIdentity)
     case wrongMode(String)
     case unsupportedModel(String)
+    /// A catalog body FilmLab recognises but has no slot-access reports for: its profile is
+    /// shown, but slots are neither read (reading selects a slot over PTP) nor written.
+    case profileOnly(CameraIdentity)
     case readyReadOnly(CameraIdentity)
     case readyWritable(CameraIdentity)
     case busy(CameraIdentity, String)
@@ -81,7 +84,7 @@ enum CameraConnectionState: Equatable, Sendable {
 
     var identity: CameraIdentity? {
         switch self {
-        case .connected(let i), .readyReadOnly(let i), .readyWritable(let i), .busy(let i, _): i
+        case .connected(let i), .profileOnly(let i), .readyReadOnly(let i), .readyWritable(let i), .busy(let i, _): i
         default: nil
         }
     }
@@ -95,6 +98,7 @@ enum CameraConnectionState: Equatable, Sendable {
         case .connected: "Connected"
         case .wrongMode: "Wrong USB mode"
         case .unsupportedModel: "Unsupported model"
+        case .profileOnly: "Recognised · Profile only"
         case .readyReadOnly: "Ready · Read-only"
         case .readyWritable: "Ready · Writes enabled"
         case .busy(_, let what): "Busy · \(what)"

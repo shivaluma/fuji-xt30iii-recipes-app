@@ -61,9 +61,9 @@ export type ExtractionDraft = {
   issues: ExtractionIssue[];
 };
 
-/** Settings that exist on some Fujifilm bodies but not on the X-T30 III (manual: it has PORTRAIT ENHANCER instead). */
+/** Settings some Fujifilm bodies have that FilmLab recipes don't store (the X-T30 III has PORTRAIT ENHANCER instead). */
 const UNSUPPORTED_ON_XT30III: { match: RegExp; message: string }[] = [
-  { match: /smooth\s*skin/i, message: "Smooth Skin Effect isn't available on the X-T30 III (it has Portrait Enhancer instead)." },
+  { match: /smooth\s*skin/i, message: "Smooth Skin Effect isn't stored in FilmLab recipes (some bodies, like the X-T30 III, have Portrait Enhancer instead). Kept as a note." },
 ];
 
 const NUMERIC: FieldKey[] = ["kelvin", "wbShiftRed", "wbShiftBlue", "highlight", "shadow", "color", "sharpness", "highISONR",
@@ -75,8 +75,8 @@ const v = <T>(x: T | null | undefined) => (x === null || x === undefined ? { sta
 
 /**
  * Converts the model's answer to app settings WITHOUT altering any value, then reports:
- *  - invalid: not a legal value on the X-T30 III (out of range / wrong step);
- *  - unsupported: a setting the X-T30 III doesn't have;
+ *  - invalid: not a legal value on any supported body (out of range / wrong step; per-body limits: cameras.ts);
+ *  - unsupported: a setting FilmLab recipes can't store;
  *  - notApplicable: a value present in the source that has no effect with the other settings.
  */
 export function toDraft(e: ExtractedRecipe): ExtractionDraft {
@@ -89,7 +89,7 @@ export function toDraft(e: ExtractedRecipe): ExtractionDraft {
   if (!e.isRecipe || !e.filmSimulation) {
     const text = e.filmSimulationText;
     issues.push(text && e.isRecipe
-      ? { field: "filmSimulation", kind: "unsupported", severity: "error", message: `“${text}” isn't a film simulation on the X-T30 III. Choose one before saving.` }
+      ? { field: "filmSimulation", kind: "unsupported", severity: "error", message: `“${text}” isn't a Fujifilm film simulation FilmLab knows. Choose one before saving.` }
       : { field: "filmSimulation", kind: "invalid", severity: "error", message: "No film simulation found — this doesn't look like a Fujifilm recipe." });
     return { ...base, isRecipe: e.isRecipe, settings: null, issues };
   }
@@ -122,7 +122,7 @@ export function toDraft(e: ExtractedRecipe): ExtractionDraft {
     const steps = (value - r.min) / r.step;
     if (value < r.min || value > r.max) {
       issues.push({ field: k, kind: k === "kelvin" ? "unsupported" : "invalid", severity: "error",
-        message: `${LABELS[k]} ${value} is outside the X-T30 III range ${r.min}…${r.max}.` });
+        message: `${LABELS[k]} ${value} is outside the camera range ${r.min}…${r.max}.` });
     } else if (Math.abs(steps - Math.round(steps)) > 1e-6 || (INTEGER.includes(k) && !Number.isInteger(value))) {
       issues.push({ field: k, kind: "invalid", severity: "error", message: `${LABELS[k]} ${value} isn't a valid step (${r.step}).` });
     }

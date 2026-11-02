@@ -1,0 +1,138 @@
+{
+  "$comment": "Single source of truth for supported camera bodies, shared by the web (web/src/lib/recipe/cameras.ts) and the iOS app (FilmLab/Domain/Camera/CameraCatalog.swift, checked by a parity test). 'xTransGeneration' is the recipe family the community uses: it follows the processor's feature set, so X-Processor 5 bodies with an X-Trans CMOS 4 sensor (X-T30 III, X-S20, X-M5) take X-Trans V recipes. Feature gaps per model are community-reported unless 'status' says otherwise; see docs/cameras.md.",
+  "schemaVersion": 1,
+  "baseRanges": {
+    "kelvin": { "min": 2500, "max": 10000, "step": 10 },
+    "wbShiftRed": { "min": -9, "max": 9, "step": 1 },
+    "wbShiftBlue": { "min": -9, "max": 9, "step": 1 },
+    "highlight": { "min": -2, "max": 4, "step": 0.5 },
+    "shadow": { "min": -2, "max": 4, "step": 0.5 },
+    "color": { "min": -4, "max": 4, "step": 1 },
+    "sharpness": { "min": -4, "max": 4, "step": 1 },
+    "highISONR": { "min": -4, "max": 4, "step": 1 },
+    "clarity": { "min": -5, "max": 5, "step": 1 },
+    "monochromaticWarmCool": { "min": -18, "max": 18, "step": 1 },
+    "monochromaticMagentaGreen": { "min": -18, "max": 18, "step": 1 }
+  },
+  "filmSimulationSets": {
+    "xp5": ["provia", "velvia", "astia", "classicChrome", "realaAce", "proNegHi", "proNegStd", "classicNeg", "nostalgicNeg", "eterna", "eternaBleachBypass", "acros", "acrosYe", "acrosR", "acrosG", "monochrome", "monochromeYe", "monochromeR", "monochromeG", "sepia"],
+    "xp4": ["provia", "velvia", "astia", "classicChrome", "proNegHi", "proNegStd", "classicNeg", "eterna", "eternaBleachBypass", "acros", "acrosYe", "acrosR", "acrosG", "monochrome", "monochromeYe", "monochromeR", "monochromeG", "sepia"],
+    "xp4NoBleach": ["provia", "velvia", "astia", "classicChrome", "proNegHi", "proNegStd", "classicNeg", "eterna", "acros", "acrosYe", "acrosR", "acrosG", "monochrome", "monochromeYe", "monochromeR", "monochromeG", "sepia"],
+    "xp4Early": ["provia", "velvia", "astia", "classicChrome", "proNegHi", "proNegStd", "eterna", "acros", "acrosYe", "acrosR", "acrosG", "monochrome", "monochromeYe", "monochromeR", "monochromeG", "sepia"]
+  },
+  "cameras": [
+    {
+      "id": "x-t30-iii", "name": "X-T30 III", "aliases": ["XT30 III", "X-T30III", "XT30III", "X-T30 Mark III"],
+      "sensor": "X-Trans CMOS 4 (26.1 MP)", "processor": "X-Processor 5", "xTransGeneration": "V",
+      "filmSimulations": "xp5", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": true, "status": "verifiedInDocs", "ptp": "reportedByThirdParty",
+      "notes": ["FilmLab's reference body: ranges come from the owner's manual."]
+    },
+    {
+      "id": "x-m5", "name": "X-M5", "aliases": ["XM5"],
+      "sensor": "X-Trans CMOS 4 (26.1 MP)", "processor": "X-Processor 5", "xTransGeneration": "V",
+      "filmSimulations": "xp5", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": true, "status": "reportedByThirdParty", "ptp": "notVerified", "notes": []
+    },
+    {
+      "id": "x-s20", "name": "X-S20", "aliases": ["XS20"],
+      "sensor": "X-Trans CMOS 4 (26.1 MP)", "processor": "X-Processor 5", "xTransGeneration": "V",
+      "filmSimulations": "xp5", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": false, "status": "reportedByThirdParty", "ptp": "notVerified",
+      "notes": ["REALA ACE arrived in a firmware update; update the camera if it's missing."]
+    },
+    {
+      "id": "x-t50", "name": "X-T50", "aliases": ["XT50"],
+      "sensor": "X-Trans CMOS 5 HR (40.2 MP)", "processor": "X-Processor 5", "xTransGeneration": "V",
+      "filmSimulations": "xp5", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": true, "status": "reportedByThirdParty", "ptp": "notVerified", "notes": []
+    },
+    {
+      "id": "x-e5", "name": "X-E5", "aliases": ["XE5"],
+      "sensor": "X-Trans CMOS 5 HR (40.2 MP)", "processor": "X-Processor 5", "xTransGeneration": "V",
+      "filmSimulations": "xp5", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": true, "status": "reportedByThirdParty", "ptp": "notVerified", "notes": []
+    },
+    {
+      "id": "x100vi", "name": "X100VI", "aliases": ["X100 VI", "X100V6"],
+      "sensor": "X-Trans CMOS 5 HR (40.2 MP)", "processor": "X-Processor 5", "xTransGeneration": "V",
+      "filmSimulations": "xp5", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": false, "status": "reportedByThirdParty", "ptp": "notVerified", "notes": []
+    },
+    {
+      "id": "x-t5", "name": "X-T5", "aliases": ["XT5"],
+      "sensor": "X-Trans CMOS 5 HR (40.2 MP)", "processor": "X-Processor 5", "xTransGeneration": "V",
+      "filmSimulations": "xp5", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": false, "status": "reportedByThirdParty", "ptp": "notVerified",
+      "notes": ["REALA ACE arrived in a firmware update; update the camera if it's missing."]
+    },
+    {
+      "id": "x-h2", "name": "X-H2", "aliases": ["XH2"],
+      "sensor": "X-Trans CMOS 5 HR (40.2 MP)", "processor": "X-Processor 5", "xTransGeneration": "V",
+      "filmSimulations": "xp5", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": false, "status": "reportedByThirdParty", "ptp": "notVerified",
+      "notes": ["REALA ACE arrived in a firmware update; update the camera if it's missing."]
+    },
+    {
+      "id": "x-h2s", "name": "X-H2S", "aliases": ["XH2S", "X-H2 S"],
+      "sensor": "X-Trans CMOS 5 HS (26.1 MP, stacked)", "processor": "X-Processor 5", "xTransGeneration": "V",
+      "filmSimulations": "xp5", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": false, "status": "reportedByThirdParty", "ptp": "notVerified",
+      "notes": ["REALA ACE arrived in a firmware update; update the camera if it's missing."]
+    },
+    {
+      "id": "x-t30-ii", "name": "X-T30 II", "aliases": ["XT30 II", "X-T30II", "XT30II", "X-T30 Mark II"],
+      "sensor": "X-Trans CMOS 4 (26.1 MP)", "processor": "X-Processor 4", "xTransGeneration": "IV",
+      "filmSimulations": "xp4", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": false, "status": "reportedByThirdParty", "ptp": "notVerified", "notes": []
+    },
+    {
+      "id": "x-t4", "name": "X-T4", "aliases": ["XT4"],
+      "sensor": "X-Trans CMOS 4 (26.1 MP)", "processor": "X-Processor 4", "xTransGeneration": "IV",
+      "filmSimulations": "xp4", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": false, "status": "reportedByThirdParty", "ptp": "notVerified", "notes": []
+    },
+    {
+      "id": "x-s10", "name": "X-S10", "aliases": ["XS10"],
+      "sensor": "X-Trans CMOS 4 (26.1 MP)", "processor": "X-Processor 4", "xTransGeneration": "IV",
+      "filmSimulations": "xp4", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": false, "status": "reportedByThirdParty", "ptp": "notVerified", "notes": []
+    },
+    {
+      "id": "x-e4", "name": "X-E4", "aliases": ["XE4"],
+      "sensor": "X-Trans CMOS 4 (26.1 MP)", "processor": "X-Processor 4", "xTransGeneration": "IV",
+      "filmSimulations": "xp4", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": false, "status": "reportedByThirdParty", "ptp": "notVerified", "notes": []
+    },
+    {
+      "id": "x100v", "name": "X100V", "aliases": ["X100 V"],
+      "sensor": "X-Trans CMOS 4 (26.1 MP)", "processor": "X-Processor 4", "xTransGeneration": "IV",
+      "filmSimulations": "xp4NoBleach", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": false, "status": "reportedByThirdParty", "ptp": "notVerified",
+      "notes": ["No ETERNA BLEACH BYPASS (community reports)."]
+    },
+    {
+      "id": "x-pro3", "name": "X-Pro3", "aliases": ["XPro3", "X-Pro 3"],
+      "sensor": "X-Trans CMOS 4 (26.1 MP)", "processor": "X-Processor 4", "xTransGeneration": "IV",
+      "filmSimulations": "xp4NoBleach", "unsupported": [], "ranges": {},
+      "customSlots": 7, "hasFilmSimulationDial": false, "status": "reportedByThirdParty", "ptp": "notVerified",
+      "notes": ["No ETERNA BLEACH BYPASS (community reports)."]
+    },
+    {
+      "id": "x-t3", "name": "X-T3", "aliases": ["XT3"],
+      "sensor": "X-Trans CMOS 4 (26.1 MP)", "processor": "X-Processor 4", "xTransGeneration": "IV",
+      "filmSimulations": "xp4Early", "unsupported": ["colorChromeFXBlue", "clarity", "grainSize", "monochromaticMagentaGreen"],
+      "ranges": { "highlight": { "min": -2, "max": 4, "step": 1 }, "shadow": { "min": -2, "max": 4, "step": 1 } },
+      "customSlots": 7, "hasFilmSimulationDial": false, "status": "reportedByThirdParty", "ptp": "notVerified",
+      "notes": ["Early X-Trans IV: no CLASSIC Neg., ETERNA BLEACH BYPASS, Color Chrome FX Blue, Clarity or grain size; Highlight/Shadow in whole steps (community reports)."]
+    },
+    {
+      "id": "x-t30", "name": "X-T30", "aliases": ["XT30"],
+      "sensor": "X-Trans CMOS 4 (26.1 MP)", "processor": "X-Processor 4", "xTransGeneration": "IV",
+      "filmSimulations": "xp4Early", "unsupported": ["colorChromeFXBlue", "clarity", "grainSize", "monochromaticMagentaGreen"],
+      "ranges": { "highlight": { "min": -2, "max": 4, "step": 1 }, "shadow": { "min": -2, "max": 4, "step": 1 } },
+      "customSlots": 7, "hasFilmSimulationDial": false, "status": "reportedByThirdParty", "ptp": "notVerified",
+      "notes": ["Early X-Trans IV: no CLASSIC Neg., ETERNA BLEACH BYPASS, Color Chrome FX Blue, Clarity or grain size; Highlight/Shadow in whole steps (community reports)."]
+    }
+  ]
+}

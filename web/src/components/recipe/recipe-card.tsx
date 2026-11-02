@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { FILM_SIMULATION_NAMES, type FilmSimulation, type RecipeSettings } from "@/lib/recipe/schema";
 import { RecipeThumb } from "./recipe-thumb";
+import { GENERATION_LABEL, type Generation } from "@/lib/recipe/cameras";
 import { cn } from "@/lib/utils";
 
 export type RecipeCardData = {
@@ -11,6 +12,7 @@ export type RecipeCardData = {
   settings: RecipeSettings;
   cover: { url: string; kind: string | null } | null;
   author?: string | null;
+  generation?: Generation | null;
 };
 
 const coverLabel = (kind: string | null) =>
@@ -31,6 +33,11 @@ export function RecipeCard({ r, className, size = "md" }: { r: RecipeCardData; c
         <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-black backdrop-blur">
           {r.cover ? coverLabel(r.cover.kind) : "Approximate"}
         </span>
+        {r.generation && (
+          <span className="absolute right-3 top-3 rounded-full bg-black/70 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
+            {GENERATION_LABEL[r.generation]}
+          </span>
+        )}
       </div>
       <div className="mt-5 flex items-start justify-between gap-4 px-0.5">
         <div className="min-w-0">

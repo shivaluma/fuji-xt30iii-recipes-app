@@ -163,10 +163,14 @@ struct PhotoRecipeCard: View {
             .clipShape(RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
             VStack(alignment: .leading, spacing: 4) {
                 Text(recipe.name).font(.title3.weight(.bold)).foregroundStyle(Theme.textPrimary).lineLimit(1)
-                Label {
-                    Text(recipe.filmSimulation.shortName).foregroundStyle(Theme.textSecondary)
-                } icon: {
-                    Image(systemName: "film").foregroundStyle(Theme.accent)
+                HStack(spacing: 8) {
+                    Label {
+                        Text(recipe.filmSimulation.shortName).foregroundStyle(Theme.textSecondary)
+                    } icon: {
+                        Image(systemName: "film").foregroundStyle(Theme.accent)
+                    }
+                    .lineLimit(1)
+                    if let g = recipe.inferredGeneration { GenerationBadge(generation: g) }
                 }
                 .font(.subheadline)
             }
@@ -174,7 +178,21 @@ struct PhotoRecipeCard: View {
         }
         .frame(width: width)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(recipe.name), \(recipe.filmSimulation.displayName)\(saved ? ", in library" : "")")
+        .accessibilityLabel("\(recipe.name), \(recipe.filmSimulation.displayName)\(recipe.inferredGeneration.map { ", \($0.displayName)" } ?? "")\(saved ? ", in library" : "")")
+    }
+}
+
+/// Small "X-Trans V" tag for recipe cards and detail.
+struct GenerationBadge: View {
+    var generation: XTransGeneration
+    var body: some View {
+        Text(generation.displayName)
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(Theme.textSecondary)
+            .padding(.horizontal, 7).padding(.vertical, 3)
+            .overlay(Capsule().stroke(Theme.hairline, lineWidth: 1))
+            .fixedSize()
+            .accessibilityLabel(generation.displayName)
     }
 }
 

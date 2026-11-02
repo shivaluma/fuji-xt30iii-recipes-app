@@ -14,8 +14,11 @@ struct CameraView: View {
                 if camera.state.identity == nil { setupGuide }
                 if camera.transport != nil { slotsSection; actionsSection }
                 if !camera.backups.isEmpty { backupsSection }
-                Section("Camera model") {
-                    NavigationLink("X-T30 III capabilities & verification status") { CapabilitiesView() }
+                Section {
+                    NavigationLink("\(camera.profile.modelName) capabilities & verification status") { CapabilitiesView(profile: camera.profile) }
+                    NavigationLink("Supported cameras") { SupportedCamerasView() }
+                } header: {
+                    Text("Camera model")
                 }
                 Section {
                     Button("Share Redacted Diagnostics…") {
@@ -81,7 +84,11 @@ struct CameraView: View {
             .accessibilityIdentifier("cameraStatus")
             if case .wrongMode(let m) = camera.state { Label(m, systemImage: "cable.connector").foregroundStyle(Theme.warning).font(.footnote) }
             if case .unsupportedModel(let m) = camera.state {
-                Label("\(m) isn't profiled yet. FilmLab currently supports only the X-T30 III.", systemImage: "xmark.octagon").font(.footnote)
+                Label("\(m) isn't in FilmLab's camera list yet. Recipes still work on it, but FilmLab can't connect to it.", systemImage: "xmark.octagon").font(.footnote)
+            }
+            if case .profileOnly(let id) = camera.state {
+                Label("FilmLab recognises the \(id.model) (\(camera.profile.generation.displayName)) and uses its profile for checks, but reading or writing C1–C7 over USB is only offered on the X-T30 III — the one body with community reports of the protocol working. The camera was released.",
+                      systemImage: "info.circle").font(.footnote)
             }
             if case .permissionDenied = camera.state {
                 Label("Camera control permission was denied. Enable it for FilmLab in iOS Settings.", systemImage: "lock").font(.footnote)
@@ -89,7 +96,7 @@ struct CameraView: View {
             if case .failed(let m) = camera.state { Label(m, systemImage: "exclamationmark.triangle").foregroundStyle(Theme.danger).font(.footnote) }
             if let e = camera.lastError { Text(e).font(.footnote).foregroundStyle(Theme.danger) }
             if camera.mode == .usb {
-                ExperimentalBanner(text: "Experimental hardware integration — not yet verified on a physical X-T30 III by FilmLab.")
+                ExperimentalBanner(text: "Experimental hardware integration — not yet verified on a physical camera by FilmLab.")
             }
             if !camera.slotsNeedingVerification.isEmpty {
                 Label("Verify \(camera.slotsNeedingVerification.sorted().map(\.label).joined(separator: ", ")): last write outcome unknown. Reconnect and read.", systemImage: "questionmark.diamond")
@@ -97,6 +104,9 @@ struct CameraView: View {
             }
             HStack {
                 if camera.transport == nil {
+                    if case .profileOnly = camera.state, camera.profile.catalogID != env.settings.myCameraID {
+                        Button("Set as My Camera") { env.settings.myCameraID = camera.profile.catalogID }.buttonStyle(.bordered)
+                    }
                     Button("Connect via USB") { Task { await camera.startUSB() } }.buttonStyle(.borderedProminent)
                         .accessibilityIdentifier("connectUSB")
                     Button("Use Demo Camera") { Task { await camera.connectDemo() } }.buttonStyle(.bordered)
@@ -109,7 +119,7 @@ struct CameraView: View {
     }
 
     private var setupGuide: some View {
-        Section("Connect your X-T30 III") {
+        Section("Connect your camera") {
             Label("Charge the camera and use a USB-C cable that carries data (not charge-only).", systemImage: "battery.100")
             Label("Camera menu: USB POWER SUPPLY/COMM SETTING → AUTO or POWER SUPPLY OFF/COMM ON.", systemImage: "bolt.horizontal")
             Label("Camera menu: CONNECTION MODE → USB RAW CONV./BACKUP RESTORE.", systemImage: "gearshape.2")
@@ -252,15 +262,29 @@ struct SlotDetailView: View {
 // MARK: - Capabilities
 
 struct CapabilitiesView: View {
-    let profile = CameraProfile.xt30III
+    var profile: CameraProfile = .xt30III
     var body: some View {
         List {
             Section("Body") {
                 LabeledContent("Model", value: profile.modelName)
+                LabeledContent("Recipe family", value: profile.generation.displayName)
                 LabeledContent("Sensor", value: profile.sensor)
                 LabeledContent("Processor", value: profile.processor)
                 LabeledContent("Custom slots", value: "C1–C\(profile.customSlotCount)")
-                LabeledContent("Film simulation dial", value: profile.filmSimulationDialSlots.map(\.rawValue).joined(separator: ", ") + " (not written by FilmLab)")
+                if profile.filmSimulationDialSlots.isEmpty {
+                    LabeledContent("Film simulation dial", value: "None")
+                } else {
+                    LabeledContent("Film simulation dial", value: profile.filmSimulationDialSlots.map(\.rawValue).joined(separator: ", ") + " (not written by FilmLab)")
+                }
+                LabeledContent("Feature data", value: profile.dataStatus.label)
+                LabeledContent("USB slot writes", value: profile.allowsSlotWrites ? "Experimental (off by default)" : "Not offered")
+            }
+            Section("Film simulations (\(profile.filmSimulations.count))") {
+                Text(profile.filmSimulations.map(\.displayName).joined(separator: " · ")).font(.footnote)
+                let missing = FilmSimulation.allCases.filter { !profile.filmSimulations.contains($0) }
+                if !missing.isEmpty {
+                    Text("Not available: " + missing.map(\.displayName).joined(separator: ", ")).font(.footnote).foregroundStyle(Theme.textSecondary)
+                }
             }
             Section("Properties") {
                 ForEach(RecipePropertyKey.allCases, id: \.self) { key in
@@ -268,7 +292,9 @@ struct CapabilitiesView: View {
                         VStack(alignment: .leading, spacing: 3) {
                             HStack {
                                 Text(key.displayName).font(.subheadline.weight(.medium))
+                                    .foregroundStyle(c.isSupported ? Theme.textPrimary : Theme.textTertiary)
                                 Spacer()
+                                if !c.isSupported { Text("Not available").font(.caption).foregroundStyle(Theme.textTertiary) }
                                 if let r = c.range { Text("\(RecipeValidator.format(r.min))…\(RecipeValidator.format(r.max))").font(.caption.monospaced()) }
                             }
                             Text("Values: \(c.valuesStatus.label)").font(.caption2)
@@ -278,12 +304,47 @@ struct CapabilitiesView: View {
                     }
                 }
             }
-            Section("Known quirks & constraints") {
-                ForEach(profile.knownQuirks, id: \.self) { Text($0).font(.footnote) }
+            if !profile.knownQuirks.isEmpty {
+                Section("Known quirks & constraints") {
+                    ForEach(profile.knownQuirks, id: \.self) { Text($0).font(.footnote) }
+                }
             }
         }
         .groupedListStyle()
-        .navigationTitle("Capabilities")
+        .navigationTitle(profile.modelName)
+        .inlineNavigationTitle()
+    }
+}
+
+/// Every body in the catalog, grouped by recipe family.
+struct SupportedCamerasView: View {
+    var body: some View {
+        List {
+            ForEach(CameraCatalog.grouped(), id: \.generation) { group in
+                Section {
+                    ForEach(group.cameras) { cam in
+                        NavigationLink { CapabilitiesView(profile: cam.profile) } label: {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(cam.name).font(.body.weight(.medium))
+                                Text("\(cam.sensor) · \(cam.processor)").font(.caption).foregroundStyle(Theme.textSecondary)
+                            }
+                        }
+                    }
+                } header: {
+                    Text(group.generation.displayName)
+                } footer: {
+                    Text(group.generation == .v
+                         ? "X-Processor 5 bodies, including the X-T30 III, X-S20 and X-M5, which pair it with an X-Trans CMOS 4 sensor."
+                         : "X-Processor 4 bodies. X-Trans IV recipes also run on X-Trans V cameras.")
+                }
+            }
+            Section {
+                Text("Only the X-T30 III's ranges are checked against its manual. The other bodies' feature support is community-reported and may change with firmware. USB slot access is offered only on the X-T30 III.")
+                    .font(.footnote).foregroundStyle(Theme.textSecondary)
+            }
+        }
+        .groupedListStyle()
+        .navigationTitle("Supported cameras")
         .inlineNavigationTitle()
     }
 }

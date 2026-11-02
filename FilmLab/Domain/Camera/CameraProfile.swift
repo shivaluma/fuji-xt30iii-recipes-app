@@ -68,9 +68,13 @@ struct PropertyCapability: Codable, Equatable, Hashable, Sendable {
 }
 
 /// Per-model capabilities. Feature support is modelled at property level, never inferred
-/// from sensor generation alone.
+/// from sensor generation alone (the generation is only a recipe-family label).
 struct CameraProfile: Codable, Equatable, Sendable {
+    /// Stable id from `shared/camera-catalog.json`, e.g. "x-t30-iii".
+    var catalogID: String
     var modelName: String
+    /// Recipe family (follows the processor): X-Processor 5 bodies take X-Trans V recipes.
+    var generation: XTransGeneration
     var sensor: String
     var processor: String
     var testedFirmware: [String]
@@ -80,10 +84,21 @@ struct CameraProfile: Codable, Equatable, Sendable {
     var hasFilmSimulationDial: Bool
     var filmSimulationDialSlots: [FilmSimulationDialSlot]
     var knownQuirks: [String]
+    /// Where this body's feature/range data comes from as a whole. Only the X-T30 III is checked
+    /// against its manual; the other bodies are community-reported.
+    var dataStatus: VerificationStatus
 
     func capability(_ key: RecipePropertyKey) -> PropertyCapability? { properties[key] }
 
     func isSupported(_ key: RecipePropertyKey) -> Bool { properties[key]?.isSupported ?? false }
+
+    /// FilmLab only offers (experimental) slot writes where someone has reported the PTP property
+    /// map working on that body. Today that is the X-T30 III alone; others are read-only.
+    var allowsSlotWrites: Bool {
+        (capability(.filmSimulation)?.ptpWriteStatus ?? .notVerified) >= .reportedByThirdParty
+    }
+
+    var displayName: String { "\(modelName) · \(generation.displayName)" }
 }
 
 extension CameraProfile {
@@ -129,7 +144,9 @@ extension CameraProfile {
                 note: "ACROS/MONOCHROME only. Range from community PTP notes; not in manual text."),
         ]
         return CameraProfile(
+            catalogID: "x-t30-iii",
             modelName: "X-T30 III",
+            generation: .v,
             sensor: "X-Trans CMOS 4 (26.1 MP, BSI)",
             processor: "X-Processor 5",
             testedFirmware: [],
@@ -144,7 +161,8 @@ extension CameraProfile {
                 "FS RECIPE is not applied when the AUTO lever is engaged (manual).",
                 "Community report: grain OFF may read back as a vendor-specific code that encodes the last size.",
                 "Community report: DR AUTO and D RANGE PRIORITY may not be stored in custom presets.",
-            ]
+            ],
+            dataStatus: .verifiedInDocs
         )
     }()
 }
@@ -156,6 +174,9 @@ struct ValidationIssue: Equatable, Hashable, Sendable, Identifiable {
     var key: RecipePropertyKey
     var severity: Severity
     var message: String
+    /// True when the issue is about what this camera body can do (unsupported film simulation,
+    /// setting or value), as opposed to dependency hints that apply to every body.
+    var isCapability = false
     var id: String { "\(key.rawValue)-\(message)" }
 }
 
@@ -168,36 +189,46 @@ struct RecipeValidator: Sendable {
         var issues: [ValidationIssue] = []
         func err(_ k: RecipePropertyKey, _ m: String) { issues.append(.init(key: k, severity: .error, message: m)) }
         func warn(_ k: RecipePropertyKey, _ m: String) { issues.append(.init(key: k, severity: .warning, message: m)) }
+        func capErr(_ k: RecipePropertyKey, _ m: String) { issues.append(.init(key: k, severity: .error, message: m, isCapability: true)) }
+        /// A setting this body doesn't have, holding its neutral value: nothing is lost by skipping it.
+        func capInfo(_ k: RecipePropertyKey, _ m: String) { issues.append(.init(key: k, severity: .info, message: m, isCapability: true)) }
+        // Per-field "third-party range" notes only make sense on the manual-checked reference body;
+        // other bodies get one summary note below.
+        let perFieldSourceNotes = profile.dataStatus >= .verifiedInDocs
 
         if !profile.filmSimulations.contains(s.filmSimulation) {
-            err(.filmSimulation, "\(s.filmSimulation.displayName) is not available on \(profile.modelName).")
+            capErr(.filmSimulation, "\(s.filmSimulation.displayName) is not available on \(profile.modelName).")
         }
 
         func checkNumber(_ k: RecipePropertyKey, _ v: Double?) {
             guard let v else { return }
             guard let cap = profile.capability(k), cap.isSupported else {
-                err(k, "\(k.displayName) is not supported on \(profile.modelName)."); return
+                if v == 0 { capInfo(k, "\(profile.modelName) has no \(k.displayName) setting; 0 is the default, so nothing changes.") }
+                else { capErr(k, "\(k.displayName) is not available on \(profile.modelName).") }
+                return
             }
             if let r = cap.range, !r.contains(v) {
-                err(k, "\(k.displayName) \(Self.format(v)) is outside \(Self.format(r.min))…\(Self.format(r.max)) (step \(Self.format(r.step))).")
-            } else if cap.valuesStatus == .reportedByThirdParty {
+                capErr(k, "\(k.displayName) \(Self.format(v)) is outside \(Self.format(r.min))…\(Self.format(r.max)) (step \(Self.format(r.step))) on \(profile.modelName).")
+            } else if perFieldSourceNotes, cap.valuesStatus == .reportedByThirdParty {
                 issues.append(.init(key: k, severity: .info, message: "\(k.displayName) range is reported by a third party, not the manual."))
             }
         }
-        func checkEnum(_ k: RecipePropertyKey, _ raw: String?) {
+        func checkEnum(_ k: RecipePropertyKey, _ raw: String?, neutral: String? = nil) {
             guard let raw else { return }
             guard let cap = profile.capability(k), cap.isSupported else {
-                err(k, "\(k.displayName) is not supported on \(profile.modelName)."); return
+                if raw == neutral { capInfo(k, "\(profile.modelName) has no \(k.displayName) setting; “\(raw)” is the default, so nothing changes.") }
+                else { capErr(k, "\(k.displayName) is not available on \(profile.modelName).") }
+                return
             }
             if let allowed = cap.allowedValues, !allowed.contains(raw) {
-                err(k, "\(k.displayName) value “\(raw)” is not supported on \(profile.modelName).")
+                capErr(k, "\(k.displayName) value “\(raw)” is not supported on \(profile.modelName).")
             }
         }
 
         checkEnum(.grainRoughness, s.grainRoughness.concreteValue?.rawValue)
-        checkEnum(.grainSize, s.grainSize.concreteValue?.rawValue)
-        checkEnum(.colorChrome, s.colorChrome.concreteValue?.rawValue)
-        checkEnum(.colorChromeFXBlue, s.colorChromeFXBlue.concreteValue?.rawValue)
+        checkEnum(.grainSize, s.grainSize.concreteValue?.rawValue, neutral: GrainSize.small.rawValue)
+        checkEnum(.colorChrome, s.colorChrome.concreteValue?.rawValue, neutral: EffectLevel.off.rawValue)
+        checkEnum(.colorChromeFXBlue, s.colorChromeFXBlue.concreteValue?.rawValue, neutral: EffectLevel.off.rawValue)
         checkEnum(.whiteBalance, s.whiteBalance.concreteValue?.rawValue)
         checkEnum(.dynamicRange, s.dynamicRange.concreteValue?.rawValue)
         checkEnum(.dRangePriority, s.dRangePriority.concreteValue?.rawValue)
@@ -232,6 +263,10 @@ struct RecipeValidator: Sendable {
         }
         if s.grainRoughness.concreteValue == .off, s.grainSize.isSet {
             warn(.grainSize, "Grain size is ignored when grain is OFF.")
+        }
+        if !perFieldSourceNotes {
+            issues.append(.init(key: .filmSimulation, severity: .info,
+                                message: "\(profile.modelName) feature support and ranges are community-reported, not checked by FilmLab against its manual."))
         }
         return issues
     }

@@ -73,7 +73,8 @@ final class CameraController {
 
     let settings: AppSettings
     let backupStore: CameraBackupStore
-    let profile = CameraProfile.xt30III
+    /// Profile of the connected body (catalog); the X-T30 III reference profile when disconnected.
+    private(set) var profile = CameraProfile.xt30III
     private(set) var transport: CameraTransport?
     private(set) var demoCamera: SimulatedFujiCamera?
     private let writeGate = OSAllocatedUnfairLock(initialState: false)
@@ -180,12 +181,30 @@ final class CameraController {
     }
     #endif
 
+    #if DEBUG || FILMLAB_CLI
+    /// Tests: attach an arbitrary transport (e.g. a simulated body with another model name).
+    func attachForTesting(_ t: CameraTransport) async {
+        await disconnect()
+        mode = .demo
+        await attach(t)
+    }
+    #endif
+
     private func attach(_ t: CameraTransport) async {
         do {
             let id = try await t.connect()
-            guard id.model.uppercased().replacingOccurrences(of: " ", with: "").contains("X-T30III") else {
+            guard let body = CameraCatalog.recognize(id.model) else {
                 await t.disconnect()
                 state = .unsupportedModel(id.model)
+                return
+            }
+            profile = body.profile
+            guard body.profile.allowsSlotWrites else {
+                // Recognised, but nobody has reported FilmLab's PTP slot map working on this body.
+                // Even reading selects a slot over PTP, so release the camera and show the profile only.
+                await t.disconnect()
+                state = .profileOnly(id)
+                logger.info("Camera recognised (profile only): \(id.model, privacy: .public)")
                 return
             }
             transport = t
@@ -210,8 +229,8 @@ final class CameraController {
 
     /// Re-evaluates read-only vs writable (e.g. after the Settings toggle changes).
     func refreshWritability(_ id: CameraIdentity? = nil) {
-        guard let id = id ?? identity else { return }
-        let writable = mode == .demo || settings.experimentalSlotWrites
+        guard transport != nil, let id = id ?? identity else { return }
+        let writable = (mode == .demo || settings.experimentalSlotWrites) && profile.allowsSlotWrites
         let allowWrites = settings.experimentalSlotWrites
         if mode == .usb { writeGate.withLock { $0 = allowWrites } }
         if busyCount > 0, let what = activity { state = .busy(id, what); return }
@@ -229,6 +248,7 @@ final class CameraController {
         #endif
         mode = .none
         state = .disconnected
+        profile = .xt30III
         resetPerConnectionState()
         setOutcomes = [:]
     }

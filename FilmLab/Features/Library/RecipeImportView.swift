@@ -118,10 +118,18 @@ struct RecipeImportView: View {
                     .accessibilityIdentifier("importName")
                 TextField("Credit (author / photographer)", text: Binding(get: { draft.credit ?? "" }, set: { draft.credit = $0.isEmpty ? nil : $0 }))
                     .textFieldStyle(.roundedBorder)
-                if let cam = draft.cameraModel, cam != CameraProfile.xt30III.modelName {
-                    Label("Written for \(cam). Settings may look different on the X-T30 III.", systemImage: "camera")
+                if let written = draft.writtenForLabel {
+                    Label(written, systemImage: "camera")
                         .font(.caption).foregroundStyle(Theme.textSecondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityIdentifier("importWrittenFor")
                 }
+                Picker("X-Trans", selection: $draft.xTransGeneration) {
+                    Text(draft.xTransGeneration == nil ? "Auto (\(draft.resolvedGeneration?.displayName ?? "unknown"))" : "Auto").tag(XTransGeneration?.none)
+                    ForEach(XTransGeneration.allCases) { g in Text(g.displayName).tag(XTransGeneration?.some(g)) }
+                }
+                .font(.caption)
+                .accessibilityIdentifier("importGeneration")
             }
             VStack(spacing: 0) {
                 ForEach(RecipePropertyKey.allCases, id: \.self) { key in
@@ -140,8 +148,25 @@ struct RecipeImportView: View {
                 }
                 .font(.caption).foregroundStyle(Theme.textSecondary)
             }
+            // Blocking: values invalid on every body. The X-T30 III reference profile is a superset
+            // of the catalog's features and ranges, so its errors are the "invalid anywhere" set.
             let errors = RecipeValidator(profile: .xt30III).validate(draft.settings.normalized()).filter { $0.severity == .error }
             ForEach(errors) { Label($0.message, systemImage: "xmark.octagon").font(.caption).foregroundStyle(Theme.danger) }
+            if draft.isUsable {
+                // Not blocking: how it fares on the user's own body.
+                let profile = env.settings.myProfile
+                let compat = RecipeCompatibility.evaluate(draft.settings.normalized(), on: profile)
+                Label("\(compat.label) on your \(profile.modelName)", systemImage: compatIcon(compat))
+                    .font(.caption.weight(.semibold)).foregroundStyle(compatColor(compat))
+                if profile.catalogID != CameraProfile.xt30III.catalogID {
+                    switch compat {
+                    case .supported: EmptyView()
+                    case .notAvailable(let why): Label(why, systemImage: "exclamationmark.triangle").font(.caption).foregroundStyle(Theme.warning)
+                    case .worksWithChanges(let issues):
+                        ForEach(issues) { Label($0.message, systemImage: "exclamationmark.triangle").font(.caption).foregroundStyle(Theme.warning) }
+                    }
+                }
+            }
             ForEach(Array(draft.reviewMessages.enumerated()), id: \.offset) { _, m in
                 Label(m.text, systemImage: m.isError ? "xmark.octagon" : "exclamationmark.triangle")
                     .font(.caption).foregroundStyle(m.isError ? Theme.danger : Theme.warning)
