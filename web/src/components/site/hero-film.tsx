@@ -6,13 +6,13 @@ import { FILM_SIMULATION_NAMES, RecipeSettingsSchema, type FilmSimulation } from
 import { renderRecipe } from "@/lib/preview/render";
 import { loadImageData } from "@/components/recipe/recipe-preview";
 
-const SIMS: FilmSimulation[] = ["classicChrome", "velvia", "nostalgicNeg", "acrosR", "classicNeg", "realaAce", "eternaBleachBypass", "provia"];
+const SIMS: FilmSimulation[] = ["classicChrome", "nostalgicNeg", "acrosR", "eterna", "classicNeg", "realaAce", "velvia", "provia"];
 
 /**
  * Hero background: FilmLab's own sample photo rendered live through each film simulation by the
  * in-browser preview engine, cross-fading every few seconds.
  */
-export function HeroFilm() {
+export function HeroFilm({ src, credit, position }: { src: string; credit: string | null; position: string }) {
   const [frames, setFrames] = useState<{ sim: FilmSimulation; url: string }[]>([]);
   const [i, setI] = useState(0);
   const reduce = useReducedMotion();
@@ -20,22 +20,22 @@ export function HeroFilm() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const src = await loadImageData("/samples/landscape.jpg", 1500);
+      const base = await loadImageData(src, 2000);
       const canvas = document.createElement("canvas");
-      canvas.width = src.width; canvas.height = src.height;
+      canvas.width = base.width; canvas.height = base.height;
       const ctx = canvas.getContext("2d")!;
       for (const sim of SIMS) {
         if (cancelled) return;
         // Yield between frames so the first paint and scrolling stay smooth.
         await new Promise((r) => setTimeout(r, 30));
         const grain = sim === "acrosR" || sim === "classicNeg" ? { grainRoughness: { state: "value", value: "weak" } } : {};
-        ctx.putImageData(renderRecipe(src, RecipeSettingsSchema.parse({ filmSimulation: sim, ...grain })), 0, 0);
+        ctx.putImageData(renderRecipe(base, RecipeSettingsSchema.parse({ filmSimulation: sim, ...grain })), 0, 0);
         const url = canvas.toDataURL("image/jpeg", 0.85);
         if (!cancelled) setFrames((f) => [...f, { sim, url }]);
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [src]);
 
   useEffect(() => {
     if (reduce || frames.length < 2) return;
@@ -48,7 +48,7 @@ export function HeroFilm() {
     <div className="absolute inset-0 overflow-hidden" aria-hidden>
       {/* Plain sample until the first rendered frame is ready */}
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/samples/landscape.jpg" alt="" className="absolute inset-0 size-full scale-105 object-cover" />
+      <img src={src} alt="" className="absolute inset-0 size-full scale-105 object-cover" style={{ objectPosition: position }} />
       <AnimatePresence initial={false}>
         {current && (
            
@@ -57,6 +57,7 @@ export function HeroFilm() {
             src={current.url}
             alt=""
             className="absolute inset-0 size-full object-cover"
+            style={{ objectPosition: position }}
             initial={{ opacity: 0, scale: 1.08 }}
             animate={{ opacity: 1, scale: 1.02 }}
             exit={{ opacity: 0 }}
@@ -64,8 +65,8 @@ export function HeroFilm() {
           />
         )}
       </AnimatePresence>
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.55)_0%,rgba(0,0,0,.15)_35%,rgba(0,0,0,.65)_75%,#000_100%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,.72)_0%,rgba(0,0,0,.35)_45%,transparent_75%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,.35)_0%,rgba(0,0,0,.05)_30%,rgba(0,0,0,.55)_72%,#000_100%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,.6)_0%,rgba(0,0,0,.25)_45%,transparent_75%)]" />
       <div className="fl-grain absolute inset-0" />
       <AnimatePresence mode="wait">
         {current && (
@@ -75,7 +76,7 @@ export function HeroFilm() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.4 }}
-            className="absolute bottom-28 right-5 flex items-center gap-2 rounded-full border border-hairline bg-black/55 px-3.5 py-2 text-xs font-semibold backdrop-blur sm:bottom-10 sm:right-8"
+            className="absolute right-4 top-20 flex items-center gap-2 rounded-full border border-hairline bg-black/55 px-3.5 py-2 text-xs font-semibold backdrop-blur sm:bottom-10 sm:right-8 sm:top-auto"
           >
             <span className="size-2 rounded-full bg-primary" />
             {FILM_SIMULATION_NAMES[current.sim]}
@@ -83,6 +84,9 @@ export function HeroFilm() {
           </motion.div>
         )}
       </AnimatePresence>
+      {credit && (
+        <span className="absolute right-5 top-[7.75rem] text-[11px] font-medium text-white/60 sm:bottom-4 sm:right-8 sm:top-auto">Photo: {credit}</span>
+      )}
     </div>
   );
 }

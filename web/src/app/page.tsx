@@ -9,6 +9,7 @@ import { Phone } from "@/components/site/phone";
 import { ImportMock, ScanBadge, TuneMock, WriteMock } from "@/components/site/app-mocks";
 import { TryIt } from "@/components/site/try-it";
 import { publishedRecipes, toCard } from "@/lib/server/data";
+import { HERO } from "@/lib/site-config";
 
 const FAQ = [
   ["Is the preview what my camera will produce?", "No — it's FilmLab's own approximation, rendered on your device. It's great for comparing looks and choosing a starting point. Only a JPEG produced by the camera itself is the real thing, and FilmLab always labels which is which."],
@@ -30,7 +31,7 @@ export default async function Home() {
     <>
       {/* HERO */}
       <section className="relative flex min-h-[100svh] items-end overflow-hidden pb-24 pt-32 sm:items-center sm:pb-0">
-        <HeroFilm />
+        <HeroFilm src={HERO.src} credit={HERO.credit} position={HERO.position} />
         <div className="relative mx-auto w-full max-w-6xl px-5">
           <div className="animate-in fade-in slide-in-from-bottom-6 fill-mode-both duration-1000 ease-out motion-reduce:animate-none" style={{ animationDelay: "100ms" }}>
             <p className="inline-flex items-center gap-2 rounded-full border border-hairline bg-black/40 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[.18em] text-primary backdrop-blur">
