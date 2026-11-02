@@ -187,9 +187,9 @@ struct FilterChip: View {
         Button(action: action) {
             Text(title).font(.footnote.weight(.medium))
                 .padding(.horizontal, 14).padding(.vertical, 8)
-                .background(isOn ? Theme.accent : Theme.surface, in: Capsule())
-                .overlay(Capsule().stroke(isOn ? .clear : Theme.hairline, lineWidth: 1))
-                .foregroundStyle(isOn ? Theme.onAccent : Theme.textPrimary)
+                .background(isOn ? Theme.accent : Theme.background, in: Capsule())
+                .overlay(Capsule().strokeBorder(isOn ? .clear : Theme.chipStroke, lineWidth: 1))
+                .foregroundStyle(isOn ? Theme.onAccent : Theme.textSecondary)
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isOn ? .isSelected : [])

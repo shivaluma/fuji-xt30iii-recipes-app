@@ -150,10 +150,10 @@ struct PillChip: View {
                 Text(title).font(.subheadline.weight(.medium)).lineLimit(1)
             }
             .fixedSize()
-            .padding(.horizontal, 16).padding(.vertical, 11)
+            .padding(.horizontal, 16).padding(.vertical, 10)
             .foregroundStyle(selected ? Theme.onAccent : Theme.textPrimary)
-            .background(selected ? Theme.accent : Theme.surface, in: Capsule())
-            .overlay(Capsule().stroke(selected ? Color.clear : Theme.hairline, lineWidth: 1))
+            .background(selected ? Theme.accent : Theme.background, in: Capsule())
+            .overlay(Capsule().strokeBorder(selected ? Color.clear : Theme.chipStroke, lineWidth: 1))
         }
         .buttonStyle(PressScaleStyle())
         .accessibilityAddTraits(selected ? .isSelected : [])
@@ -243,8 +243,8 @@ struct GenerationBadge: View {
             .font(.caption2.weight(.medium))
             .foregroundStyle(Theme.textPrimary)
             .padding(.horizontal, 8).padding(.vertical, 3)
-            .background(Theme.surface, in: Capsule())
-            .overlay(Capsule().stroke(Theme.hairline, lineWidth: 1))
+            .background(Theme.background, in: Capsule())
+            .overlay(Capsule().strokeBorder(Theme.chipStroke, lineWidth: 1))
             .fixedSize()
             .accessibilityLabel(generation.displayName)
     }

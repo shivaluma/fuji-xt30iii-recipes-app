@@ -15,6 +15,8 @@ enum Theme {
     /// Page behind grouped lists and forms, so their white rows read as cards.
     static let groupedBackground = hex(0xf3f3f1)
     static let hairline = hex(0xe6e6e3)                   // --fl-hairline
+    /// Outline for white chips: a touch darker than hairline so the pill reads on a white page.
+    static let chipStroke = hex(0xdcdcd8)
 
     // Text
     static let textPrimary = hex(0x0c0c0c)                // --fl-text
