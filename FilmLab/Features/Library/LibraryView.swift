@@ -59,7 +59,7 @@ struct LibraryView: View {
             }
             .groupedListStyle()
             .navigationTitle("Library")
-            .darkNavigationBar()
+            .themedNavigationBar()
             .searchable(text: $query)
             .navigationDestination(for: UUID.self) { RecipeDetailView(recipeID: $0) }
             .toolbar { toolbar }
@@ -94,7 +94,7 @@ struct LibraryView: View {
             Group {
                 if let t = env.thumbnails.thumbnail(for: r) { CGImageView(image: t, contentMode: .fill) } else { Theme.swatch(for: r.filmSimulation) }
             }
-            .frame(width: 54, height: 54).clipShape(RoundedRectangle(cornerRadius: 8))
+            .frame(width: 56, height: 56).clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .onAppear { env.thumbnails.request(r) }
             if selecting {
                 rowText(r).contentShape(Rectangle()).onTapGesture { toggle(r.id) }
@@ -110,7 +110,7 @@ struct LibraryView: View {
     private func rowText(_ r: FilmRecipe) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack {
-                Text(r.name).font(.body.weight(.medium))
+                Text(r.name).font(.body).tracking(-0.3)
                 if r.isFavorite { Image(systemName: "heart.fill").font(.caption).foregroundStyle(Theme.accent) }
             }
             Text("\(r.filmSimulation.displayName)\(r.inferredGeneration.map { " · \($0.displayName)" } ?? "") · \(r.provenance.kind == .filmLabOriginal ? "FilmLab" : "Yours")")
@@ -213,8 +213,7 @@ struct SettingsView: View {
                         .font(.footnote).foregroundStyle(Theme.textSecondary)
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(Theme.background)
+            .formPage()
             .navigationTitle("Settings")
             .inlineNavigationTitle()
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }

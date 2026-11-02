@@ -51,21 +51,29 @@ aside, not deleted. Swapping in SwiftData later only touches `LibraryStore`.
 
 ## Design system (`SharedUI/Theme.swift`, `SharedUI/DesignSystem.swift`)
 
-The visual language is a pure-black canvas, charcoal cards with hairline strokes, and a single
-teal accent for selection, links and the primary call to action, with black text on teal.
+The app uses the same light, editorial system as the website (`web/src/app/globals.css`), so the
+two read as one product. The page is white (`#fff`), with warm grey panels (`#f3f3f1`) and
+hairlines (`#e6e6e3`). Text is ink (`#0c0c0c`) and primary actions are ink-black pills with white
+text. Photos carry the colour; the UI stays neutral. Display text is SF Pro at a regular weight
+with negative tracking, standing in for the web's Inter Tight. Small labels are uppercase and
+tracked. Grouped lists and forms sit on the grey page, so their white rows read as cards. The token
+values are mirrored in `Theme` and in the web CSS, so change them in both places.
 
 | Component | Used for |
 |---|---|
-| `ScreenHeader` | Big bold screen title (38 pt) with `CircleIconButton`s on the right |
-| `SectionHeader` | Section title + subtitle + teal "See all ›" |
-| `PillChip` | Large capsule chips (Explore › Browse by Situation) |
-| `PhotoRecipeCard` | Large rounded photo cards with a status badge. The badge shows only real state (In Library or Favorite), never invented counts. |
-| `FloatingTabBar` | Capsule tab bar; the selected item sits on a dark pill and turns teal. The system tab bar is hidden. |
-| `TunePanel` / `ParameterCard` | Horizontal parameter cards. The selected card is filled with its gradient (COLOR is a rainbow). Below them is a large −/+ stepper with VoiceOver adjustable actions. Every step is clamped to the profile's range, and inapplicable cards are dimmed with a reason. |
-| `DestinationCard` | DESTINATION eyebrow, slot row (teal "C1", name, simulation, picker chevron) and a full-width teal CTA. Used for "Review Changes for Cn" and then "Write to Cn" once acknowledged. |
+| `Wordmark` | The web nav's grey "©FilmLab" box, top-left on root screens |
+| `ScreenHeader` | Wordmark and `CircleIconButton`s on top, then a large light title (52 pt, −2.6 tracking) |
+| `SectionHeader` | Uppercase display title + subtitle + an `ArrowLink` ("SEE ALL ↗") |
+| `CircleIconButton` | Soft grey round buttons; `isOn` fills them ink-black (toggles, the primary +) |
+| `PillChip` / `FilterChip` | Grey capsule chips; selected chips are ink-black with white text |
+| `PhotoRecipeCard` | 4:3 rounded photo card with a white "Approximate" pill, a black X-Trans pill and a status pill. The status pill shows only real state (In Library or Favorite), never invented counts. Grid cells use a compact variant with one pill. |
+| `PhotoPill` | White label / black tag pills laid over photos (fidelity, before/after, compare) |
+| `FloatingTabBar` | Frosted white capsule with uppercase labels. The selected tab sits on an ink pill. The system tab bar is hidden. |
+| `TunePanel` / `ParameterCard` | Horizontal parameter cards: grey, or ink-black when selected, each with a thin strip of its colour (COLOR is a rainbow). Below them is a large −/+ stepper with VoiceOver adjustable actions. Every step is clamped to the profile's range, and inapplicable cards are dimmed with a reason. |
+| `DestinationCard` | DESTINATION eyebrow, a white slot row ("C1", name, simulation, picker chevron) and a full-width ink CTA. Used for "Review Changes for Cn" and then "Write to Cn" once acknowledged. |
+| `PrimaryButton(Label)` / `SecondaryButtonLabel` | The web's `pillDark` / `pillSoft` |
 
-The look borrows its direction from reference screenshots the user provided. Names, layout
-details, content and iconography are FilmLab's own.
+Names, layout details, content and iconography are FilmLab's own.
 
 ## Recipe model
 

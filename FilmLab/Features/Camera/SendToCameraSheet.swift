@@ -38,8 +38,7 @@ struct SendToCameraSheet: View {
                     }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(Theme.background)
+            .formPage()
             .navigationTitle("Send to Camera")
             .inlineNavigationTitle()
             .toolbar {

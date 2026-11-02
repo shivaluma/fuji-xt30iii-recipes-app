@@ -92,14 +92,14 @@ struct ExploreView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
-                    ScreenHeader(title: "Explore") {
+                VStack(alignment: .leading, spacing: Theme.sectionSpacing) {
+                    ScreenHeader(title: "Explore", subtitle: "Film recipes for X-Trans IV & V") {
                         CircleIconButton(systemName: "magnifyingglass", accessibilityLabel: "Search") {
                             withAnimation(.snappy) { searching.toggle() }
                             searchFocused = searching
                             if !searching { query = "" }
                         }
-                        CircleIconButton(systemName: "line.3.horizontal.decrease", tint: moods.isEmpty && simulation == nil ? Theme.textPrimary : Theme.accent,
+                        CircleIconButton(systemName: "line.3.horizontal.decrease", isOn: !(moods.isEmpty && simulation == nil),
                                          accessibilityLabel: "Filters") { showFilters = true }
                         Menu {
                             Button("New Recipe", systemImage: "plus") {
@@ -108,14 +108,16 @@ struct ExploreView: View {
                             }
                             Button("Import from Image or Text…", systemImage: "text.viewfinder") { showImport = true }
                         } label: {
-                            CircleIconLabel(systemName: "plus", tint: Theme.accent)
+                            CircleIconLabel(systemName: "plus", isOn: true)
                         }
                         .accessibilityLabel("Add recipe")
                         .accessibilityIdentifier("exploreAdd")
                     }
                     if searching { searchField }
-                    situations
-                    GenerationFilterBar(filter: $generation, cameraName: env.settings.myCamera.name)
+                    VStack(alignment: .leading, spacing: 14) {
+                        situations
+                        GenerationFilterBar(filter: $generation, cameraName: env.settings.myCamera.name)
+                    }
                     if isFiltering {
                         resultsGrid
                     } else {
@@ -128,9 +130,12 @@ struct ExploreView: View {
                         carousel(title: "Black & White", subtitle: "Monochrome starters",
                                  recipes: pool.filter { $0.filmSimulation.isMonochrome })
                     }
-                    Text("Starter recipes are original FilmLab creations. Thumbnails are approximate on-device previews on a synthetic test image.")
-                        .font(.caption2).foregroundStyle(Theme.textTertiary)
-                        .padding(.horizontal, Theme.gutter)
+                    VStack(alignment: .leading, spacing: 14) {
+                        Rectangle().fill(Theme.hairline).frame(height: 1)
+                        Text("Starter recipes are original FilmLab creations. Thumbnails are approximate on-device previews on a synthetic test image.")
+                            .font(.caption).foregroundStyle(Theme.textTertiary)
+                    }
+                    .padding(.horizontal, Theme.gutter)
                 }
                 .padding(.bottom, 110)
             }
@@ -157,7 +162,7 @@ struct ExploreView: View {
                     .accessibilityLabel("Clear search")
             }
         }
-        .padding(.horizontal, 16).padding(.vertical, 14)
+        .padding(.horizontal, 18).padding(.vertical, 14)
         .background(Theme.surface, in: Capsule())
         .overlay(Capsule().stroke(Theme.hairline, lineWidth: 1))
         .padding(.horizontal, Theme.gutter)
@@ -165,8 +170,8 @@ struct ExploreView: View {
     }
 
     private var situations: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            SectionHeader(title: "Browse by Situation", subtitle: "Pick a look for what you're shooting")
+        VStack(alignment: .leading, spacing: 18) {
+            SectionHeader(title: "Situations", subtitle: "Pick a look for what you're shooting")
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(Situation.all) { s in
@@ -181,17 +186,17 @@ struct ExploreView: View {
     }
 
     private func carousel(title: String, subtitle: String, recipes: [FilmRecipe]) -> some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 20) {
             NavigationLink(value: RecipeListRoute(title: title, ids: recipes.map(\.id))) {
                 SectionHeader(title: title, subtitle: subtitle, actionTitle: "See all", action: {})
                     .allowsHitTesting(false)
             }
             .buttonStyle(.plain)
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top, spacing: 16) {
+                HStack(alignment: .top, spacing: 14) {
                     ForEach(recipes) { r in
                         NavigationLink(value: r.id) {
-                            PhotoRecipeCard(recipe: r, thumbnail: env.thumbnails.thumbnail(for: r), width: 250, saved: env.library.isSaved(r.id))
+                            PhotoRecipeCard(recipe: r, thumbnail: env.thumbnails.thumbnail(for: r), width: 290, saved: env.library.isSaved(r.id))
                                 .onAppear { env.thumbnails.request(r) }
                         }
                         .buttonStyle(PressScaleStyle())
@@ -219,7 +224,7 @@ struct ExploreView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
-                    Text("MOOD").font(Theme.Font.eyebrow).tracking(1.2).foregroundStyle(Theme.textSecondary)
+                    Text("Mood").eyebrowStyle()
                     FlowLayout(spacing: 8) {
                         ForEach(RecipeMood.allCases, id: \.self) { m in
                             FilterChip(title: m.displayName, isOn: moods.contains(m)) {
@@ -227,7 +232,7 @@ struct ExploreView: View {
                             }
                         }
                     }
-                    Text("FILM SIMULATION").font(Theme.Font.eyebrow).tracking(1.2).foregroundStyle(Theme.textSecondary)
+                    Text("Film simulation").eyebrowStyle()
                     FlowLayout(spacing: 8) {
                         FilterChip(title: "Any", isOn: simulation == nil) { simulation = nil }
                         ForEach(FilmSimulation.allCases) { sim in
@@ -259,7 +264,7 @@ struct RecipeGrid: View {
     @Environment(AppEnvironment.self) private var env
     var recipes: [FilmRecipe]
     var body: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 22) {
+        LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 28) {
             ForEach(recipes) { r in
                 NavigationLink(value: r.id) {
                     PhotoRecipeCard(recipe: r, thumbnail: env.thumbnails.thumbnail(for: r), width: nil, saved: env.library.isSaved(r.id))
@@ -313,8 +318,8 @@ struct RecipeDetailView: View {
                     Group {
                         if let t = env.thumbnails.thumbnail(for: r) { CGImageView(image: t, contentMode: .fill) } else { Theme.swatch(for: r.filmSimulation) }
                     }
-                    .frame(height: 200).frame(maxWidth: .infinity).clipped()
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .frame(height: 220).frame(maxWidth: .infinity).clipped()
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
                     .overlay(alignment: .topLeading) { FidelityBadge(fidelity: .approximateOnDevice).padding(8) }
                     .onAppear { env.thumbnails.request(r) }
                     if !r.summary.isEmpty { Text(r.summary).font(.subheadline).foregroundStyle(Theme.textSecondary) }
@@ -435,7 +440,7 @@ func compatIcon(_ c: RecipeCompatibility) -> String {
 
 func compatColor(_ c: RecipeCompatibility) -> Color {
     switch c {
-    case .supported: Theme.accent
+    case .supported: Theme.authentic
     case .worksWithChanges: Theme.warning
     case .notAvailable: Theme.textTertiary
     }

@@ -131,7 +131,7 @@ struct RootView: View {
         }
         .background(Theme.background)
         .tint(Theme.accent)
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
         .task { await env.bootstrap() }
         .onChange(of: env.camera.mode) { _, _ in env.cameraModeChanged() }
         .onChange(of: env.camera.state) { _, _ in Task { await env.studio.refreshCameraAvailability() } }

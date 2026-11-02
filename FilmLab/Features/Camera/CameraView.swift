@@ -33,7 +33,7 @@ struct CameraView: View {
             }
             .groupedListStyle()
             .navigationTitle("Camera")
-            .darkNavigationBar()
+            .themedNavigationBar()
             .sheet(item: Binding(get: { sendRecipeID.map(IdentifiedUUID.init) }, set: { sendRecipeID = $0?.id })) { item in
                 SendToCameraSheet(recipeID: item.id)
             }

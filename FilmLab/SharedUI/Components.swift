@@ -11,13 +11,12 @@ struct FidelityBadge: View {
         HStack(spacing: 6) {
             Circle().fill(Theme.color(for: fidelity)).frame(width: 7, height: 7)
             Text(fidelity.badge(model: model) + (stale ? " · outdated" : ""))
-                .font(.caption2.weight(.semibold))
+                .font(.caption2.weight(.medium))
                 .monospacedDigit()
         }
         .padding(.horizontal, 10).padding(.vertical, 5)
-        .background(.black.opacity(0.55), in: Capsule())
-        .overlay(Capsule().stroke(Theme.color(for: fidelity).opacity(0.6), lineWidth: 1))
-        .foregroundStyle(Theme.textPrimary)
+        .background(Theme.photoPill, in: Capsule())
+        .foregroundStyle(Theme.photoPillText)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Preview type: \(fidelity.badge(model: model))\(stale ? ", outdated" : "")")
         .accessibilityIdentifier("fidelityBadge")
@@ -27,9 +26,9 @@ struct FidelityBadge: View {
 struct DemoBadge: View {
     var body: some View {
         Text("DEMO")
-            .font(.caption2.weight(.heavy)).tracking(1)
+            .font(.caption2.weight(.semibold)).tracking(1)
             .padding(.horizontal, 7).padding(.vertical, 3)
-            .background(Theme.demo.opacity(0.25), in: Capsule())
+            .background(Theme.demo.opacity(0.14), in: Capsule())
             .foregroundStyle(Theme.demo)
             .accessibilityLabel("Demo data")
     }
@@ -41,9 +40,9 @@ struct ExperimentalBanner: View {
         Label(text, systemImage: "exclamationmark.triangle.fill")
             .font(.footnote)
             .foregroundStyle(Theme.warning)
-            .padding(10)
+            .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Theme.warning.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+            .background(Theme.warning.opacity(0.1), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }
 
@@ -75,15 +74,16 @@ struct SimulationChip: View {
                 }
             }
             .frame(width: 64, height: 64)
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(selected ? Theme.accent : Theme.hairline, lineWidth: selected ? 2.5 : 1))
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .padding(3)
+            .overlay(RoundedRectangle(cornerRadius: 17, style: .continuous)
+                .stroke(selected ? Theme.accent : .clear, lineWidth: 1.5))
             Text(sim.shortName)
-                .font(.caption2.weight(selected ? .bold : .regular))
-                .foregroundStyle(selected ? Theme.accent : Theme.textSecondary)
+                .font(.caption2.weight(selected ? .semibold : .regular))
+                .foregroundStyle(selected ? Theme.textPrimary : Theme.textSecondary)
                 .lineLimit(1)
         }
-        .frame(width: 72)
+        .frame(width: 74)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(sim.displayName)
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
@@ -114,7 +114,7 @@ struct HistogramView: View {
         }
         .frame(width: 120, height: 48)
         .padding(6)
-        .background(.black.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
+        .background(.black.opacity(0.55), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .accessibilityLabel("Histogram. \(Int(histogram.clippedHighlights * 100)) percent highlights clipped, \(Int(histogram.clippedShadows * 100)) percent shadows clipped.")
     }
 }
@@ -135,20 +135,18 @@ struct RecipeCard: View {
                 .frame(maxWidth: .infinity)
                 .clipped()
                 if recipe.isFavorite {
-                    Image(systemName: "heart.fill").foregroundStyle(Theme.accent).padding(8)
+                    PhotoPill(title: "Favorite", systemImage: "heart.fill").padding(8)
                         .accessibilityLabel("Favorite")
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            Text(recipe.name).font(.subheadline.weight(.semibold)).foregroundStyle(Theme.textPrimary).lineLimit(1)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous))
+            Text(recipe.name).font(.body).tracking(-0.3).foregroundStyle(Theme.textPrimary).lineLimit(1)
             HStack(spacing: 4) {
                 Text(recipe.filmSimulation.shortName)
                 if saved { Image(systemName: "checkmark.circle.fill").accessibilityLabel("In library") }
             }
             .font(.caption).foregroundStyle(Theme.textSecondary)
         }
-        .padding(8)
-        .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 }
@@ -188,10 +186,10 @@ struct FilterChip: View {
     var body: some View {
         Button(action: action) {
             Text(title).font(.footnote.weight(.medium))
-                .padding(.horizontal, 12).padding(.vertical, 7)
-                .background(isOn ? Theme.accent.opacity(0.22) : Theme.surfaceRaised, in: Capsule())
-                .overlay(Capsule().stroke(isOn ? Theme.accent : .clear, lineWidth: 1))
-                .foregroundStyle(isOn ? Theme.accent : Theme.textPrimary)
+                .padding(.horizontal, 14).padding(.vertical, 8)
+                .background(isOn ? Theme.accent : Theme.surface, in: Capsule())
+                .overlay(Capsule().stroke(isOn ? .clear : Theme.hairline, lineWidth: 1))
+                .foregroundStyle(isOn ? Theme.onAccent : Theme.textPrimary)
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isOn ? .isSelected : [])

@@ -53,23 +53,21 @@ struct RecipeImportView: View {
             Text("Screenshots of recipe cards, blog posts, comments, or a photo of your notes all work. Text is read on this iPhone first.")
                 .font(.subheadline).foregroundStyle(Theme.textSecondary)
             PhotosPicker(selection: $pickerItem, matching: .images) {
-                Label("Choose Screenshot or Photo", systemImage: "photo.on.rectangle")
-                    .font(.headline.weight(.bold)).frame(maxWidth: .infinity).padding(.vertical, 16)
-                    .foregroundStyle(Theme.onAccent)
-                    .background(Theme.accent, in: RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous))
+                PrimaryButtonLabel(title: "Choose Screenshot or Photo", systemImage: "photo.on.rectangle")
             }
             .accessibilityIdentifier("importPickPhoto")
             Button { showFiles = true } label: {
-                Label("Choose from Files", systemImage: "folder").frame(maxWidth: .infinity).padding(.vertical, 12)
+                SecondaryButtonLabel(title: "Choose from Files", systemImage: "folder")
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(PressScaleStyle())
             VStack(alignment: .leading, spacing: 8) {
-                Text("OR PASTE TEXT").font(Theme.Font.eyebrow).tracking(1.2).foregroundStyle(Theme.textSecondary)
+                Text("Or paste text").eyebrowStyle()
                 TextEditor(text: $pastedText)
                     .frame(minHeight: 140)
                     .scrollContentBackground(.hidden)
-                    .padding(10)
-                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.cornerSmall))
+                    .padding(12)
+                    .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous))
+                    .overlay(RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous).stroke(Theme.hairline, lineWidth: 1))
                     .accessibilityLabel("Recipe text")
                 PrimaryButton(title: "Read Text", systemImage: "text.viewfinder", enabled: !pastedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) {
                     image = nil

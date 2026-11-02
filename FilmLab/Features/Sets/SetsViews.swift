@@ -172,8 +172,7 @@ struct SetInstallSheet: View {
                 }
                 if let error { Section { Text(error).foregroundStyle(Theme.danger) } }
             }
-            .scrollContentBackground(.hidden)
-            .background(Theme.background)
+            .formPage()
             .navigationTitle("Install “\(set.name)”")
             .inlineNavigationTitle()
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() }.disabled(camera.isInstallingSet) } }

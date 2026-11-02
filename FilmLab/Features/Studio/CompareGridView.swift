@@ -30,13 +30,9 @@ struct CompareGridView: View {
                                     }
                                     .frame(minHeight: gridSize == 9 ? 110 : 160)
                                     .clipped()
-                                    Text(r.name)
-                                        .font(.caption2.weight(.semibold)).lineLimit(1)
-                                        .padding(6).background(.black.opacity(0.55), in: Capsule())
-                                        .padding(6)
-                                        .foregroundStyle(Theme.textPrimary)
+                                    PhotoPill(title: r.name).lineLimit(1).padding(8)
                                 }
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                             }
                             .buttonStyle(.plain)
                             .accessibilityLabel("Compare \(r.name). Double-tap to edit.")
@@ -143,8 +139,7 @@ struct SaveRecipeSheet: View {
                         .font(.footnote).foregroundStyle(Theme.textSecondary)
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(Theme.background)
+            .formPage()
             .navigationTitle("Save Recipe")
             .inlineNavigationTitle()
             .toolbar {

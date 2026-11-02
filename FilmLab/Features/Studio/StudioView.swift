@@ -65,19 +65,18 @@ struct StudioView: View {
             photoMenu
             VStack(alignment: .leading, spacing: 2) {
                 Text(env.studio.recipe.name + (env.studio.isDirty ? " •" : ""))
-                    .font(.title3.weight(.bold)).foregroundStyle(Theme.textPrimary).lineLimit(1)
-                Text("Tune · \(env.studio.recipe.filmSimulation.shortName)")
-                    .font(.caption).foregroundStyle(Theme.textSecondary)
+                    .font(.system(size: 22, weight: .regular)).tracking(-0.7).foregroundStyle(Theme.textPrimary).lineLimit(1)
+                Text("Tune · \(env.studio.recipe.filmSimulation.shortName)").eyebrowStyle()
             }
             .accessibilityElement(children: .combine)
             Spacer(minLength: 4)
             CircleIconButton(systemName: splitEnabled ? "rectangle.split.2x1.fill" : "rectangle.split.2x1",
-                             tint: splitEnabled ? Theme.accent : Theme.textPrimary, size: 44,
+                             size: 44, isOn: splitEnabled,
                              accessibilityLabel: splitEnabled ? "Hide before and after split" : "Show before and after split") {
                 splitEnabled.toggle()
             }
             CircleIconButton(systemName: showOriginal ? "eye.slash" : "eye",
-                             tint: showOriginal ? Theme.accent : Theme.textPrimary, size: 44,
+                             size: 44, isOn: showOriginal,
                              accessibilityLabel: showOriginal ? "Show recipe preview" : "Show original") {
                 showOriginal.toggle()
             }
@@ -217,9 +216,9 @@ struct StudioView: View {
                 Label("Render with Camera", systemImage: "camera.aperture")
                     .font(.footnote.weight(.semibold))
                     .padding(.horizontal, 12).padding(.vertical, 9)
-                    .foregroundStyle(enabled ? Theme.accent : Theme.textTertiary)
+                    .foregroundStyle(enabled ? Theme.textPrimary : Theme.textTertiary)
                     .background(Theme.surface, in: Capsule())
-                    .overlay(Capsule().stroke(enabled ? Theme.accent.opacity(0.5) : Theme.hairline, lineWidth: 1))
+                    .overlay(Capsule().stroke(Theme.hairline, lineWidth: 1))
             }
             .buttonStyle(PressScaleStyle())
             .disabled(!enabled)
@@ -232,7 +231,7 @@ struct StudioView: View {
         VStack(alignment: .leading, spacing: 10) {
             let profile = env.settings.myProfile
             HStack {
-                Text("FILM SIMULATION").font(Theme.Font.eyebrow).tracking(1.2).foregroundStyle(Theme.textSecondary)
+                Text("Film simulation").eyebrowStyle()
                 Spacer()
                 Text(profile.displayName).font(.caption2).foregroundStyle(Theme.textTertiary)
             }
@@ -289,8 +288,8 @@ struct StudioView: View {
                                 .overlay(RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
                                     .stroke(selected ? Theme.accent : Theme.hairline, lineWidth: selected ? 2.5 : 1))
                                 .onAppear { env.thumbnails.request(r) }
-                                Text(r.name).font(.footnote.weight(.semibold)).lineLimit(1).frame(width: 112, alignment: .leading)
-                                    .foregroundStyle(selected ? Theme.accent : Theme.textPrimary)
+                                Text(r.name).font(.footnote.weight(selected ? .semibold : .regular)).lineLimit(1).frame(width: 112, alignment: .leading)
+                                    .foregroundStyle(selected ? Theme.textPrimary : Theme.textSecondary)
                             }
                         }
                         .buttonStyle(PressScaleStyle())
@@ -353,10 +352,7 @@ struct ExportSheet: View {
                 Text("This JPEG was rendered by FilmLab's on-device approximation, not by the camera. The original photo is unchanged.")
                     .font(.footnote).multilineTextAlignment(.center).foregroundStyle(Theme.textSecondary)
                 ShareLink(item: url) {
-                    Label("Share JPEG", systemImage: "square.and.arrow.up")
-                        .font(.headline).frame(maxWidth: .infinity).padding(.vertical, 14)
-                        .foregroundStyle(Theme.onAccent)
-                        .background(Theme.accent, in: RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous))
+                    PrimaryButtonLabel(title: "Share JPEG", systemImage: "square.and.arrow.up")
                 }
             }
             .padding(24)

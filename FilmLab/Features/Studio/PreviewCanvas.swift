@@ -76,11 +76,7 @@ struct PreviewCanvas: View {
         VStack {
             HStack(alignment: .top) {
                 if holdingOriginal {
-                    Text(originalLabel)
-                        .font(.caption2.weight(.semibold))
-                        .padding(.horizontal, 10).padding(.vertical, 5)
-                        .background(.black.opacity(0.6), in: Capsule())
-                        .foregroundStyle(Theme.textPrimary)
+                    PhotoPill(title: originalLabel)
                 } else if let processed {
                     FidelityBadge(fidelity: processed.fidelity, model: processed.cameraModel, stale: staleCamera)
                 }
@@ -90,15 +86,14 @@ struct PreviewCanvas: View {
             Spacer()
             HStack {
                 if splitEnabled, !holdingOriginal {
-                    Text(originalLabel).font(.caption2.weight(.semibold)).padding(6).background(.black.opacity(0.5), in: Capsule())
+                    PhotoPill(title: originalLabel)
                     Spacer()
-                    Text("Recipe").font(.caption2.weight(.semibold)).padding(6).background(.black.opacity(0.5), in: Capsule())
+                    PhotoPill(title: "Recipe", dark: true)
                 } else {
                     Spacer()
                 }
                 if isRendering { ProgressView().controlSize(.small).tint(.white).padding(6) }
             }
-            .foregroundStyle(Theme.textPrimary)
         }
         .padding(10)
         .allowsHitTesting(false)

@@ -135,7 +135,7 @@ extension TuneParameter {
         func r(_ k: RecipePropertyKey) -> NumericRange { profile.capability(k)?.range ?? NumericRange(min: -4, max: 4, step: 1) }
         let drpNA = "D RANGE PRIORITY is on: the camera sets this automatically. Set D RANGE PRIORITY to OFF to adjust."
         let rainbow: [Color] = [.red, .orange, .yellow, .green, .blue, .purple]
-        let teal: [Color] = [Theme.accent, Color(red: 0.1, green: 0.35, blue: 0.4)]
+        let teal: [Color] = [Color(red: 0.2, green: 0.6, blue: 0.55), Color(red: 0.1, green: 0.35, blue: 0.4)]
         let effect = EffectLevel.allCases
         return [
             .numeric("highlight", "HIGHLIGHT", "Highlight", \.highlight, range: r(.highlight),
@@ -223,19 +223,19 @@ struct TunePanel: View {
         let p = selected
         let applicable = p.isApplicable(settings)
         return HStack(spacing: 44) {
-            CircleIconButton(systemName: "minus", tint: Theme.accent, size: 56, accessibilityLabel: "Decrease \(p.name)") {
+            CircleIconButton(systemName: "minus", size: 56, accessibilityLabel: "Decrease \(p.name)") {
                 settings = p.step(settings, -1)
             }
             .disabled(!p.canStep(settings, -1))
             .opacity(p.canStep(settings, -1) ? 1 : 0.4)
             Text(p.display(settings))
-                .font(.system(size: 34, weight: .bold).monospacedDigit())
+                .font(.system(size: 40, weight: .regular).monospacedDigit()).tracking(-1.2)
                 .foregroundStyle(applicable ? Theme.textPrimary : Theme.textTertiary)
                 .frame(minWidth: 110)
                 .lineLimit(1).minimumScaleFactor(0.5)
                 .contentTransition(.numericText())
                 .animation(.snappy, value: p.display(settings))
-            CircleIconButton(systemName: "plus", tint: Theme.textSecondary, size: 56, accessibilityLabel: "Increase \(p.name)") {
+            CircleIconButton(systemName: "plus", size: 56, accessibilityLabel: "Increase \(p.name)") {
                 settings = p.step(settings, 1)
             }
             .disabled(!p.canStep(settings, 1))
@@ -288,27 +288,25 @@ struct ParameterCard: View {
     var body: some View {
         let applicable = parameter.isApplicable(settings)
         let shape = RoundedRectangle(cornerRadius: Theme.cornerSmall, style: .continuous)
-        VStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: 0) {
             Text(parameter.label)
-                .font(.caption.weight(.semibold)).tracking(1.2)
-                .foregroundStyle(selected ? .white.opacity(0.92) : Theme.textSecondary)
+                .font(.caption2.weight(.medium)).tracking(0.8)
+                .foregroundStyle(selected ? Theme.onAccent.opacity(0.7) : Theme.textSecondary)
+            Spacer(minLength: 4)
             Text(parameter.display(settings))
-                .font(.title3.weight(.semibold).monospacedDigit())
-                .foregroundStyle(selected ? .white : (applicable ? Theme.textPrimary.opacity(0.8) : Theme.textTertiary))
+                .font(.system(size: 20, weight: .regular).monospacedDigit()).tracking(-0.5)
+                .foregroundStyle(selected ? Theme.onAccent : (applicable ? Theme.textPrimary : Theme.textTertiary))
                 .lineLimit(1).minimumScaleFactor(0.6)
+            // The parameter's colour lives in a thin strip; the card itself stays neutral.
+            Capsule().fill(LinearGradient(colors: parameter.palette, startPoint: .leading, endPoint: .trailing))
+                .frame(height: 3)
+                .padding(.top, 8)
+                .opacity(selected ? 1 : 0.55)
         }
-        .shadow(color: selected ? .black.opacity(0.35) : .clear, radius: 3)
-        .frame(width: 124, height: 78)
-        .background {
-            ZStack {
-                Theme.surface
-                LinearGradient(colors: parameter.palette, startPoint: .leading, endPoint: .trailing)
-                    .opacity(selected ? 0.95 : 0.14)
-            }
-            .clipShape(shape)
-        }
-        .overlay(shape.stroke(selected ? Color.white.opacity(0.75) : Theme.hairline, lineWidth: selected ? 2 : 1))
-        .shadow(color: selected ? parameter.palette.first!.opacity(0.45) : .clear, radius: 12)
+        .padding(.horizontal, 14).padding(.vertical, 12)
+        .frame(width: 124, height: 86, alignment: .leading)
+        .background(selected ? Theme.accent : Theme.surface, in: shape)
+        .overlay(shape.stroke(selected ? Color.clear : Theme.hairline, lineWidth: 1))
         .opacity(applicable ? 1 : 0.5)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(parameter.name)

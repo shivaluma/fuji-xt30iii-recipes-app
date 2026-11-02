@@ -1,36 +1,65 @@
 import SwiftUI
 
-/// FilmLab design tokens: dark charcoal surfaces, warm accent, crisp type. Original branding.
+/// FilmLab design tokens — the same light, neutral, editorial system as the website
+/// (web/src/app/globals.css). Photos carry the colour; the UI stays quiet: white page, warm grey
+/// panels, ink-black pills for primary actions, light display type with tight tracking.
 enum Theme {
-    // Surfaces: true black canvas, layered charcoal cards.
-    static let background = Color.black
-    static let surface = Color(red: 0.11, green: 0.11, blue: 0.115)        // cards, chips
-    static let surfaceRaised = Color(red: 0.17, green: 0.17, blue: 0.18)   // rows inside cards, circle buttons
-    static let hairline = Color.white.opacity(0.09)
-    static let textPrimary = Color.white.opacity(0.96)
-    static let textSecondary = Color.white.opacity(0.55)
-    static let textTertiary = Color.white.opacity(0.35)
-    /// Primary accent: teal. Used for selection, links, and the main call to action.
-    static let accent = Color(red: 0.20, green: 0.65, blue: 0.57)
-    static let accentMuted = Color(red: 0.20, green: 0.65, blue: 0.57).opacity(0.18)
-    static let onAccent = Color.black
-    static let approximate = Color(red: 0.55, green: 0.7, blue: 0.95)
-    static let authentic = Color(red: 0.36, green: 0.82, blue: 0.62)
-    static let demo = Color(red: 0.82, green: 0.6, blue: 0.95)
-    static let warning = Color(red: 0.98, green: 0.75, blue: 0.3)
-    static let danger = Color(red: 0.95, green: 0.38, blue: 0.35)
+    private static func hex(_ v: UInt32) -> Color {
+        Color(red: Double((v >> 16) & 0xff) / 255, green: Double((v >> 8) & 0xff) / 255, blue: Double(v & 0xff) / 255)
+    }
 
-    static let corner: CGFloat = 22        // large cards
-    static let cornerSmall: CGFloat = 16   // rows, parameter cards
+    // Surfaces
+    static let background = Color.white                 // --fl-background
+    static let surface = hex(0xf3f3f1)                    // --fl-surface: soft panels, chips, inputs
+    static let surfaceRaised = hex(0xe8e8e5)              // --fl-surface-raised: pressed / nested
+    /// Page behind grouped lists and forms, so their white rows read as cards.
+    static let groupedBackground = hex(0xf3f3f1)
+    static let hairline = hex(0xe6e6e3)                   // --fl-hairline
+
+    // Text
+    static let textPrimary = hex(0x0c0c0c)                // --fl-text
+    static let textSecondary = hex(0x6a6a67)
+    static let textTertiary = hex(0x9b9b97)
+
+    /// Primary actions and selection are ink-black, as on the web.
+    static let accent = hex(0x0c0c0c)
+    static let accentMuted = hex(0xf3f3f1)
+    static let onAccent = Color.white
+
+    // Status (tuned for a light page)
+    static let approximate = hex(0x5b7fa6)
+    static let authentic = hex(0x2f7d55)
+    static let demo = hex(0x8a7bb8)
+    static let warning = hex(0xb7791f)
+    static let danger = hex(0xcf3f3a)
+
+    // Pills laid over photos: white label pill / black tag pill.
+    static let photoPill = Color.white.opacity(0.92)
+    static let photoPillText = Color.black
+    static let photoTag = Color.black.opacity(0.72)
+
+    static let corner: CGFloat = 24        // --fl-radius-card
+    static let cornerSmall: CGFloat = 16   // --fl-radius-small
     static let spacing: CGFloat = 12
     static let gutter: CGFloat = 20        // screen side padding
+    static let sectionSpacing: CGFloat = 44
 
+    /// SF Pro stands in for Inter / Inter Tight: regular-weight display sizes with negative tracking.
     enum Font {
-        static let screenTitle = SwiftUI.Font.system(size: 38, weight: .bold)
-        static let sectionTitle = SwiftUI.Font.title2.weight(.bold)
+        static let screenTitle = SwiftUI.Font.system(size: 52, weight: .regular)
+        static let sectionTitle = SwiftUI.Font.system(size: 32, weight: .regular)
         static let sectionSubtitle = SwiftUI.Font.subheadline
-        static let cardTitle = SwiftUI.Font.headline.weight(.semibold)
-        static let eyebrow = SwiftUI.Font.caption.weight(.semibold)
+        static let cardTitle = SwiftUI.Font.system(size: 20, weight: .regular)
+        static let eyebrow = SwiftUI.Font.caption.weight(.medium)
+        static let wordmark = SwiftUI.Font.system(size: 15, weight: .semibold)
+    }
+
+    /// Letter-spacing in points for the display sizes above (≈ the web's em values).
+    enum Tracking {
+        static let screenTitle: CGFloat = -2.6     // -0.05em
+        static let sectionTitle: CGFloat = -1.5
+        static let cardTitle: CGFloat = -0.6       // -0.03em
+        static let eyebrow: CGFloat = 0.8          // uppercase labels: +0.06em
     }
 
     static func color(for fidelity: PreviewFidelity) -> Color {
@@ -74,22 +103,31 @@ extension View {
         #endif
     }
 
-    @ViewBuilder func darkNavigationBar() -> some View {
+    /// Light navigation bar that blends into the page until content scrolls under it.
+    @ViewBuilder func themedNavigationBar() -> some View {
         #if os(iOS)
-        self.toolbarBackground(Theme.background, for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.dark, for: .navigationBar)
+        self.toolbarColorScheme(.light, for: .navigationBar)
         #else
         self
         #endif
     }
 
+    /// Grey page behind a Form so its white rows read as cards (same as `groupedListStyle`).
+    func formPage() -> some View {
+        self.scrollContentBackground(.hidden).background(Theme.groupedBackground)
+    }
+
+    /// Small uppercase tracked label, like the web's nav links and eyebrows.
+    func eyebrowStyle(_ color: Color = Theme.textSecondary) -> some View {
+        self.font(Theme.Font.eyebrow).textCase(.uppercase).tracking(Theme.Tracking.eyebrow).foregroundStyle(color)
+    }
+
     @ViewBuilder func groupedListStyle() -> some View {
         #if os(iOS)
-        self.listStyle(.insetGrouped).scrollContentBackground(.hidden).background(Theme.background)
+        self.listStyle(.insetGrouped).scrollContentBackground(.hidden).background(Theme.groupedBackground)
             .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 84) } // clear the floating tab bar
         #else
-        self.listStyle(.inset).scrollContentBackground(.hidden).background(Theme.background)
+        self.listStyle(.inset).scrollContentBackground(.hidden).background(Theme.groupedBackground)
             .safeAreaInset(edge: .bottom) { Color.clear.frame(height: 84) }
         #endif
     }
@@ -97,7 +135,6 @@ extension View {
     func cardStyle() -> some View {
         self.padding(16)
             .background(Theme.surface, in: RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
-            .overlay(RoundedRectangle(cornerRadius: Theme.corner, style: .continuous).stroke(Theme.hairline, lineWidth: 1))
     }
 
     /// Hides the system navigation bar on root screens that draw their own `ScreenHeader`.
