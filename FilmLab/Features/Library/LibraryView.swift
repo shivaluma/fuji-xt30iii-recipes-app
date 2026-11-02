@@ -20,6 +20,7 @@ struct LibraryView: View {
     @State private var exportDoc: RecipeExportFile?
     @State private var message: String?
     @State private var showSettings = false
+    @State private var showImageImport = false
 
     private var recipes: [FilmRecipe] {
         env.library.recipes.filter {
@@ -77,6 +78,7 @@ struct LibraryView: View {
                 Button("OK", role: .cancel) {}
             } message: { Text(message ?? "") }
             .sheet(isPresented: $showSettings) { SettingsView() }
+            .sheet(isPresented: $showImageImport) { RecipeImportView() }
         }
     }
 
@@ -138,6 +140,7 @@ struct LibraryView: View {
                     .disabled(selection.isEmpty)
                 }
                 Divider()
+                Button("Import from Image or Text…", systemImage: "text.viewfinder") { showImageImport = true }
                 Button("Import Recipes…", systemImage: "square.and.arrow.down") { importing = true }
                 Button("Export All…", systemImage: "square.and.arrow.up") { export([]) }
                     .disabled(env.library.recipes.isEmpty)
@@ -179,6 +182,7 @@ struct SettingsView: View {
                 } footer: {
                     Text("Writing C1–C7 over USB uses unofficial, community-documented protocol details that have NOT been verified by FilmLab on an X-T30 III. It may change camera settings unexpectedly and may affect your warranty. Off by default. Demo mode never needs this.")
                 }
+                WebShowcaseSection()
                 Section("About") {
                     LabeledContent("Preview engine", value: FilmLookEngine.version)
                     LabeledContent("Recipe format", value: "\(RecipeTransferDocument.formatID) v\(RecipeTransferDocument.currentSchemaVersion)")
@@ -227,5 +231,37 @@ struct SettingsView: View {
                 }
             }
         }
+    }
+}
+
+/// Connection to the FilmLab web showcase (the Next.js app in web/, e.g. hosted on Dokploy).
+struct WebShowcaseSection: View {
+    @Environment(AppEnvironment.self) private var env
+    @State private var token = ""
+    @State private var status: String?
+
+    var body: some View {
+        @Bindable var settings = env.settings
+        Section {
+            TextField("https://recipes.example.com", text: $settings.webBaseURL)
+                .autocorrectionDisabled()
+                .accessibilityLabel("Web showcase URL")
+            SecureField("Admin token", text: $token)
+                .onSubmit { env.settings.webToken = token }
+            Button("Save & Test Connection") {
+                env.settings.webToken = token
+                Task {
+                    guard let client = env.settings.webClient else { status = "Enter an http(s) URL and the token."; return }
+                    do { try await client.checkHealth(); status = "Connected." } catch { status = error.localizedDescription }
+                }
+            }
+            if let status { Text(status).font(.footnote).foregroundStyle(Theme.textSecondary) }
+            Toggle("Use AI when on-device reading is incomplete", isOn: $settings.autoAIExtraction)
+        } header: {
+            Text("Web showcase")
+        } footer: {
+            Text("Used for “Extract with AI” and “Publish to Web”. Recipe images are read on this iPhone first; only incomplete results are sent to your server for AI reading. The token is stored in the iOS Keychain and sent only to this server.")
+        }
+        .onAppear { token = env.settings.webToken }
     }
 }

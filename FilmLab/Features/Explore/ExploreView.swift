@@ -32,6 +32,7 @@ struct ExploreView: View {
     @State private var moods: Set<RecipeMood> = []
     @State private var simulation: FilmSimulation?
     @State private var showFilters = false
+    @State private var showImport = false
     @FocusState private var searchFocused: Bool
 
     private var pool: [FilmRecipe] {
@@ -64,10 +65,17 @@ struct ExploreView: View {
                         }
                         CircleIconButton(systemName: "line.3.horizontal.decrease", tint: moods.isEmpty && simulation == nil ? Theme.textPrimary : Theme.accent,
                                          accessibilityLabel: "Filters") { showFilters = true }
-                        CircleIconButton(systemName: "plus", tint: Theme.accent, accessibilityLabel: "New recipe") {
-                            env.studio.load(FilmRecipe(name: "New Recipe", settings: .neutral()))
-                            env.router.tab = .studio
+                        Menu {
+                            Button("New Recipe", systemImage: "plus") {
+                                env.studio.load(FilmRecipe(name: "New Recipe", settings: .neutral()))
+                                env.router.tab = .studio
+                            }
+                            Button("Import from Image or Text…", systemImage: "text.viewfinder") { showImport = true }
+                        } label: {
+                            CircleIconLabel(systemName: "plus", tint: Theme.accent)
                         }
+                        .accessibilityLabel("Add recipe")
+                        .accessibilityIdentifier("exploreAdd")
                     }
                     if searching { searchField }
                     situations
@@ -97,6 +105,7 @@ struct ExploreView: View {
                 RecipeGridScreen(title: route.title, recipes: route.ids.compactMap { env.library.recipe($0) })
             }
             .sheet(isPresented: $showFilters) { filterSheet }
+            .sheet(isPresented: $showImport) { RecipeImportView() }
         }
     }
 
@@ -245,6 +254,8 @@ struct RecipeDetailView: View {
     var recipeID: UUID
     @State private var renaming = false
     @State private var newName = ""
+    @State private var publishing = false
+    @State private var publishResult: String?
 
     var body: some View {
         if let r = env.library.recipe(recipeID) {
@@ -286,6 +297,18 @@ struct RecipeDetailView: View {
                         env.router.pendingSendRecipeID = r.id
                         env.router.tab = .camera
                     } label: { Label("Send to Camera…", systemImage: "camera") }
+                    if let client = env.settings.webClient {
+                        Button {
+                            publishing = true
+                            Task {
+                                defer { publishing = false }
+                                do { publishResult = "Published: " + (try await client.publish(r, published: true, story: nil)).absoluteString }
+                                catch { publishResult = error.localizedDescription }
+                            }
+                        } label: { Label(publishing ? "Publishing…" : "Publish to Web", systemImage: "globe") }
+                        .disabled(publishing)
+                        if let publishResult { Text(publishResult).font(.footnote).foregroundStyle(Theme.textSecondary).textSelection(.enabled) }
+                    }
                 } else {
                     Button { env.library.saveToLibrary(r) } label: { Label("Save to Library", systemImage: "tray.and.arrow.down") }
                         .accessibilityIdentifier("saveToLibrary")

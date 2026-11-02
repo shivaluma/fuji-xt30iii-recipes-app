@@ -1,0 +1,7 @@
+node_modules
+.next
+data/*.db*
+data/uploads
+.env*
+!.env.example
+npm-debug.log*

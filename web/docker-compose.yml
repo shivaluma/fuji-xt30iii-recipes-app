@@ -1,0 +1,14 @@
+# Optional: deploy with Dokploy's "Docker Compose" type (or run locally: docker compose up --build).
+services:
+  web:
+    build: .
+    restart: unless-stopped
+    environment:
+      ADMIN_TOKEN: ${ADMIN_TOKEN:?set ADMIN_TOKEN}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    volumes:
+      - filmlab-data:/app/data
+    ports:
+      - "3000"
+volumes:
+  filmlab-data:

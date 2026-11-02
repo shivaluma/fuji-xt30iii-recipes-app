@@ -14,6 +14,22 @@ final class AppSettings {
     var showHistogram: Bool { didSet { defaults.set(showHistogram, forKey: "showHistogram") } }
     var hapticsEnabled: Bool { didSet { defaults.set(hapticsEnabled, forKey: "hapticsEnabled") } }
     var hasSeenOnboarding: Bool { didSet { defaults.set(hasSeenOnboarding, forKey: "hasSeenOnboarding") } }
+    /// After on-device reading, automatically ask the web server's AI when the result is incomplete.
+    var autoAIExtraction: Bool { didSet { defaults.set(autoAIExtraction, forKey: "autoAIExtraction") } }
+    /// FilmLab web showcase (e.g. https://recipes.example.com). The admin token lives in the Keychain.
+    var webBaseURL: String { didSet { defaults.set(webBaseURL, forKey: "webBaseURL") } }
+    var webToken: String {
+        get { KeychainStore.get("adminToken") ?? "" }
+        set { KeychainStore.set(newValue, for: "adminToken"); webTokenRevision += 1 }
+    }
+    private(set) var webTokenRevision = 0
+
+    var webClient: FilmLabWebClient? {
+        _ = webTokenRevision
+        guard let url = URL(string: webBaseURL.trimmingCharacters(in: .whitespaces)), url.scheme?.hasPrefix("http") == true,
+              !webToken.isEmpty else { return nil }
+        return FilmLabWebClient(baseURL: url, token: webToken)
+    }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -21,6 +37,8 @@ final class AppSettings {
         showHistogram = defaults.object(forKey: "showHistogram") as? Bool ?? true
         hapticsEnabled = defaults.object(forKey: "hapticsEnabled") as? Bool ?? true
         hasSeenOnboarding = defaults.bool(forKey: "hasSeenOnboarding")
+        webBaseURL = defaults.string(forKey: "webBaseURL") ?? ""
+        autoAIExtraction = defaults.object(forKey: "autoAIExtraction") as? Bool ?? true
     }
 }
 

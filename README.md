@@ -19,6 +19,17 @@ camera.
   - Favourites, bulk export/delete, versioned JSON import/export, and provenance on every recipe.
 - **Sets.** Seven-slot arrangements for C1–C7, with reordering, preview in Compare, and
   slot-by-slot install.
+- **Import from Image or Text.** Bring in a recipe from a screenshot, a recipe card, a photo of notes, or pasted text (e.g. a Reddit comment).
+  - On-device Vision OCR and a tested parser read it first: free, offline and private.
+  - **Extract with AI** sends it to your FilmLab web server, which asks Claude to read unusual layouts.
+  - Every field is reviewed before saving. Unread fields are flagged, never guessed.
+  - Then *Preview & Adjust in Studio* or *Save to Library*.
+- **Web showcase** (`web/`): a Next.js + shadcn site and API (SQLite), deployable on Dokploy. It provides:
+  - recipe pages with an approximate in-browser preview;
+  - an admin with AI import;
+  - *Publish to Web* from the app.
+
+  See `web/README.md`.
 - **Camera.**
   - Demo camera, or USB via ImageCaptureCore (experimental).
   - Model/firmware view, capability and verification view, read C1–C7, local backups and export.

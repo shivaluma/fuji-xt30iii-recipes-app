@@ -13,6 +13,7 @@
 		0FECB17B9E297652A7BF68BB /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 763DCEF2D03EE3C71317567F /* PersistenceTests.swift */; };
 		108C4402F36F97DA7A369669 /* RecipeModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F778E22A100DFEAE0A4C48A /* RecipeModelTests.swift */; };
 		1A70DC7A1C13BCDEF3A55FCB /* PTPSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8098A190E1593D88137A7F3A /* PTPSession.swift */; };
+		1D2E06C862E70FC8FF988C98 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 184F2ED52B95C943357C5480 /* KeychainStore.swift */; };
 		2904A8C628A31E637F72F490 /* StudioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6E426E3DAE6ABF2DA5D119D /* StudioView.swift */; };
 		2C856FFD17D405E6734762D0 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E609DD07D2EDBCD0A994D67E /* CameraView.swift */; };
 		3609CDC9435126BFBFC52B6B /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4BBC0881CB9576BDE4CF28 /* AppState.swift */; };
@@ -23,6 +24,7 @@
 		44A4CB61B711E644AE79D830 /* LibraryPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69EC6D6E78BAE58347C0A30 /* LibraryPersistence.swift */; };
 		4D0B55DFCE652FBE621D2036 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43F3C8C5C2C16E03C9920C2 /* Theme.swift */; };
 		59015544F357B797289A9E81 /* PTPCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E0C83533D0BA9518983116 /* PTPCore.swift */; };
+		5C5FFDDB25C3DAA08D80677E /* RecipeCardOCR.swift in Sources */ = {isa = PBXBuildFile; fileRef = F916E3F3514950A087D7A2E6 /* RecipeCardOCR.swift */; };
 		617B22B1C5CC35E54450E7F0 /* StarterRecipes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81CB23737E3202F51E2E8E39 /* StarterRecipes.swift */; };
 		63D906FCB5A09C5117DEDBDF /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842E3552BD8347445A98DF47 /* DesignSystem.swift */; };
 		64D66578D83B323FB797225B /* FujiRecipeCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF4BA39E6604108C0BB3D684 /* FujiRecipeCodec.swift */; };
@@ -32,6 +34,10 @@
 		6B7EC2149E08BC8DB94B24F7 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = F47AD01B79FC70B702E5B2B5 /* Components.swift */; };
 		6BCD5B913B0755037B2D9641 /* FilmSimulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB2DB4886A67B66D58E30C1C /* FilmSimulation.swift */; };
 		70E0D8C610C0F92A1FB053EB /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7E3AB47A0494601B481987C /* AppEnvironment.swift */; };
+		7113397FB8DB40F55DAE5DEE /* FilmLabWebClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6E5ACD875E89392F1887F67 /* FilmLabWebClient.swift */; };
+		7C43E42CF88C61CC2F467110 /* RecipeImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70A9629EF91ED8BF8417B30 /* RecipeImportView.swift */; };
+		8008802845A7E35CCCE09F20 /* ocr-card-a.json in Resources */ = {isa = PBXBuildFile; fileRef = BA164D5EFF9B17E259FAB817 /* ocr-card-a.json */; };
+		8A3563CDC2186410B6CF9F0F /* ocr-card-b.json in Resources */ = {isa = PBXBuildFile; fileRef = 168656A4B39AD36BBACAEC00 /* ocr-card-b.json */; };
 		8DAFC0F0D8ED00BE11B17349 /* OfflinePreviewRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A128D418AB431FFB3AC9C31 /* OfflinePreviewRenderer.swift */; };
 		91EA2EA20F1C658619F99F06 /* DemoImageFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6569016F7B6C4FB6DC0811A0 /* DemoImageFactory.swift */; };
 		9A3E069C935496CA6D0D920D /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E24853FE96BD4B25EEFC8F /* LibraryView.swift */; };
@@ -45,6 +51,7 @@
 		BE4F4235D65C83318D0F94A9 /* PreviewCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = B621E925E396BEEB1EFA3EE1 /* PreviewCanvas.swift */; };
 		C1EEAC401F5D0C9D7DD242CE /* FilmLabApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EDD276BBC703F0E93D856E7 /* FilmLabApp.swift */; };
 		D3407DD083FEE0244A08EF45 /* CameraTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68ED0574F299027CB3DA396B /* CameraTransport.swift */; };
+		DC6CEC022E1C57B46A59F6AC /* RecipeImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C859F12C2BD745C55C47F2A /* RecipeImportTests.swift */; };
 		DCB80453A2EB2CC97849B049 /* CompareGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A8C3A791A08EFAAF8FA791 /* CompareGridView.swift */; };
 		DE89058E4EF2ECE9E532D44B /* PreviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B615ECFE3EE3FFAAF5AAEAD5 /* PreviewTests.swift */; };
 		E70EA62E493C743F16B12D47 /* CameraRenderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68EBC253B8BAA44CC20A665F /* CameraRenderService.swift */; };
@@ -54,6 +61,7 @@
 		E9F5CCA61F1A945B27884344 /* SlotDiff.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1AC3EBDFC7937551EA53714 /* SlotDiff.swift */; };
 		F37CD58E6B0B01DF53E836E4 /* FilmRecipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57EA690D046A3C694955F503 /* FilmRecipe.swift */; };
 		F5C34BD4DB15E1888401E0CF /* FilmLookProfiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDC987E8C7F6C90D93DEA76 /* FilmLookProfiles.swift */; };
+		F6406002A12E96BE3FDD93FB /* RecipeCardParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A5E2899611F733CF7D20BD8 /* RecipeCardParser.swift */; };
 		FAD669A8D4F8BAFEC28C15D7 /* TunePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C842A3B2AFB6762CC9CE74C4 /* TunePanel.swift */; };
 /* End PBXBuildFile section */
 
@@ -79,14 +87,18 @@
 		0474D396A2823B68371A99CE /* RecipeField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeField.swift; sourceTree = "<group>"; };
 		068556A52D9CE47BC8255097 /* FilmLab.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FilmLab.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F778E22A100DFEAE0A4C48A /* RecipeModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeModelTests.swift; sourceTree = "<group>"; };
+		168656A4B39AD36BBACAEC00 /* ocr-card-b.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "ocr-card-b.json"; sourceTree = "<group>"; };
 		17E0C83533D0BA9518983116 /* PTPCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTPCore.swift; sourceTree = "<group>"; };
 		17E8446254AC72ABF4CB4A8B /* SetsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetsViews.swift; sourceTree = "<group>"; };
+		184F2ED52B95C943357C5480 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		1C859F12C2BD745C55C47F2A /* RecipeImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeImportTests.swift; sourceTree = "<group>"; };
 		24C9B79385735683F383E923 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		255DE2F81E243E4BAB6311FF /* CameraFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraFlowTests.swift; sourceTree = "<group>"; };
 		28520A0E89CA141940E6CA49 /* golden-filmlab-approx-1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "golden-filmlab-approx-1.json"; sourceTree = "<group>"; };
 		2BDC987E8C7F6C90D93DEA76 /* FilmLookProfiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmLookProfiles.swift; sourceTree = "<group>"; };
 		3EB0907E4856A1A70BA4112C /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
 		49A8C3A791A08EFAAF8FA791 /* CompareGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareGridView.swift; sourceTree = "<group>"; };
+		4A5E2899611F733CF7D20BD8 /* RecipeCardParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeCardParser.swift; sourceTree = "<group>"; };
 		4EDD276BBC703F0E93D856E7 /* FilmLabApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmLabApp.swift; sourceTree = "<group>"; };
 		57EA690D046A3C694955F503 /* FilmRecipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmRecipe.swift; sourceTree = "<group>"; };
 		5A128D418AB431FFB3AC9C31 /* OfflinePreviewRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflinePreviewRenderer.swift; sourceTree = "<group>"; };
@@ -105,12 +117,14 @@
 		99E338310555375BE3E04A3E /* ImageCaptureAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCaptureAdapter.swift; sourceTree = "<group>"; };
 		A0E24853FE96BD4B25EEFC8F /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		A69EC6D6E78BAE58347C0A30 /* LibraryPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryPersistence.swift; sourceTree = "<group>"; };
+		A70A9629EF91ED8BF8417B30 /* RecipeImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeImportView.swift; sourceTree = "<group>"; };
 		A76EC531CCC67611E4665EDE /* SimulatedFujiCamera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedFujiCamera.swift; sourceTree = "<group>"; };
 		A7E3AB47A0494601B481987C /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		B615ECFE3EE3FFAAF5AAEAD5 /* PreviewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewTests.swift; sourceTree = "<group>"; };
 		B621E925E396BEEB1EFA3EE1 /* PreviewCanvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewCanvas.swift; sourceTree = "<group>"; };
 		B6E426E3DAE6ABF2DA5D119D /* StudioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudioView.swift; sourceTree = "<group>"; };
 		B9C7D39578F9C899C906CDB1 /* RecipeSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeSettings.swift; sourceTree = "<group>"; };
+		BA164D5EFF9B17E259FAB817 /* ocr-card-a.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "ocr-card-a.json"; sourceTree = "<group>"; };
 		BF50D009BD88A19C25F2BBAA /* FilmLabUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FilmLabUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C1AC3EBDFC7937551EA53714 /* SlotDiff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotDiff.swift; sourceTree = "<group>"; };
 		C842A3B2AFB6762CC9CE74C4 /* TunePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunePanel.swift; sourceTree = "<group>"; };
@@ -121,9 +135,11 @@
 		E43F3C8C5C2C16E03C9920C2 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		E609DD07D2EDBCD0A994D67E /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
 		E64DAEDB53757B14066EE378 /* PreviewCaches.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewCaches.swift; sourceTree = "<group>"; };
+		E6E5ACD875E89392F1887F67 /* FilmLabWebClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmLabWebClient.swift; sourceTree = "<group>"; };
 		F3FC6F22A10B5A6973EB4AEB /* FilmLabUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmLabUITests.swift; sourceTree = "<group>"; };
 		F47AD01B79FC70B702E5B2B5 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		F722F515C6A959A32B292402 /* FilmLabTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FilmLabTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F916E3F3514950A087D7A2E6 /* RecipeCardOCR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeCardOCR.swift; sourceTree = "<group>"; };
 		FB2DB4886A67B66D58E30C1C /* FilmSimulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmSimulation.swift; sourceTree = "<group>"; };
 		FF4BA39E6604108C0BB3D684 /* FujiRecipeCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FujiRecipeCodec.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -155,6 +171,7 @@
 				DDF213A5B4B418D247402A3A /* Imports */,
 				C29B42F7635A9FE21F7B8C92 /* Preview */,
 				5061FC69DBBD031501BCEA30 /* Storage */,
+				1786DB64ACFC1BA6BFFD504F /* Web */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -182,10 +199,20 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		1786DB64ACFC1BA6BFFD504F /* Web */ = {
+			isa = PBXGroup;
+			children = (
+				E6E5ACD875E89392F1887F67 /* FilmLabWebClient.swift */,
+				184F2ED52B95C943357C5480 /* KeychainStore.swift */,
+			);
+			path = Web;
+			sourceTree = "<group>";
+		};
 		2E88E63E3BDE52B3C570FAF7 /* Library */ = {
 			isa = PBXGroup;
 			children = (
 				A0E24853FE96BD4B25EEFC8F /* LibraryView.swift */,
+				A70A9629EF91ED8BF8417B30 /* RecipeImportView.swift */,
 			);
 			path = Library;
 			sourceTree = "<group>";
@@ -234,6 +261,8 @@
 			isa = PBXGroup;
 			children = (
 				28520A0E89CA141940E6CA49 /* golden-filmlab-approx-1.json */,
+				BA164D5EFF9B17E259FAB817 /* ocr-card-a.json */,
+				168656A4B39AD36BBACAEC00 /* ocr-card-b.json */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -285,6 +314,7 @@
 				763DCEF2D03EE3C71317567F /* PersistenceTests.swift */,
 				B615ECFE3EE3FFAAF5AAEAD5 /* PreviewTests.swift */,
 				660DBC521EAF34FB4D17E5AB /* PTPTests.swift */,
+				1C859F12C2BD745C55C47F2A /* RecipeImportTests.swift */,
 				0F778E22A100DFEAE0A4C48A /* RecipeModelTests.swift */,
 				568B956AB894304CA1F2B921 /* Fixtures */,
 			);
@@ -341,6 +371,8 @@
 			children = (
 				6569016F7B6C4FB6DC0811A0 /* DemoImageFactory.swift */,
 				5C898046AFCED376BC268BAD /* PhotoImporter.swift */,
+				F916E3F3514950A087D7A2E6 /* RecipeCardOCR.swift */,
+				4A5E2899611F733CF7D20BD8 /* RecipeCardParser.swift */,
 			);
 			path = Imports;
 			sourceTree = "<group>";
@@ -495,6 +527,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				E9E762571AD20959B590BFEF /* golden-filmlab-approx-1.json in Resources */,
+				8008802845A7E35CCCE09F20 /* ocr-card-a.json in Resources */,
+				8A3563CDC2186410B6CF9F0F /* ocr-card-b.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -509,6 +543,7 @@
 				418F9123872745394BB0760D /* PTPTests.swift in Sources */,
 				0FECB17B9E297652A7BF68BB /* PersistenceTests.swift in Sources */,
 				DE89058E4EF2ECE9E532D44B /* PreviewTests.swift in Sources */,
+				DC6CEC022E1C57B46A59F6AC /* RecipeImportTests.swift in Sources */,
 				108C4402F36F97DA7A369669 /* RecipeModelTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -539,12 +574,14 @@
 				63D906FCB5A09C5117DEDBDF /* DesignSystem.swift in Sources */,
 				04B0EBC263706B69804605DF /* ExploreView.swift in Sources */,
 				C1EEAC401F5D0C9D7DD242CE /* FilmLabApp.swift in Sources */,
+				7113397FB8DB40F55DAE5DEE /* FilmLabWebClient.swift in Sources */,
 				BB73F93CF998204A9A65DEBB /* FilmLookEngine.swift in Sources */,
 				F5C34BD4DB15E1888401E0CF /* FilmLookProfiles.swift in Sources */,
 				F37CD58E6B0B01DF53E836E4 /* FilmRecipe.swift in Sources */,
 				6BCD5B913B0755037B2D9641 /* FilmSimulation.swift in Sources */,
 				64D66578D83B323FB797225B /* FujiRecipeCodec.swift in Sources */,
 				6AB9C4514D77D16FC06B5D86 /* ImageCaptureAdapter.swift in Sources */,
+				1D2E06C862E70FC8FF988C98 /* KeychainStore.swift in Sources */,
 				44A4CB61B711E644AE79D830 /* LibraryPersistence.swift in Sources */,
 				9A3E069C935496CA6D0D920D /* LibraryView.swift in Sources */,
 				8DAFC0F0D8ED00BE11B17349 /* OfflinePreviewRenderer.swift in Sources */,
@@ -553,7 +590,10 @@
 				37FDE4A6EDC2D8BC6506131B /* PhotoImporter.swift in Sources */,
 				670A075F31FE9C5B117F5D05 /* PreviewCaches.swift in Sources */,
 				BE4F4235D65C83318D0F94A9 /* PreviewCanvas.swift in Sources */,
+				5C5FFDDB25C3DAA08D80677E /* RecipeCardOCR.swift in Sources */,
+				F6406002A12E96BE3FDD93FB /* RecipeCardParser.swift in Sources */,
 				40346C5251AAC5DA3DAC4A3A /* RecipeField.swift in Sources */,
+				7C43E42CF88C61CC2F467110 /* RecipeImportView.swift in Sources */,
 				6A26B2BA867D7E0CC9743B9A /* RecipeSettings.swift in Sources */,
 				ABD7FC44A59F09F9698E2F35 /* RenderingModels.swift in Sources */,
 				B11BA98586F2632914FC8105 /* SendToCameraSheet.swift in Sources */,

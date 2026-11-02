@@ -152,7 +152,7 @@ final class StudioModel {
                              provenance: base.map {
                                  RecipeProvenance(kind: .duplicated, author: $0.provenance.author, sourceURL: $0.provenance.sourceURL,
                                                   license: $0.provenance.license, derivedFrom: $0.id, note: "Tuned from “\($0.name)” in Studio")
-                             } ?? .userCreated)
+                             } ?? (recipe.provenance.kind == .filmLabOriginal ? .userCreated : recipe.provenance))
         new = library.save(new)
         baseRecipeID = new.id
         recipe = new

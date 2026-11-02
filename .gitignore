@@ -4,3 +4,8 @@
 *.xcworkspace/xcuserdata/
 DerivedData/
 build/
+web/node_modules/
+web/.next/
+web/data/*.db*
+web/data/uploads/
+web/.env*.local

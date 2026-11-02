@@ -55,9 +55,24 @@
   truth.
 
 ## Product scope not implemented yet
-- Text or URL recipe import (only versioned FilmLab JSON is supported). There is no web scraping,
-  by design.
+- Recipe import from a URL. Images, text and FilmLab JSON are supported; there is no web
+  scraping, by design.
 - Re-rendering the preview at higher resolution when zoomed. The preview is 1600 px on the long
   edge; export renders at full resolution.
 - Localisation: strings are inline English, not yet in a String Catalog.
 - App icon artwork. The asset catalog slot is empty.
+
+## Recipe import (image / text)
+- **On-device OCR (Vision) reliability.** It reads card layouts well, but sometimes skips an isolated single character such as a lone "0". Those fields are flagged "Not read — check" and left unset. The parser never guesses them.
+  - An enlarged-crop retry is attempted.
+  - A drawn-text-anchor trick was tried and removed because it didn't help.
+- **Layout coverage.** The on-device parser handles "value above label" cards and "Key: Value" text. Other layouts need **Extract with AI**.
+- **Test fixtures** are OCR *text* from two third-party cards, with credits anonymized. The card images themselves are not in the repo.
+
+## Web showcase & AI extraction
+- **AI extraction has not been run live.** This build machine has no Anthropic credentials. The request type-checks against `@anthropic-ai/sdk` 1.3.0, the response mapping is unit-tested, and the missing-key path was checked against a running server.
+- **Docker image not built locally.** The Docker daemon wasn't running. The standalone production build was built and smoke-tested with `node server.js`:
+  - pages, health check, the publish → cover → export → unpublish → delete cycle, auth, and path-traversal rejection;
+  - a Swift-client ↔ server round trip.
+- **The browser preview** ports the app's LUT, white balance, exposure and grain (parity-tested). It does **not** simulate clarity, sharpness or noise reduction.
+- **SQLite means a single replica.** Back up the `/app/data` volume.

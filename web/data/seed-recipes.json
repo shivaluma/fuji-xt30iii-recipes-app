@@ -1,0 +1,1196 @@
+{
+  "appVersion" : "seed",
+  "exportedAt" : "2026-10-26T07:33:20Z",
+  "format" : "filmlab.recipes",
+  "recipes" : [
+    {
+      "compatibleCameras" : [
+        "X-T30 III"
+      ],
+      "createdAt" : "2026-10-26T07:33:20Z",
+      "id" : "6F1C2A10-0001-4A6B-9C11-000000000001",
+      "isFavorite" : false,
+      "moods" : [
+        "cool",
+        "lowContrast",
+        "muted"
+      ],
+      "name" : "Harbour Morning",
+      "provenance" : {
+        "author" : "FilmLab",
+        "kind" : "filmLabOriginal",
+        "license" : "Same licence as the FilmLab project"
+      },
+      "settings" : {
+        "clarity" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "color" : {
+          "state" : "value",
+          "value" : -1
+        },
+        "colorChrome" : {
+          "state" : "value",
+          "value" : "weak"
+        },
+        "colorChromeFXBlue" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dRangePriority" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dynamicRange" : {
+          "state" : "value",
+          "value" : "dr100"
+        },
+        "filmSimulation" : "classicChrome",
+        "grainRoughness" : {
+          "state" : "value",
+          "value" : "weak"
+        },
+        "grainSize" : {
+          "state" : "value",
+          "value" : "small"
+        },
+        "highISONR" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "highlight" : {
+          "state" : "value",
+          "value" : -1
+        },
+        "kelvin" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticMagentaGreen" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticWarmCool" : {
+          "state" : "notApplicable"
+        },
+        "shadow" : {
+          "state" : "value",
+          "value" : -1
+        },
+        "sharpness" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "suggestedExposureCompensation" : {
+          "state" : "unset"
+        },
+        "wbShiftBlue" : {
+          "state" : "value",
+          "value" : 2
+        },
+        "wbShiftRed" : {
+          "state" : "value",
+          "value" : -1
+        },
+        "whiteBalance" : {
+          "state" : "value",
+          "value" : "daylight"
+        }
+      },
+      "summary" : "Soft, cool daylight with gentle shadows. Good for overcast coastlines.",
+      "tags" : [
+        "landscape",
+        "overcast"
+      ],
+      "updatedAt" : "2026-10-26T07:33:20Z"
+    },
+    {
+      "compatibleCameras" : [
+        "X-T30 III"
+      ],
+      "createdAt" : "2026-10-26T07:33:20Z",
+      "id" : "6F1C2A10-0002-4A6B-9C11-000000000002",
+      "isFavorite" : false,
+      "moods" : [
+        "warm",
+        "highContrast",
+        "cinematic"
+      ],
+      "name" : "Late Bus Home",
+      "provenance" : {
+        "author" : "FilmLab",
+        "kind" : "filmLabOriginal",
+        "license" : "Same licence as the FilmLab project"
+      },
+      "settings" : {
+        "clarity" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "color" : {
+          "state" : "value",
+          "value" : 1
+        },
+        "colorChrome" : {
+          "state" : "value",
+          "value" : "strong"
+        },
+        "colorChromeFXBlue" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dRangePriority" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dynamicRange" : {
+          "state" : "value",
+          "value" : "dr200"
+        },
+        "filmSimulation" : "classicNeg",
+        "grainRoughness" : {
+          "state" : "value",
+          "value" : "strong"
+        },
+        "grainSize" : {
+          "state" : "value",
+          "value" : "large"
+        },
+        "highISONR" : {
+          "state" : "value",
+          "value" : -2
+        },
+        "highlight" : {
+          "state" : "value",
+          "value" : 1
+        },
+        "kelvin" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticMagentaGreen" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticWarmCool" : {
+          "state" : "notApplicable"
+        },
+        "shadow" : {
+          "state" : "value",
+          "value" : 2
+        },
+        "sharpness" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "suggestedExposureCompensation" : {
+          "state" : "unset"
+        },
+        "wbShiftBlue" : {
+          "state" : "value",
+          "value" : -4
+        },
+        "wbShiftRed" : {
+          "state" : "value",
+          "value" : 3
+        },
+        "whiteBalance" : {
+          "state" : "value",
+          "value" : "auto"
+        }
+      },
+      "summary" : "Warm, punchy night-street look with deep shadows and visible grain.",
+      "tags" : [
+        "street",
+        "night"
+      ],
+      "updatedAt" : "2026-10-26T07:33:20Z"
+    },
+    {
+      "compatibleCameras" : [
+        "X-T30 III"
+      ],
+      "createdAt" : "2026-10-26T07:33:20Z",
+      "id" : "6F1C2A10-0003-4A6B-9C11-000000000003",
+      "isFavorite" : false,
+      "moods" : [
+        "warm",
+        "lowContrast"
+      ],
+      "name" : "Kitchen Window",
+      "provenance" : {
+        "author" : "FilmLab",
+        "kind" : "filmLabOriginal",
+        "license" : "Same licence as the FilmLab project"
+      },
+      "settings" : {
+        "clarity" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "color" : {
+          "state" : "value",
+          "value" : 1
+        },
+        "colorChrome" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "colorChromeFXBlue" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dRangePriority" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dynamicRange" : {
+          "state" : "value",
+          "value" : "dr100"
+        },
+        "filmSimulation" : "proNegHi",
+        "grainRoughness" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "grainSize" : {
+          "state" : "notApplicable"
+        },
+        "highISONR" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "highlight" : {
+          "state" : "value",
+          "value" : -1.5
+        },
+        "kelvin" : {
+          "state" : "value",
+          "value" : 5800
+        },
+        "monochromaticMagentaGreen" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticWarmCool" : {
+          "state" : "notApplicable"
+        },
+        "shadow" : {
+          "state" : "value",
+          "value" : -1
+        },
+        "sharpness" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "suggestedExposureCompensation" : {
+          "state" : "value",
+          "value" : 0.67
+        },
+        "wbShiftBlue" : {
+          "state" : "value",
+          "value" : -1
+        },
+        "wbShiftRed" : {
+          "state" : "value",
+          "value" : 1
+        },
+        "whiteBalance" : {
+          "state" : "value",
+          "value" : "colorTemperature"
+        }
+      },
+      "summary" : "Bright, airy and slightly warm. Built for food and interiors in window light.",
+      "tags" : [
+        "interior",
+        "food"
+      ],
+      "updatedAt" : "2026-10-26T07:33:20Z"
+    },
+    {
+      "compatibleCameras" : [
+        "X-T30 III"
+      ],
+      "createdAt" : "2026-10-26T07:33:20Z",
+      "id" : "6F1C2A10-0004-4A6B-9C11-000000000004",
+      "isFavorite" : false,
+      "moods" : [
+        "blackAndWhite",
+        "highContrast"
+      ],
+      "name" : "Paper Moon",
+      "provenance" : {
+        "author" : "FilmLab",
+        "kind" : "filmLabOriginal",
+        "license" : "Same licence as the FilmLab project"
+      },
+      "settings" : {
+        "clarity" : {
+          "state" : "value",
+          "value" : 2
+        },
+        "color" : {
+          "state" : "notApplicable"
+        },
+        "colorChrome" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "colorChromeFXBlue" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dRangePriority" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dynamicRange" : {
+          "state" : "value",
+          "value" : "dr100"
+        },
+        "filmSimulation" : "acrosR",
+        "grainRoughness" : {
+          "state" : "value",
+          "value" : "strong"
+        },
+        "grainSize" : {
+          "state" : "value",
+          "value" : "small"
+        },
+        "highISONR" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "highlight" : {
+          "state" : "value",
+          "value" : 1.5
+        },
+        "kelvin" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticMagentaGreen" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "monochromaticWarmCool" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "shadow" : {
+          "state" : "value",
+          "value" : 2
+        },
+        "sharpness" : {
+          "state" : "value",
+          "value" : 1
+        },
+        "suggestedExposureCompensation" : {
+          "state" : "unset"
+        },
+        "wbShiftBlue" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "wbShiftRed" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "whiteBalance" : {
+          "state" : "value",
+          "value" : "auto"
+        }
+      },
+      "summary" : "Classic, crunchy black-and-white with a red-filter sky.",
+      "tags" : [
+        "bw",
+        "street"
+      ],
+      "updatedAt" : "2026-10-26T07:33:20Z"
+    },
+    {
+      "compatibleCameras" : [
+        "X-T30 III"
+      ],
+      "createdAt" : "2026-10-26T07:33:20Z",
+      "id" : "6F1C2A10-0005-4A6B-9C11-000000000005",
+      "isFavorite" : false,
+      "moods" : [
+        "blackAndWhite",
+        "vintage",
+        "lowContrast"
+      ],
+      "name" : "Tea Stain",
+      "provenance" : {
+        "author" : "FilmLab",
+        "kind" : "filmLabOriginal",
+        "license" : "Same licence as the FilmLab project"
+      },
+      "settings" : {
+        "clarity" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "color" : {
+          "state" : "notApplicable"
+        },
+        "colorChrome" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "colorChromeFXBlue" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dRangePriority" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dynamicRange" : {
+          "state" : "value",
+          "value" : "dr100"
+        },
+        "filmSimulation" : "acros",
+        "grainRoughness" : {
+          "state" : "value",
+          "value" : "weak"
+        },
+        "grainSize" : {
+          "state" : "value",
+          "value" : "large"
+        },
+        "highISONR" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "highlight" : {
+          "state" : "value",
+          "value" : -1
+        },
+        "kelvin" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticMagentaGreen" : {
+          "state" : "value",
+          "value" : -1
+        },
+        "monochromaticWarmCool" : {
+          "state" : "value",
+          "value" : 6
+        },
+        "shadow" : {
+          "state" : "value",
+          "value" : -1.5
+        },
+        "sharpness" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "suggestedExposureCompensation" : {
+          "state" : "unset"
+        },
+        "wbShiftBlue" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "wbShiftRed" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "whiteBalance" : {
+          "state" : "value",
+          "value" : "auto"
+        }
+      },
+      "summary" : "Warm-toned monochrome with lifted, gentle shadows.",
+      "tags" : [
+        "bw",
+        "portrait"
+      ],
+      "updatedAt" : "2026-10-26T07:33:20Z"
+    },
+    {
+      "compatibleCameras" : [
+        "X-T30 III"
+      ],
+      "createdAt" : "2026-10-26T07:33:20Z",
+      "id" : "6F1C2A10-0006-4A6B-9C11-000000000006",
+      "isFavorite" : false,
+      "moods" : [
+        "warm",
+        "vivid",
+        "vintage"
+      ],
+      "name" : "Golden Hour Drive",
+      "provenance" : {
+        "author" : "FilmLab",
+        "kind" : "filmLabOriginal",
+        "license" : "Same licence as the FilmLab project"
+      },
+      "settings" : {
+        "clarity" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "color" : {
+          "state" : "value",
+          "value" : 2
+        },
+        "colorChrome" : {
+          "state" : "value",
+          "value" : "strong"
+        },
+        "colorChromeFXBlue" : {
+          "state" : "value",
+          "value" : "weak"
+        },
+        "dRangePriority" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dynamicRange" : {
+          "state" : "value",
+          "value" : "dr100"
+        },
+        "filmSimulation" : "nostalgicNeg",
+        "grainRoughness" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "grainSize" : {
+          "state" : "notApplicable"
+        },
+        "highISONR" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "highlight" : {
+          "state" : "value",
+          "value" : 0.5
+        },
+        "kelvin" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticMagentaGreen" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticWarmCool" : {
+          "state" : "notApplicable"
+        },
+        "shadow" : {
+          "state" : "value",
+          "value" : 0.5
+        },
+        "sharpness" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "suggestedExposureCompensation" : {
+          "state" : "unset"
+        },
+        "wbShiftBlue" : {
+          "state" : "value",
+          "value" : -3
+        },
+        "wbShiftRed" : {
+          "state" : "value",
+          "value" : 2
+        },
+        "whiteBalance" : {
+          "state" : "value",
+          "value" : "shade"
+        }
+      },
+      "summary" : "Amber highlights and saturated earth tones for low sun.",
+      "tags" : [
+        "travel",
+        "sunset"
+      ],
+      "updatedAt" : "2026-10-26T07:33:20Z"
+    },
+    {
+      "compatibleCameras" : [
+        "X-T30 III"
+      ],
+      "createdAt" : "2026-10-26T07:33:20Z",
+      "id" : "6F1C2A10-0007-4A6B-9C11-000000000007",
+      "isFavorite" : false,
+      "moods" : [
+        "cinematic",
+        "muted",
+        "lowContrast",
+        "cool"
+      ],
+      "name" : "Quiet Cinema",
+      "provenance" : {
+        "author" : "FilmLab",
+        "kind" : "filmLabOriginal",
+        "license" : "Same licence as the FilmLab project"
+      },
+      "settings" : {
+        "clarity" : {
+          "state" : "value",
+          "value" : -2
+        },
+        "color" : {
+          "state" : "value",
+          "value" : -2
+        },
+        "colorChrome" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "colorChromeFXBlue" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dRangePriority" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dynamicRange" : {
+          "state" : "value",
+          "value" : "dr100"
+        },
+        "filmSimulation" : "eterna",
+        "grainRoughness" : {
+          "state" : "value",
+          "value" : "weak"
+        },
+        "grainSize" : {
+          "state" : "value",
+          "value" : "small"
+        },
+        "highISONR" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "highlight" : {
+          "state" : "value",
+          "value" : -2
+        },
+        "kelvin" : {
+          "state" : "value",
+          "value" : 5000
+        },
+        "monochromaticMagentaGreen" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticWarmCool" : {
+          "state" : "notApplicable"
+        },
+        "shadow" : {
+          "state" : "value",
+          "value" : -2
+        },
+        "sharpness" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "suggestedExposureCompensation" : {
+          "state" : "unset"
+        },
+        "wbShiftBlue" : {
+          "state" : "value",
+          "value" : 1
+        },
+        "wbShiftRed" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "whiteBalance" : {
+          "state" : "value",
+          "value" : "colorTemperature"
+        }
+      },
+      "summary" : "Flat, desaturated grade with teal shadows for video-like stills.",
+      "tags" : [
+        "cinematic"
+      ],
+      "updatedAt" : "2026-10-26T07:33:20Z"
+    },
+    {
+      "compatibleCameras" : [
+        "X-T30 III"
+      ],
+      "createdAt" : "2026-10-26T07:33:20Z",
+      "id" : "6F1C2A10-0008-4A6B-9C11-000000000008",
+      "isFavorite" : false,
+      "moods" : [
+        "highContrast",
+        "muted",
+        "cinematic"
+      ],
+      "name" : "Concrete & Chrome",
+      "provenance" : {
+        "author" : "FilmLab",
+        "kind" : "filmLabOriginal",
+        "license" : "Same licence as the FilmLab project"
+      },
+      "settings" : {
+        "clarity" : {
+          "state" : "value",
+          "value" : 3
+        },
+        "color" : {
+          "state" : "value",
+          "value" : -1
+        },
+        "colorChrome" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "colorChromeFXBlue" : {
+          "state" : "value",
+          "value" : "strong"
+        },
+        "dRangePriority" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dynamicRange" : {
+          "state" : "value",
+          "value" : "dr100"
+        },
+        "filmSimulation" : "eternaBleachBypass",
+        "grainRoughness" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "grainSize" : {
+          "state" : "notApplicable"
+        },
+        "highISONR" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "highlight" : {
+          "state" : "value",
+          "value" : 1
+        },
+        "kelvin" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticMagentaGreen" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticWarmCool" : {
+          "state" : "notApplicable"
+        },
+        "shadow" : {
+          "state" : "value",
+          "value" : 1.5
+        },
+        "sharpness" : {
+          "state" : "value",
+          "value" : 1
+        },
+        "suggestedExposureCompensation" : {
+          "state" : "unset"
+        },
+        "wbShiftBlue" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "wbShiftRed" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "whiteBalance" : {
+          "state" : "value",
+          "value" : "auto"
+        }
+      },
+      "summary" : "Gritty, silvery bleach-bypass look for architecture.",
+      "tags" : [
+        "architecture",
+        "urban"
+      ],
+      "updatedAt" : "2026-10-26T07:33:20Z"
+    },
+    {
+      "compatibleCameras" : [
+        "X-T30 III"
+      ],
+      "createdAt" : "2026-10-26T07:33:20Z",
+      "id" : "6F1C2A10-0009-4A6B-9C11-000000000009",
+      "isFavorite" : false,
+      "moods" : [
+        "vivid",
+        "neutral"
+      ],
+      "name" : "Botanical",
+      "provenance" : {
+        "author" : "FilmLab",
+        "kind" : "filmLabOriginal",
+        "license" : "Same licence as the FilmLab project"
+      },
+      "settings" : {
+        "clarity" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "color" : {
+          "state" : "value",
+          "value" : 1
+        },
+        "colorChrome" : {
+          "state" : "value",
+          "value" : "weak"
+        },
+        "colorChromeFXBlue" : {
+          "state" : "value",
+          "value" : "strong"
+        },
+        "dRangePriority" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dynamicRange" : {
+          "state" : "value",
+          "value" : "dr100"
+        },
+        "filmSimulation" : "velvia",
+        "grainRoughness" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "grainSize" : {
+          "state" : "notApplicable"
+        },
+        "highISONR" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "highlight" : {
+          "state" : "value",
+          "value" : -0.5
+        },
+        "kelvin" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticMagentaGreen" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticWarmCool" : {
+          "state" : "notApplicable"
+        },
+        "shadow" : {
+          "state" : "value",
+          "value" : 0.5
+        },
+        "sharpness" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "suggestedExposureCompensation" : {
+          "state" : "unset"
+        },
+        "wbShiftBlue" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "wbShiftRed" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "whiteBalance" : {
+          "state" : "value",
+          "value" : "daylight"
+        }
+      },
+      "summary" : "Lush greens and clean skies for gardens and hikes.",
+      "tags" : [
+        "nature",
+        "landscape"
+      ],
+      "updatedAt" : "2026-10-26T07:33:20Z"
+    },
+    {
+      "compatibleCameras" : [
+        "X-T30 III"
+      ],
+      "createdAt" : "2026-10-26T07:33:20Z",
+      "id" : "6F1C2A10-000A-4A6B-9C11-00000000000A",
+      "isFavorite" : false,
+      "moods" : [
+        "neutral"
+      ],
+      "name" : "Everyday Neutral",
+      "provenance" : {
+        "author" : "FilmLab",
+        "kind" : "filmLabOriginal",
+        "license" : "Same licence as the FilmLab project"
+      },
+      "settings" : {
+        "clarity" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "color" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "colorChrome" : {
+          "state" : "value",
+          "value" : "weak"
+        },
+        "colorChromeFXBlue" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dRangePriority" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dynamicRange" : {
+          "state" : "value",
+          "value" : "dr100"
+        },
+        "filmSimulation" : "realaAce",
+        "grainRoughness" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "grainSize" : {
+          "state" : "notApplicable"
+        },
+        "highISONR" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "highlight" : {
+          "state" : "value",
+          "value" : -0.5
+        },
+        "kelvin" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticMagentaGreen" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticWarmCool" : {
+          "state" : "notApplicable"
+        },
+        "shadow" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "sharpness" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "suggestedExposureCompensation" : {
+          "state" : "unset"
+        },
+        "wbShiftBlue" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "wbShiftRed" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "whiteBalance" : {
+          "state" : "value",
+          "value" : "auto"
+        }
+      },
+      "summary" : "A faithful, lightly-polished everyday look. A good baseline to tune.",
+      "tags" : [
+        "everyday"
+      ],
+      "updatedAt" : "2026-10-26T07:33:20Z"
+    },
+    {
+      "compatibleCameras" : [
+        "X-T30 III"
+      ],
+      "createdAt" : "2026-10-26T07:33:20Z",
+      "id" : "6F1C2A10-000B-4A6B-9C11-00000000000B",
+      "isFavorite" : false,
+      "moods" : [
+        "warm",
+        "lowContrast"
+      ],
+      "name" : "Soft Portrait",
+      "provenance" : {
+        "author" : "FilmLab",
+        "kind" : "filmLabOriginal",
+        "license" : "Same licence as the FilmLab project"
+      },
+      "settings" : {
+        "clarity" : {
+          "state" : "value",
+          "value" : -1
+        },
+        "color" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "colorChrome" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "colorChromeFXBlue" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dRangePriority" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dynamicRange" : {
+          "state" : "value",
+          "value" : "dr100"
+        },
+        "filmSimulation" : "astia",
+        "grainRoughness" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "grainSize" : {
+          "state" : "notApplicable"
+        },
+        "highISONR" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "highlight" : {
+          "state" : "value",
+          "value" : -1
+        },
+        "kelvin" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticMagentaGreen" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticWarmCool" : {
+          "state" : "notApplicable"
+        },
+        "shadow" : {
+          "state" : "value",
+          "value" : -0.5
+        },
+        "sharpness" : {
+          "state" : "value",
+          "value" : -1
+        },
+        "suggestedExposureCompensation" : {
+          "state" : "unset"
+        },
+        "wbShiftBlue" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "wbShiftRed" : {
+          "state" : "value",
+          "value" : 1
+        },
+        "whiteBalance" : {
+          "state" : "value",
+          "value" : "autoWhitePriority"
+        }
+      },
+      "summary" : "Gentle skin tones and smooth highlight roll-off.",
+      "tags" : [
+        "portrait"
+      ],
+      "updatedAt" : "2026-10-26T07:33:20Z"
+    },
+    {
+      "compatibleCameras" : [
+        "X-T30 III"
+      ],
+      "createdAt" : "2026-10-26T07:33:20Z",
+      "id" : "6F1C2A10-000C-4A6B-9C11-00000000000C",
+      "isFavorite" : false,
+      "moods" : [
+        "vintage",
+        "blackAndWhite"
+      ],
+      "name" : "Old Postcard",
+      "provenance" : {
+        "author" : "FilmLab",
+        "kind" : "filmLabOriginal",
+        "license" : "Same licence as the FilmLab project"
+      },
+      "settings" : {
+        "clarity" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "color" : {
+          "state" : "notApplicable"
+        },
+        "colorChrome" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "colorChromeFXBlue" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dRangePriority" : {
+          "state" : "value",
+          "value" : "off"
+        },
+        "dynamicRange" : {
+          "state" : "value",
+          "value" : "dr100"
+        },
+        "filmSimulation" : "sepia",
+        "grainRoughness" : {
+          "state" : "value",
+          "value" : "strong"
+        },
+        "grainSize" : {
+          "state" : "value",
+          "value" : "large"
+        },
+        "highISONR" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "highlight" : {
+          "state" : "value",
+          "value" : -1
+        },
+        "kelvin" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticMagentaGreen" : {
+          "state" : "notApplicable"
+        },
+        "monochromaticWarmCool" : {
+          "state" : "notApplicable"
+        },
+        "shadow" : {
+          "state" : "value",
+          "value" : -1
+        },
+        "sharpness" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "suggestedExposureCompensation" : {
+          "state" : "unset"
+        },
+        "wbShiftBlue" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "wbShiftRed" : {
+          "state" : "value",
+          "value" : 0
+        },
+        "whiteBalance" : {
+          "state" : "value",
+          "value" : "auto"
+        }
+      },
+      "summary" : "Sepia toning with soft contrast for a nostalgic print feel.",
+      "tags" : [
+        "vintage"
+      ],
+      "updatedAt" : "2026-10-26T07:33:20Z"
+    }
+  ],
+  "schemaVersion" : 1
+}
