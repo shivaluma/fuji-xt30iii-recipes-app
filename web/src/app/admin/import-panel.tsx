@@ -221,17 +221,20 @@ export function ImportPanel({ token, onSaved }: { token: string; onSaved: () => 
                 )}
               </div>
             </div>
-            <div className="flex snap-x gap-4 overflow-x-auto pb-2 [scrollbar-width:thin]">
+            <div className="-mx-2 flex snap-x scroll-px-2 gap-3 overflow-x-auto px-2 pb-3 pt-2 [scrollbar-width:thin]">
               {items.map((x) => (
                 <div key={x.id} className="group relative w-44 shrink-0 snap-start">
                   <button type="button" onClick={() => setSelected(x.id)} aria-pressed={selected === x.id}
-                    className={cn("block w-full rounded-[18px] p-1.5 text-left transition-colors", selected === x.id ? "bg-foreground/5 ring-2 ring-foreground" : "hover:bg-surface")}>
+                    className={cn("block w-full rounded-[18px] p-1.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring", selected === x.id ? "bg-surface ring-1 ring-foreground/70" : "hover:bg-surface")}>
                     <div className="relative aspect-[4/5] overflow-hidden rounded-[14px] bg-surface ring-1 ring-inset ring-hairline">
                       {x.previewUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={x.previewUrl} alt="" className={cn("size-full object-cover", x.status === "reading" && "opacity-60")} />
                       ) : (
-                        <div className="grid size-full place-items-center p-4"><FileText className="size-7 text-tertiary" /></div>
+                        <div className="flex size-full flex-col gap-2 p-3 pt-9">
+                          <FileText className="size-4 shrink-0 text-tertiary" />
+                          <p className="line-clamp-[9] whitespace-pre-line font-mono text-[10px] leading-relaxed text-muted-foreground">{x.text}</p>
+                        </div>
                       )}
                       <span className={cn("absolute left-2 top-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium", STATUS[x.status].className)}>
                         {x.status === "reading" && <Loader2 className="size-3 animate-spin" />}
