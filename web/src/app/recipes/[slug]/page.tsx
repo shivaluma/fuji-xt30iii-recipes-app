@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowLeft, Download } from "lucide-react";
 import { HeroPreview } from "@/components/recipe/hero-preview";
+import { PhotoGallery } from "@/components/recipe/photo-gallery";
 import { RecipePreview } from "@/components/recipe/recipe-preview";
 import { SettingsGrid } from "@/components/recipe/settings-grid";
 import { ShareButton } from "@/components/recipe/share-button";
@@ -52,15 +53,12 @@ async function Recipe({ params }: { params: PageProps<"/recipes/[slug]">["params
 
       <article className="mt-10 grid gap-14 animate-in fade-in slide-in-from-bottom-4 fill-mode-both duration-700 ease-out motion-reduce:animate-none lg:grid-cols-[1.15fr_1fr] lg:gap-20">
         <div className="lg:sticky lg:top-24 lg:self-start">
-          {row.coverFile ? (
-            <figure>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/api/media/${row.coverFile}`} alt={`Sample photo for ${r.name}`} className="w-full rounded-[var(--fl-radius-card)] bg-surface object-contain" />
-              <figcaption className="mt-3 text-xs text-tertiary">
-                {row.coverKind === "camera-jpeg" ? "JPEG made by the camera with this recipe" :
-                  row.coverKind === "approximate-preview" ? "Approximate preview by FilmLab — not camera output" : "Sample photo"}
-              </figcaption>
-            </figure>
+          {row.photos.length > 0 ? (
+            <PhotoGallery
+              name={r.name}
+              photos={[...row.photos].sort((a, b) => Number(b.file === row.coverFile) - Number(a.file === row.coverFile))
+                .map((p) => ({ id: p.id, url: `/api/media/${p.file}`, kind: p.kind }))}
+            />
           ) : (
             <HeroPreview settings={s} />
           )}

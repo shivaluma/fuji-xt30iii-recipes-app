@@ -10,6 +10,8 @@ import { FilmRecipeSchema, type FilmRecipe } from "@/lib/recipe/schema";
 export type RecipeStatus = "draft" | "published";
 export type CoverKind = "approximate-preview" | "camera-jpeg" | "photo";
 
+export type RecipePhoto = { id: string; file: string; kind: CoverKind; position: number };
+
 export type RecipeRow = {
   id: string;
   slug: string;
@@ -25,7 +27,11 @@ export type RecipeRow = {
   updatedAt: string;
   publishedAt: string | null;
   downloads: number;
+  /** Sample photos (only loaded by getRecipe); the cover is one of them. */
+  photos: RecipePhoto[];
 };
+
+export const MAX_PHOTOS = 12;
 
 const DATA_DIR = process.env.DATA_DIR ?? path.join(process.cwd(), "data");
 export const UPLOAD_DIR = path.join(DATA_DIR, "uploads");
@@ -56,10 +62,26 @@ function open(): DatabaseSync {
       published_at TEXT
     );
     CREATE INDEX IF NOT EXISTS recipes_status ON recipes(status, published_at);
+    CREATE TABLE IF NOT EXISTS recipe_photos (
+      id TEXT PRIMARY KEY,
+      recipe_id TEXT NOT NULL,
+      file TEXT NOT NULL,
+      kind TEXT NOT NULL,
+      position INTEGER NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS recipe_photos_recipe ON recipe_photos(recipe_id, position);
   `);
   // Additive migrations for existing databases.
   const columns = (db.prepare("PRAGMA table_info(recipes)").all() as { name: string }[]).map((c) => c.name);
   if (!columns.includes("downloads")) db.exec("ALTER TABLE recipes ADD COLUMN downloads INTEGER NOT NULL DEFAULT 0");
+  // Covers predate the photo gallery: make sure every cover is also a gallery photo.
+  db.exec(`
+    INSERT INTO recipe_photos (id, recipe_id, file, kind, position, created_at)
+    SELECT lower(hex(randomblob(16))), r.id, r.cover_file, COALESCE(r.cover_kind, 'photo'), 0, r.updated_at
+    FROM recipes r
+    WHERE r.cover_file IS NOT NULL AND NOT EXISTS (SELECT 1 FROM recipe_photos p WHERE p.recipe_id = r.id AND p.file = r.cover_file)
+  `);
   return db;
 }
 
@@ -91,6 +113,7 @@ const toRow = (r: DBRow): RecipeRow => ({
   recipe: FilmRecipeSchema.parse(JSON.parse(r.recipe_json)),
   coverFile: r.cover_file, coverKind: r.cover_kind as CoverKind | null, status: r.status as RecipeStatus,
   createdAt: r.created_at, updatedAt: r.updated_at, publishedAt: r.published_at, downloads: r.downloads ?? 0,
+  photos: [],
 });
 
 export function upsertRecipe(recipe: FilmRecipe, opts: { status?: RecipeStatus; body?: string } = {}, d = open()): RecipeRow {
@@ -112,7 +135,7 @@ export function upsertRecipe(recipe: FilmRecipe, opts: { status?: RecipeStatus; 
 
 export function getRecipe(slug: string, { includeDrafts = false } = {}): RecipeRow | null {
   const r = open().prepare(`SELECT * FROM recipes WHERE slug = ? ${includeDrafts ? "" : "AND status = 'published'"}`).get(slug) as DBRow | undefined;
-  return r ? toRow(r) : null;
+  return r ? { ...toRow(r), photos: listPhotos(r.id) } : null;
 }
 
 export function listRecipes(opts: { includeDrafts?: boolean; simulation?: string; query?: string; limit?: number } = {}): RecipeRow[] {
@@ -132,18 +155,73 @@ export function updateMeta(slug: string, patch: { status?: RecipeStatus; body?: 
   return upsertRecipe(row.recipe, { status: patch.status ?? row.status, body: patch.body ?? row.body });
 }
 
-export function setCover(slug: string, file: string, kind: CoverKind) {
+function listPhotos(recipeId: string): RecipePhoto[] {
+  // node:sqlite rows have a null prototype; copy into plain objects so they can cross into Client Components.
+  return (open().prepare("SELECT id, file, kind, position FROM recipe_photos WHERE recipe_id = ? ORDER BY position, created_at").all(recipeId) as RecipePhoto[])
+    .map((p) => ({ id: p.id, file: p.file, kind: p.kind, position: p.position }));
+}
+
+const removeFile = (file: string) => fs.rmSync(/*turbopackIgnore: true*/ path.join(UPLOAD_DIR, file), { force: true });
+
+/** Adds an uploaded file to the recipe's gallery; it becomes the cover if there is none yet (or `asCover`). */
+export function addPhoto(slug: string, file: string, kind: CoverKind, { asCover = false } = {}) {
   const row = getRecipe(slug, { includeDrafts: true });
   if (!row) return null;
-  if (row.coverFile && row.coverFile !== file) fs.rmSync(/*turbopackIgnore: true*/ path.join(UPLOAD_DIR, row.coverFile), { force: true });
-  open().prepare("UPDATE recipes SET cover_file = ?, cover_kind = ?, updated_at = ? WHERE slug = ?").run(file, kind, new Date().toISOString(), slug);
+  const position = (row.photos.at(-1)?.position ?? -1) + 1;
+  const id = crypto.randomUUID();
+  open().prepare("INSERT INTO recipe_photos (id, recipe_id, file, kind, position, created_at) VALUES (?, ?, ?, ?, ?, ?)")
+    .run(id, row.id, file, kind, position, new Date().toISOString());
+  if (asCover || !row.coverFile) setCover(slug, id);
+  else touch(row.id);
   return getRecipe(slug, { includeDrafts: true });
+}
+
+/** Makes one of the recipe's photos the cover. */
+export function setCover(slug: string, photoId: string) {
+  const row = getRecipe(slug, { includeDrafts: true });
+  const photo = row?.photos.find((p) => p.id === photoId);
+  if (!row || !photo) return null;
+  open().prepare("UPDATE recipes SET cover_file = ?, cover_kind = ?, updated_at = ? WHERE id = ?").run(photo.file, photo.kind, new Date().toISOString(), row.id);
+  return getRecipe(slug, { includeDrafts: true });
+}
+
+export function updatePhoto(slug: string, photoId: string, patch: { kind?: CoverKind }) {
+  const row = getRecipe(slug, { includeDrafts: true });
+  const photo = row?.photos.find((p) => p.id === photoId);
+  if (!row || !photo) return null;
+  if (patch.kind) {
+    open().prepare("UPDATE recipe_photos SET kind = ? WHERE id = ?").run(patch.kind, photoId);
+    if (row.coverFile === photo.file) open().prepare("UPDATE recipes SET cover_kind = ? WHERE id = ?").run(patch.kind, row.id);
+  }
+  touch(row.id);
+  return getRecipe(slug, { includeDrafts: true });
+}
+
+export function deletePhoto(slug: string, photoId: string) {
+  const row = getRecipe(slug, { includeDrafts: true });
+  const photo = row?.photos.find((p) => p.id === photoId);
+  if (!row || !photo) return null;
+  open().prepare("DELETE FROM recipe_photos WHERE id = ?").run(photoId);
+  removeFile(photo.file);
+  if (row.coverFile === photo.file) {
+    const next = row.photos.find((p) => p.id !== photoId);
+    if (next) setCover(slug, next.id);
+    else open().prepare("UPDATE recipes SET cover_file = NULL, cover_kind = NULL WHERE id = ?").run(row.id);
+  }
+  touch(row.id);
+  return getRecipe(slug, { includeDrafts: true });
+}
+
+function touch(recipeId: string) {
+  open().prepare("UPDATE recipes SET updated_at = ? WHERE id = ?").run(new Date().toISOString(), recipeId);
 }
 
 export function deleteRecipe(slug: string) {
   const row = getRecipe(slug, { includeDrafts: true });
   if (!row) return false;
-  if (row.coverFile) fs.rmSync(/*turbopackIgnore: true*/ path.join(UPLOAD_DIR, row.coverFile), { force: true });
+  const files = new Set([...row.photos.map((p) => p.file), ...(row.coverFile ? [row.coverFile] : [])]);
+  files.forEach(removeFile);
+  open().prepare("DELETE FROM recipe_photos WHERE recipe_id = ?").run(row.id);
   open().prepare("DELETE FROM recipes WHERE slug = ?").run(slug);
   return true;
 }

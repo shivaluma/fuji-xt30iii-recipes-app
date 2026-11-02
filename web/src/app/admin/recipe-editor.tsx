@@ -30,12 +30,14 @@ export function draftProblems(d: Draft) {
 }
 
 export function RecipeEditor({
-  draft, onChange, sourceImage, footer,
+  draft, onChange, sourceImage, footer, photos,
 }: {
   draft: Draft;
   onChange: (d: Draft) => void;
   sourceImage?: string | null;
   footer: React.ReactNode;
+  /** Sample-photo manager, rendered after the recipe details. */
+  photos?: React.ReactNode;
 }) {
   const [view, setView] = useState<"preview" | "source">(sourceImage ? "source" : "preview");
   const set = (patch: Partial<Draft>) => onChange({ ...draft, ...patch });
@@ -117,6 +119,8 @@ export function RecipeEditor({
             </div>
           </div>
         </section>
+
+        {photos}
 
         <section className="space-y-6">
           <div className="space-y-2">

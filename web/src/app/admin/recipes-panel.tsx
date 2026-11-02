@@ -1,16 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ArrowUpRight, Download, Eye, EyeOff, Loader2, Pencil, Search, Trash2, Upload } from "lucide-react";
+import { ArrowUpRight, Download, Eye, EyeOff, Loader2, Pencil, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RecipeThumb } from "@/components/recipe/recipe-thumb";
 import { FILM_SIMULATION_NAMES, type FilmRecipe } from "@/lib/recipe/schema";
 import { cn } from "@/lib/utils";
-import { api, draftFromRecipe, jsonInit, saveDraft, type Draft, type Summary } from "./lib";
-import { RecipeEditor, draftProblems, fieldClass } from "./recipe-editor";
+import { api, draftFromRecipe, jsonInit, preparePhoto, saveDraft, uploadPhotos, type Draft, type RemotePhoto, type Summary } from "./lib";
+import { RecipeEditor, draftProblems } from "./recipe-editor";
+import { PhotoManager } from "./photo-manager";
 
 type Filter = "all" | "published" | "draft";
-type Full = { recipe: FilmRecipe; slug: string; status: "draft" | "published"; body: string; cover: { url: string; kind: string } | null };
+type Full = { recipe: FilmRecipe; slug: string; status: "draft" | "published"; body: string; cover: { url: string; kind: string } | null; photos: RemotePhoto[] };
 
 const dateFmt = new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" });
 
@@ -21,7 +22,7 @@ export function RecipesPanel({ token, version, onChange }: { token: string; vers
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string[] | null>(null);
-  const [editing, setEditing] = useState<{ draft: Draft; cover: Full["cover"] } | null>(null);
+  const [editing, setEditing] = useState<{ draft: Draft; photos: RemotePhoto[] } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -69,7 +70,7 @@ export function RecipesPanel({ token, version, onChange }: { token: string; vers
   async function openEditor(slug: string) {
     try {
       const f = await api<Full>(`/api/recipes/${slug}?all=1`, token);
-      setEditing({ draft: draftFromRecipe(f.recipe, f.status, f.slug, f.body), cover: f.cover });
+      setEditing({ draft: draftFromRecipe(f.recipe, f.status, f.slug, f.body), photos: f.photos });
     } catch (e) { toast.error((e as Error).message); }
   }
 
@@ -189,12 +190,12 @@ export function RecipesPanel({ token, version, onChange }: { token: string; vers
                 <DialogTitle className="font-display text-3xl font-normal tracking-[-0.03em]">Edit recipe</DialogTitle>
                 <DialogDescription>Changes go live when you save{editing.draft.existing?.status === "published" ? " — this recipe is published" : ""}.</DialogDescription>
               </DialogHeader>
-              <CoverControl token={token} slug={editing.draft.existing!.slug} cover={editing.cover}
-                onUploaded={(cover) => { setEditing({ ...editing, cover }); onChange(); }} />
-              <div className="mt-10">
+              <div>
                 <RecipeEditor
                   draft={editing.draft}
-                  onChange={(draft) => setEditing({ ...editing, draft })}
+                  photos={<RemotePhotos token={token} slug={editing.draft.existing!.slug} photos={editing.photos}
+                    onChange={(photos) => { setEditing((e) => (e ? { ...e, photos } : e)); onChange(); }} />}
+                  onChange={(draft) => setEditing((e) => (e ? { ...e, draft } : e))}
                   footer={(() => {
                     const { errors } = draftProblems(editing.draft);
                     const wasPublished = editing.draft.existing?.status === "published";
@@ -218,38 +219,20 @@ export function RecipesPanel({ token, version, onChange }: { token: string; vers
   );
 }
 
-function CoverControl({ token, slug, cover, onUploaded }: { token: string; slug: string; cover: Full["cover"]; onUploaded: (c: Full["cover"]) => void }) {
-  const [kind, setKind] = useState("photo");
+function RemotePhotos({ token, slug, photos, onChange }: { token: string; slug: string; photos: RemotePhoto[]; onChange: (p: RemotePhoto[]) => void }) {
   const [busy, setBusy] = useState(false);
-  async function upload(file: File) {
+  async function run(fn: () => Promise<{ photos: RemotePhoto[] }>) {
     setBusy(true);
-    try {
-      const form = new FormData();
-      form.set("file", file); form.set("kind", kind);
-      const { cover: c } = await api<{ cover: { url: string; kind: string } }>(`/api/recipes/${slug}/cover`, token, { method: "POST", body: form });
-      onUploaded(c);
-      toast.success("Cover updated");
-    } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); }
+    try { onChange((await fn()).photos); } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); }
   }
   return (
-    <div className="flex flex-wrap items-center gap-5 rounded-[20px] bg-surface p-4">
-      <div className="aspect-[4/3] w-28 overflow-hidden rounded-xl bg-background">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        {cover && <img src={cover.url} alt="Current cover" className="size-full object-cover" />}
-      </div>
-      <div className="min-w-48 flex-1">
-        <p className="font-medium">Cover photo</p>
-        <p className="text-sm text-muted-foreground">{cover ? `Current: ${cover.kind.replace("-", " ")}` : "None — the site renders the default photo with this recipe."} Upload only images you own.</p>
-      </div>
-      <select className={cn(fieldClass, "w-auto")} value={kind} onChange={(e) => setKind(e.target.value)} aria-label="What the cover is">
-        <option value="photo">Photo</option>
-        <option value="camera-jpeg">Camera JPEG (made with this recipe)</option>
-        <option value="approximate-preview">Approximate preview</option>
-      </select>
-      <label className={cn("inline-flex h-10 cursor-pointer items-center gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background", busy && "opacity-60")}>
-        {busy ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />} Upload
-        <input type="file" className="sr-only" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void upload(f); }} />
-      </label>
-    </div>
+    <PhotoManager
+      busy={busy}
+      photos={photos}
+      onAdd={(files) => run(async () => uploadPhotos(token, slug, await Promise.all(files.map(async (f) => ({ blob: (await preparePhoto(f)).blob, kind: "photo" as const })))))}
+      onRemove={(id) => run(() => api(`/api/recipes/${slug}/photos/${id}`, token, { method: "DELETE" }))}
+      onCover={(id) => run(() => api(`/api/recipes/${slug}/photos/${id}`, token, jsonInit("PATCH", { cover: true })))}
+      onKind={(id, kind) => run(() => api(`/api/recipes/${slug}/photos/${id}`, token, jsonInit("PATCH", { kind })))}
+    />
   );
 }

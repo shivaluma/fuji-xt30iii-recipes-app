@@ -9,6 +9,14 @@ export type Summary = {
   cover: { url: string; kind: string } | null; publishedAt: string | null; updatedAt: string;
 };
 
+export type PhotoKind = "photo" | "camera-jpeg" | "approximate-preview";
+export const PHOTO_KIND_LABELS: Record<PhotoKind, string> = { photo: "Photo", "camera-jpeg": "Camera JPEG", "approximate-preview": "Approximate preview" };
+/** A photo attached in the editor before the recipe exists on the server. */
+export type PendingPhoto = { id: string; blob: Blob; previewUrl: string; kind: PhotoKind };
+/** A photo already stored with a recipe. */
+export type RemotePhoto = { id: string; url: string; kind: PhotoKind; isCover: boolean };
+export const MAX_PHOTOS = 12;
+
 /** Everything the editor needs, for a fresh import or an existing recipe. */
 export type Draft = {
   /** Set when editing a saved recipe: keeps its id (and so its slug). */
@@ -16,6 +24,8 @@ export type Draft = {
   name: string; summary: string; credit: string; cameraModel: string; body: string; tags: string[];
   settings: RecipeSettings;
   uncertain: string[]; issues: ExtractionIssue[]; raw: { field: string; text: string }[]; meta: ExtractMeta | null;
+  /** Photos to upload once the draft is saved (new recipes only). */
+  photos: PendingPhoto[]; coverPhotoId: string | null;
 };
 
 /** "Works best for" tags shown on recipe pages. */
@@ -75,6 +85,7 @@ export function draftFromExtraction(d: ExtractionDraft, meta: ExtractMeta | null
   return {
     name: d.name ?? "", summary: "", credit: d.credit ?? "", cameraModel: d.cameraModel ?? "", body: d.notes.join("\n"), tags: [],
     settings: d.settings!, uncertain: d.uncertainFields, issues: d.issues, raw: d.extracted.raw, meta,
+    photos: [], coverPhotoId: null,
   };
 }
 
@@ -84,6 +95,7 @@ export function draftFromRecipe(recipe: FilmRecipe, status: "draft" | "published
     name: recipe.name, summary: recipe.summary, credit: recipe.provenance.author ?? "",
     cameraModel: recipe.compatibleCameras.find((c) => c !== "X-T30 III") ?? "", body, tags: recipe.tags,
     settings: recipe.settings, uncertain: [], issues: [], raw: [], meta: null,
+    photos: [], coverPhotoId: null,
   };
 }
 
@@ -109,7 +121,34 @@ export function recipeFromDraft(draft: Draft): FilmRecipe {
 }
 
 export async function saveDraft(token: string, draft: Draft, status: "draft" | "published") {
-  return api<{ recipes: Summary[] }>("/api/recipes", token, jsonInit("POST", { recipe: recipeFromDraft(draft), status, body: draft.body }));
+  const saved = await api<{ recipes: Summary[] }>("/api/recipes", token, jsonInit("POST", { recipe: recipeFromDraft(draft), status, body: draft.body }));
+  if (draft.photos.length) {
+    const cover = draft.photos.findIndex((p) => p.id === draft.coverPhotoId);
+    await uploadPhotos(token, saved.recipes[0].slug, draft.photos.map((p) => ({ blob: p.blob, kind: p.kind })), cover);
+  }
+  return saved;
+}
+
+export async function uploadPhotos(token: string, slug: string, photos: { blob: Blob; kind: PhotoKind }[], coverIndex = -1) {
+  const form = new FormData();
+  photos.forEach((p, i) => { form.append("file", p.blob, `photo-${i}.jpg`); form.append("kind", p.kind); });
+  if (coverIndex >= 0) form.set("cover", String(coverIndex));
+  return api<{ photos: RemotePhoto[] }>(`/api/recipes/${slug}/photos`, token, { method: "POST", body: form });
+}
+
+/**
+ * Sample photos are re-encoded in the browser (max 2560 px, JPEG): smaller pages, and EXIF —
+ * including GPS location — is dropped before anything is uploaded.
+ */
+export async function preparePhoto(file: File, maxEdge = 2560): Promise<{ blob: Blob; previewUrl: string }> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
+  const w = Math.round(bitmap.width * scale), h = Math.round(bitmap.height * scale);
+  const canvas = new OffscreenCanvas(w, h);
+  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close();
+  const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.92 });
+  return { blob, previewUrl: URL.createObjectURL(blob) };
 }
 
 /** Run async jobs with a fixed concurrency. */

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AlertTriangle, Check, CircleX, FileText, ImagePlus, Loader2, RotateCcw, Sparkles, Trash2, Type } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { FILM_SIMULATION_NAMES } from "@/lib/recipe/schema";
@@ -8,6 +9,7 @@ import type { ExtractionDraft } from "@/lib/extract/mapping";
 import { cn } from "@/lib/utils";
 import { ApiError, api, draftFromExtraction, jsonInit, pool, prepareImage, saveDraft, type Draft, type ExtractMeta } from "./lib";
 import { RecipeEditor, draftProblems } from "./recipe-editor";
+import { PendingPhotos } from "./photo-manager";
 
 type Status = "queued" | "reading" | "ready" | "review" | "failed" | "saved";
 type Item = {
@@ -46,6 +48,9 @@ export function ImportPanel({ token, onSaved }: { token: string; onSaved: () => 
   const [textOpen, setTextOpen] = useState(false);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [anchor, setAnchor] = useState<number | null>(null);
+  const [confirm, setConfirm] = useState<{ ids: string[]; status: "draft" | "published"; flagged: number } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const update = useCallback((id: string, patch: Partial<Item>) => setItems((xs) => xs.map((x) => (x.id === id ? { ...x, ...patch } : x))), []);
@@ -126,21 +131,56 @@ export function ImportPanel({ token, onSaved }: { token: string; onSaved: () => 
     } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); }
   }
 
-  async function saveReady(status: "draft" | "published") {
+  /** Saves the given items (skipping anything not savable: still reading, failed, invalid values, already saved). */
+  async function saveMany(ids: string[], status: "draft" | "published") {
+    const targets = items.filter((x) => ids.includes(x.id) && x.draft && x.status !== "saved" && !draftProblems(x.draft).errors.length);
     setBusy(true);
     let ok = 0;
-    for (const item of ready) {
+    for (const item of targets) {
       try { await saveOne(item, status); ok++; } catch (e) { update(item.id, { error: (e as Error).message }); }
     }
     setBusy(false);
-    toast.success(`${ok} recipe${ok === 1 ? "" : "s"} ${status === "published" ? "published" : "saved as drafts"}`);
+    const skipped = ids.length - targets.length;
+    toast.success(`${ok} recipe${ok === 1 ? "" : "s"} ${status === "published" ? "published" : "saved as drafts"}${skipped ? ` · ${skipped} skipped` : ""}`);
+    setChecked(new Set());
     onSaved();
+  }
+
+  /** Bulk save of a selection: flagged drafts need an explicit confirmation first. */
+  function requestSave(ids: string[], status: "draft" | "published") {
+    const flagged = items.filter((x) => ids.includes(x.id) && x.status === "review").length;
+    if (flagged) setConfirm({ ids, status, flagged });
+    else void saveMany(ids, status);
   }
 
   function remove(id: string) {
     setItems((xs) => xs.filter((x) => x.id !== id));
+    setChecked((c) => { const n = new Set(c); n.delete(id); return n; });
     if (selected === id) setSelected(nextAfter(id, items));
   }
+
+  function removeMany(ids: string[]) {
+    setItems((xs) => xs.filter((x) => !ids.includes(x.id)));
+    setChecked(new Set());
+    if (selected && ids.includes(selected)) setSelected(null);
+  }
+
+  /** Click toggles one card; shift-click selects the range from the last toggled card. */
+  function toggleCheck(index: number, shift: boolean) {
+    const id = items[index].id;
+    setChecked((c) => {
+      const n = new Set(c);
+      if (shift && anchor !== null) {
+        const [a, b] = [Math.min(anchor, index), Math.max(anchor, index)];
+        items.slice(a, b + 1).forEach((x) => n.add(x.id));
+      } else if (n.has(id)) n.delete(id);
+      else n.add(id);
+      return n;
+    });
+    setAnchor(index);
+  }
+  const selection = items.filter((x) => checked.has(x.id)).map((x) => x.id);
+  const allChecked = items.length > 0 && selection.length === items.length;
 
   const footer = current?.draft && current.status !== "saved" && (() => {
     const { errors } = draftProblems(current.draft);
@@ -202,11 +242,23 @@ export function ImportPanel({ token, onSaved }: { token: string; onSaved: () => 
                 {count("saved") > 0 && ` · ${count("saved")} saved`}
                 {cost > 0 && ` · $${cost.toFixed(4)}`}
               </p>
-              <div className="flex flex-wrap gap-2">
-                {ready.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="mr-2 inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+                  <input type="checkbox" className="size-4 accent-foreground" checked={allChecked}
+                    onChange={() => setChecked(allChecked ? new Set() : new Set(items.map((x) => x.id)))} />
+                  Select all
+                </label>
+                {selection.length > 0 ? (
                   <>
-                    <Button className="rounded-full px-4" disabled={busy} onClick={() => saveReady("published")}><Check className="size-4" /> Publish {ready.length} ready</Button>
-                    <Button variant="secondary" className="rounded-full px-4" disabled={busy} onClick={() => saveReady("draft")}>Save {ready.length} as drafts</Button>
+                    <Button className="rounded-full px-4" disabled={busy} onClick={() => requestSave(selection, "published")}><Check className="size-4" /> Publish {selection.length}</Button>
+                    <Button variant="secondary" className="rounded-full px-4" disabled={busy} onClick={() => requestSave(selection, "draft")}>Save {selection.length} as drafts</Button>
+                    <Button variant="outline" className="rounded-full px-4" disabled={busy} onClick={() => removeMany(selection)}><Trash2 className="size-4" /> Remove</Button>
+                    <Button variant="ghost" className="rounded-full px-3" onClick={() => setChecked(new Set())}>Clear</Button>
+                  </>
+                ) : ready.length > 0 && (
+                  <>
+                    <Button className="rounded-full px-4" disabled={busy} onClick={() => saveMany(ready.map((x) => x.id), "published")}><Check className="size-4" /> Publish {ready.length} ready</Button>
+                    <Button variant="secondary" className="rounded-full px-4" disabled={busy} onClick={() => saveMany(ready.map((x) => x.id), "draft")}>Save {ready.length} as drafts</Button>
                   </>
                 )}
                 {count("failed") > 0 && (
@@ -222,7 +274,7 @@ export function ImportPanel({ token, onSaved }: { token: string; onSaved: () => 
               </div>
             </div>
             <div className="-mx-2 flex snap-x scroll-px-2 gap-3 overflow-x-auto px-2 pb-3 pt-2 [scrollbar-width:thin]">
-              {items.map((x) => (
+              {items.map((x, index) => (
                 <div key={x.id} className="group relative w-44 shrink-0 snap-start">
                   <button type="button" onClick={() => setSelected(x.id)} aria-pressed={selected === x.id}
                     className={cn("block w-full rounded-[18px] p-1.5 text-left outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring", selected === x.id ? "bg-surface ring-1 ring-foreground/70" : "hover:bg-surface")}>
@@ -251,10 +303,12 @@ export function ImportPanel({ token, onSaved }: { token: string; onSaved: () => 
                       </p>
                     </div>
                   </button>
-                  <button type="button" aria-label={`Remove ${x.label}`} onClick={() => remove(x.id)}
-                    className="absolute right-3 top-3 grid size-7 place-items-center rounded-full bg-white/90 text-black opacity-0 shadow-sm transition-opacity hover:bg-white focus-visible:opacity-100 group-hover:opacity-100">
-                    <Trash2 className="size-3.5" />
-                  </button>
+                  <label className={cn("absolute right-3 top-3 grid size-7 cursor-pointer place-items-center rounded-full bg-white/90 shadow-sm transition-opacity",
+                    checked.has(x.id) || checked.size > 0 ? "opacity-100" : "opacity-0 focus-within:opacity-100 group-hover:opacity-100")}>
+                    <input type="checkbox" className="size-4 cursor-pointer accent-foreground" aria-label={`Select ${x.draft?.name || x.label}`}
+                      checked={checked.has(x.id)} onChange={() => {}}
+                      onClick={(e) => toggleCheck(index, e.shiftKey)} />
+                  </label>
                 </div>
               ))}
             </div>
@@ -281,6 +335,7 @@ export function ImportPanel({ token, onSaved }: { token: string; onSaved: () => 
                   sourceImage={current.previewUrl}
                   onChange={(d) => update(current.id, { draft: d, status: statusFor(d) })}
                   footer={footer}
+                  photos={<PendingPhotos draft={current.draft} onUpdate={(fn) => setItems((xs) => xs.map((x) => (x.id === current.id && x.draft ? { ...x, draft: fn(x.draft) } : x)))} />}
                 />
               ) : (
                 <div className="flex items-center justify-center gap-3 rounded-[24px] bg-surface p-14 text-muted-foreground">
@@ -291,6 +346,23 @@ export function ImportPanel({ token, onSaved }: { token: string; onSaved: () => 
           )}
         </>
       )}
+
+      <Dialog open={!!confirm} onOpenChange={(o) => { if (!o) setConfirm(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{confirm?.flagged} of these still need checking</DialogTitle>
+            <DialogDescription>
+              The AI wasn&apos;t sure about some values, or found settings this camera doesn&apos;t have. Open them to review, or {confirm?.status === "published" ? "publish" : "save"} them as they are. Drafts with invalid values are always skipped.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="ghost" className="rounded-full" onClick={() => setConfirm(null)}>Review first</Button>
+            <Button className="rounded-full" onClick={() => { const c = confirm!; setConfirm(null); void saveMany(c.ids, c.status); }}>
+              {confirm?.status === "published" ? "Publish anyway" : "Save anyway"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

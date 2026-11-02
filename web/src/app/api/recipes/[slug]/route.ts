@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/server/auth";
 import { deleteRecipe, getRecipe, updateMeta } from "@/lib/server/db";
 import { RECIPES_TAG, recipeTag } from "@/lib/server/data";
+import { photoJSON } from "@/lib/server/uploads";
 
 export async function GET(request: Request, ctx: RouteContext<"/api/recipes/[slug]">) {
   const { slug } = await ctx.params;
@@ -12,6 +13,7 @@ export async function GET(request: Request, ctx: RouteContext<"/api/recipes/[slu
   return Response.json({
     recipe: row.recipe, slug: row.slug, status: row.status, body: row.body,
     cover: row.coverFile ? { url: `/api/media/${row.coverFile}`, kind: row.coverKind } : null,
+    photos: row.photos.map((p) => photoJSON(p, row.coverFile)),
     publishedAt: row.publishedAt, updatedAt: row.updatedAt,
   });
 }

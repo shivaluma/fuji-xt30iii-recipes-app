@@ -5,7 +5,9 @@ Next.js 16 (App Router, Cache Components) + shadcn/ui + SQLite (`node:sqlite`, b
 - **Public site:** browse recipes, filter by film simulation, an approximate in-browser preview on a sample photo or your own (your photo never leaves the browser), and a "Download for FilmLab" JSON link.
 - **Admin (`/admin`):** sign in with the admin token, then:
   - **Import:** drop, pick or paste (⌘V) any number of recipe images, or paste text (separate recipes with `---`). Each is read by the AI provider, two at a time, into a draft. Clean drafts are marked *Ready* and can be published or saved in bulk. Drafts with uncertain or unsupported values are marked *Check* and must be reviewed in the editor, shown beside the source image.
-  - **Recipes:** search and filter by status, multi-select to publish, unpublish, export (FilmLab JSON) or delete, and edit any recipe, including its "Works best for" tags and cover photo.
+    Select several queue items (checkboxes, shift-click for a range) to publish, save or remove them together; flagged drafts need a confirmation.
+  - **Sample photos:** while filling in a recipe (new or existing), add up to 12 photos at once, pick the cover and label each one (photo, camera JPEG or approximate preview). Photos are re-encoded in the browser (max 2560 px), which also strips EXIF/GPS. The recipe page shows them as a gallery.
+  - **Recipes:** search and filter by status, multi-select to publish, unpublish, export (FilmLab JSON) or delete, and edit any recipe, including its "Works best for" tags and photos.
 - **API:** used by the iOS app for "Extract with AI" and "Publish to Web".
 
 Recipes use the **same JSON schema as the iOS app** (`src/lib/recipe/schema.ts` mirrors `FilmLab/Domain/Recipe/*.swift`). The browser preview is a port of the app's look engine, and `lut.test.ts` checks it against values exported from Swift.
