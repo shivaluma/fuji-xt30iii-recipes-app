@@ -16,12 +16,12 @@ export class ExtractionError extends Error {
 
 /**
  * EXTRACTION_PROVIDER=openrouter|anthropic (default: whichever key is set, OpenRouter first),
- * EXTRACTION_MODEL=<model id>.
+ * EXTRACTION_MODEL=<model id>, OPENROUTER_BASE_URL=<OpenAI-compatible base URL> (proxies, local testing).
  */
 export function configuredProvider(env: Record<string, string | undefined> = process.env): ExtractionProvider | null {
   const choice = env.EXTRACTION_PROVIDER ?? (env.OPENROUTER_API_KEY ? "openrouter" : env.ANTHROPIC_API_KEY ? "anthropic" : "");
   if (choice === "openrouter" && env.OPENROUTER_API_KEY) {
-    return new OpenRouterProvider(env.EXTRACTION_MODEL || DEFAULT_OPENROUTER_MODEL, env.OPENROUTER_API_KEY, { referer: env.PUBLIC_SITE_URL });
+    return new OpenRouterProvider(env.EXTRACTION_MODEL || DEFAULT_OPENROUTER_MODEL, env.OPENROUTER_API_KEY, { referer: env.PUBLIC_SITE_URL, baseURL: env.OPENROUTER_BASE_URL });
   }
   if (choice === "anthropic" && env.ANTHROPIC_API_KEY) {
     return new AnthropicProvider(env.EXTRACTION_MODEL || DEFAULT_ANTHROPIC_MODEL, env.ANTHROPIC_API_KEY);

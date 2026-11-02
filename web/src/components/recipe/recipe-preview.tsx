@@ -10,7 +10,6 @@ import { DEFAULT_PHOTO } from "@/lib/site-config";
 
 export const SAMPLES = [
   { id: "fuji", label: "Mt Fuji", src: DEFAULT_PHOTO },
-  { id: "landscape", label: "Landscape", src: "/samples/landscape.jpg" },
   { id: "chart", label: "Colour chart", src: "/samples/chart.jpg" },
 ];
 const MAX_EDGE = 1400;

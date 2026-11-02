@@ -2,7 +2,7 @@ import "server-only";
 import { EXTRACTION_SYSTEM_PROMPT } from "../mapping";
 import { extractionJSONSchema, ProviderError, userText, type ExtractionInput, type ExtractionProvider, type ProviderResult } from "./types";
 
-const ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
+const DEFAULT_BASE_URL = "https://openrouter.ai/api/v1";
 
 /**
  * OpenRouter (OpenAI-compatible REST; no SDK dependency). Default model is the benchmark winner
@@ -10,12 +10,12 @@ const ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
  */
 export class OpenRouterProvider implements ExtractionProvider {
   readonly id = "openrouter";
-  constructor(readonly model: string, private readonly apiKey: string, private readonly opts: { maxTokens?: number; referer?: string } = {}) {}
+  constructor(readonly model: string, private readonly apiKey: string, private readonly opts: { maxTokens?: number; referer?: string; baseURL?: string } = {}) {}
 
   async extract(input: ExtractionInput, signal: AbortSignal): Promise<ProviderResult> {
     const content: unknown[] = [{ type: "text", text: userText(input) }];
     if (input.image) content.push({ type: "image_url", image_url: { url: `data:${input.image.mediaType};base64,${input.image.data}` } });
-    const res = await fetch(ENDPOINT, {
+    const res = await fetch(`${(this.opts.baseURL || DEFAULT_BASE_URL).replace(/\/$/, "")}/chat/completions`, {
       method: "POST",
       signal,
       headers: {

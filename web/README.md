@@ -3,9 +3,9 @@
 Next.js 16 (App Router, Cache Components) + shadcn/ui + SQLite (`node:sqlite`, built into Node 24).
 
 - **Public site:** browse recipes, filter by film simulation, an approximate in-browser preview on a sample photo or your own (your photo never leaves the browser), and a "Download for FilmLab" JSON link.
-- **Admin (`/admin`):** paste a token, then:
-  - import a recipe from an image or text with AI (Claude), review it, and publish;
-  - manage drafts and covers.
+- **Admin (`/admin`):** sign in with the admin token, then:
+  - **Import:** drop, pick or paste (⌘V) any number of recipe images, or paste text (separate recipes with `---`). Each is read by the AI provider, two at a time, into a draft. Clean drafts are marked *Ready* and can be published or saved in bulk. Drafts with uncertain or unsupported values are marked *Check* and must be reviewed in the editor, shown beside the source image.
+  - **Recipes:** search and filter by status, multi-select to publish, unpublish, export (FilmLab JSON) or delete, and edit any recipe, including its "Works best for" tags and cover photo.
 - **API:** used by the iOS app for "Extract with AI" and "Publish to Web".
 
 Recipes use the **same JSON schema as the iOS app** (`src/lib/recipe/schema.ts` mirrors `FilmLab/Domain/Recipe/*.swift`). The browser preview is a port of the app's look engine, and `lut.test.ts` checks it against values exported from Swift.
@@ -13,7 +13,7 @@ Recipes use the **same JSON schema as the iOS app** (`src/lib/recipe/schema.ts` 
 ## Develop
 
 ```sh
-cp .env.example .env.local   # set ADMIN_TOKEN (and ANTHROPIC_API_KEY for AI import)
+cp .env.example .env.local   # set ADMIN_TOKEN (and OPENROUTER_API_KEY for AI import)
 pnpm install
 pnpm dev                     # http://localhost:3000 — starts with an empty collection; add recipes in /admin
 pnpm test && pnpm typecheck && pnpm lint && pnpm build
@@ -30,6 +30,8 @@ pnpm test && pnpm typecheck && pnpm lint && pnpm build
    - `OPENROUTER_API_KEY`: needed only for AI import. It stays on the server and is never sent to browsers or the app.
      - The default model is `google/gemini-3.1-flash-lite` (see `bench/RESULTS.md`). Override it with `EXTRACTION_MODEL`.
      - Or set `EXTRACTION_PROVIDER=anthropic` + `ANTHROPIC_API_KEY`.
+     - `OPENROUTER_BASE_URL` points the OpenRouter provider at another OpenAI-compatible endpoint (a proxy, or a local mock for testing).
+     - Extraction is limited to 120 requests per hour per server process.
 4. **Advanced › Volumes:** add a **volume mount** at `/app/data` (e.g. a named volume `filmlab-data`).
    - It holds the SQLite database and uploaded covers. Without it, every redeploy wipes your recipes.
    - If you use a bind mount instead, `chown -R 1001:1001` the host directory, because the container runs as uid 1001.

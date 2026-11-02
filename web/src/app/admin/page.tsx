@@ -5,8 +5,7 @@ export const metadata: Metadata = { title: "Admin", robots: { index: false, foll
 
 export default function AdminPage() {
   return (
-    <div className="mx-auto max-w-6xl px-5 pb-20 pt-28">
-      <h1 className="mb-6 text-4xl font-bold tracking-tight">Admin</h1>
+    <div className="mx-auto max-w-6xl px-5 pt-12 sm:px-8 sm:pt-20 lg:px-10">
       <AdminClient />
     </div>
   );

@@ -6,7 +6,7 @@ import { listRecipes, upsertRecipe } from "@/lib/server/db";
 import { RECIPES_TAG, recipeTag } from "@/lib/server/data";
 
 const summary = (r: ReturnType<typeof listRecipes>[number]) => ({
-  id: r.id, slug: r.slug, name: r.name, summary: r.summary, filmSimulation: r.filmSimulation, status: r.status,
+  id: r.id, slug: r.slug, name: r.name, summary: r.summary, filmSimulation: r.filmSimulation, status: r.status, settings: r.recipe.settings,
   cover: r.coverFile ? { url: `/api/media/${r.coverFile}`, kind: r.coverKind } : null,
   publishedAt: r.publishedAt, updatedAt: r.updatedAt,
 });

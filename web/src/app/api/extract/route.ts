@@ -20,7 +20,7 @@ const JsonBody = z.object({
 export async function POST(request: Request) {
   const denied = requireAdmin(request);
   if (denied) return denied;
-  if (!rateLimit("extract", 30, 60 * 60 * 1000)) return Response.json({ error: "Extraction limit reached; try again later." }, { status: 429 });
+  if (!rateLimit("extract", 120, 60 * 60 * 1000)) return Response.json({ error: "Extraction limit reached; try again later." }, { status: 429 });
 
   let image: { data: string; mediaType: string } | undefined;
   let text: string | undefined;
