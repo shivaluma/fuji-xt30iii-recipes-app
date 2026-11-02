@@ -149,7 +149,7 @@ export function AdminClient() {
           <CardTitle className="flex items-center gap-2"><Sparkles className="size-5 text-primary" /> Import a recipe with AI</CardTitle>
           <CardDescription>
             Screenshot, recipe card, photo of notes, or pasted text (e.g. a Reddit comment). A vision model reads it into a draft you review; nothing is saved until you choose.
-            Images are sent to the server and Anthropic for this one request. Only publish recipes you have the right to share, with credit.
+            Images are sent to the server and the configured AI provider for this one request. Only publish recipes you have the right to share, with credit.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

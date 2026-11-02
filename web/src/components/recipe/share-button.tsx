@@ -12,8 +12,8 @@ export function ShareButton({ title }: { title: string }) {
     } catch { /* dismissed */ }
   }
   return (
-    <button onClick={share} className="inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-raised px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-white/10 active:scale-95">
-      <Share2 className="size-4" /> Share
+    <button onClick={share} className="inline-flex items-center gap-1.5 rounded-full border border-hairline bg-surface px-3.5 py-1.5 text-sm font-medium transition-colors hover:bg-surface-raised active:scale-[.98]">
+      <Share2 className="size-3.5" /> Share
     </button>
   );
 }

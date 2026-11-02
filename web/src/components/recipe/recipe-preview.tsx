@@ -34,8 +34,8 @@ export function Chip({ active, children, onClick, className }: { active?: boolea
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-200 active:scale-95",
-        active ? "border-primary bg-accent text-primary" : "border-hairline bg-surface text-foreground hover:border-white/25",
+        "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm transition-colors duration-200 active:scale-[.98]",
+        active ? "border-foreground bg-foreground text-background" : "border-hairline text-foreground hover:border-foreground/30",
         className,
       )}
     >
@@ -75,25 +75,25 @@ export function RecipePreview({ settings, compact }: { settings: RecipeSettings;
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <CompareView
         original={original}
         processed={rendered?.out ?? null}
         badge={
-          <span className="flex items-center gap-2 rounded-full border border-hairline bg-black/60 px-3 py-1.5 text-xs font-semibold backdrop-blur">
-            <span className={cn("size-2 rounded-full", busy ? "animate-pulse bg-warning" : "bg-[#8bb3f2]")} />
+          <span className="flex items-center gap-2 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-black backdrop-blur">
+            <span className={cn("size-2 rounded-full", busy ? "animate-pulse bg-warning" : "bg-black")} />
             {busy ? "Rendering…" : "Approximate · In browser"}
           </span>
         }
       />
       {!compact && (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {SAMPLES.map((s) => (
             <Chip key={s.id} active={source === s.src} onClick={() => { setSource(s.src); setOwnName(null); }}>{s.label}</Chip>
           ))}
           <label className={cn(
-            "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-semibold transition-all active:scale-95",
-            ownName ? "border-primary bg-accent text-primary" : "border-hairline bg-surface hover:border-white/25",
+            "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm transition-colors active:scale-[.98]",
+            ownName ? "border-foreground bg-foreground text-background" : "border-dashed border-foreground/30 hover:border-foreground/60",
           )}>
             <ImagePlus className="size-4" /> <span className="max-w-40 truncate">{ownName ?? "Try your photo"}</span>
             <input type="file" accept="image/jpeg,image/png,image/webp,image/heic" className="sr-only" onChange={onFile} />

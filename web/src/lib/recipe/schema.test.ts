@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import seed from "../../../data/seed-recipes.json";
+import seed from "./__fixtures__/sample-recipes.json";
 import { TransferDocumentSchema, normalize, validate, display, RecipeSettingsSchema } from "./schema";
 
 describe("FilmLab JSON compatibility", () => {

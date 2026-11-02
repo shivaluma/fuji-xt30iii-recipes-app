@@ -2,7 +2,7 @@ import "server-only";
 import { DatabaseSync } from "node:sqlite";
 import fs from "node:fs";
 import path from "node:path";
-import { FilmRecipeSchema, TransferDocumentSchema, type FilmRecipe } from "@/lib/recipe/schema";
+import { FilmRecipeSchema, type FilmRecipe } from "@/lib/recipe/schema";
 
 // SQLite via Node's built-in node:sqlite (no native dependencies). The full FilmLab recipe JSON is
 // the source of truth; a few columns are denormalized for listing and filtering.
@@ -30,7 +30,6 @@ export type RecipeRow = {
 const DATA_DIR = process.env.DATA_DIR ?? path.join(process.cwd(), "data");
 export const UPLOAD_DIR = path.join(DATA_DIR, "uploads");
 const DB_PATH = process.env.DATABASE_PATH ?? path.join(DATA_DIR, "filmlab.db");
-const SEED_PATH = process.env.SEED_PATH ?? path.join(process.cwd(), "data", "seed-recipes.json");
 
 let db: DatabaseSync | null = null;
 
@@ -61,15 +60,7 @@ function open(): DatabaseSync {
   // Additive migrations for existing databases.
   const columns = (db.prepare("PRAGMA table_info(recipes)").all() as { name: string }[]).map((c) => c.name);
   if (!columns.includes("downloads")) db.exec("ALTER TABLE recipes ADD COLUMN downloads INTEGER NOT NULL DEFAULT 0");
-  seedIfEmpty(db);
   return db;
-}
-
-function seedIfEmpty(d: DatabaseSync) {
-  const { n } = d.prepare("SELECT COUNT(*) AS n FROM recipes").get() as { n: number };
-  if (n > 0 || !fs.existsSync(/*turbopackIgnore: true*/ SEED_PATH)) return;
-  const doc = TransferDocumentSchema.parse(JSON.parse(fs.readFileSync(/*turbopackIgnore: true*/ SEED_PATH, "utf8")));
-  for (const r of doc.recipes) upsertRecipe(r, { status: "published" }, d);
 }
 
 export function slugify(name: string) {

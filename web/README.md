@@ -15,7 +15,7 @@ Recipes use the **same JSON schema as the iOS app** (`src/lib/recipe/schema.ts` 
 ```sh
 cp .env.example .env.local   # set ADMIN_TOKEN (and ANTHROPIC_API_KEY for AI import)
 pnpm install
-pnpm dev                     # http://localhost:3000 — seeds the 12 FilmLab starter recipes on first run
+pnpm dev                     # http://localhost:3000 — starts with an empty collection; add recipes in /admin
 pnpm test && pnpm typecheck && pnpm lint && pnpm build
 ```
 

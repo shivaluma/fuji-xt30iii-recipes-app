@@ -49,23 +49,23 @@ export function CompareView({
   const canvasStyle = { width: width || "100%", height: "100%" } as const;
 
   return (
-    <div ref={box} className={cn("relative overflow-hidden rounded-card border border-hairline bg-surface", className)} style={{ aspectRatio: aspect }}>
+    <div ref={box} className={cn("relative overflow-hidden rounded-[var(--fl-radius-card)] bg-surface", className)} style={{ aspectRatio: aspect }}>
       <ResizablePanelGroup orientation="horizontal" className="absolute inset-0">
         <ResizablePanel defaultSize="50" minSize="0" className="relative overflow-hidden">
           <canvas ref={leftCanvas} aria-label={leftLabel} className="absolute inset-y-0 left-0 max-w-none" style={canvasStyle} />
-          <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold backdrop-blur">{leftLabel}</span>
+          <span className="pointer-events-none absolute bottom-3 left-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-black backdrop-blur">{leftLabel}</span>
         </ResizablePanel>
         <ResizableHandle
           aria-label="Drag to compare original and recipe"
-          className="z-10 w-0.5 bg-white/90 shadow-[0_0_12px_rgba(0,0,0,.6)] focus-visible:ring-2 focus-visible:ring-primary"
+          className="z-10 w-0.5 bg-white shadow-[0_0_10px_rgba(0,0,0,.35)] focus-visible:ring-2 focus-visible:ring-white"
         >
-          <span className="pointer-events-none absolute grid size-10 place-items-center rounded-full bg-white text-black shadow-lg ring-4 ring-black/20 transition-transform group-hover:scale-110">
+          <span className="pointer-events-none absolute grid size-10 place-items-center rounded-full bg-white text-black shadow-[0_6px_20px_rgba(0,0,0,.25)] transition-transform group-hover:scale-110">
             <ChevronsLeftRight className="size-5" />
           </span>
         </ResizableHandle>
         <ResizablePanel defaultSize="50" minSize="0" className="relative overflow-hidden">
           <canvas ref={rightCanvas} aria-label={rightLabel} className="absolute inset-y-0 right-0 max-w-none" style={canvasStyle} />
-          <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-black/60 px-3 py-1 text-xs font-semibold backdrop-blur">{rightLabel}</span>
+          <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-black backdrop-blur">{rightLabel}</span>
         </ResizablePanel>
       </ResizablePanelGroup>
       {badge && <div className="pointer-events-none absolute left-3 top-3 z-20">{badge}</div>}

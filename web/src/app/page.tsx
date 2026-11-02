@@ -1,15 +1,30 @@
 import Link from "next/link";
-import { ArrowRight, Camera, Check, CircleDashed, Lock, ScanText, SlidersHorizontal } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { RecipeCard } from "@/components/recipe/recipe-card";
+import { RecipeThumb } from "@/components/recipe/recipe-thumb";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { HeroFilm } from "@/components/site/hero-film";
-import { SimulationMarquee } from "@/components/site/marquee";
 import { Reveal } from "@/components/site/reveal";
-import { Phone } from "@/components/site/phone";
-import { ImportMock, ScanBadge, TuneMock, WriteMock } from "@/components/site/app-mocks";
 import { TryIt } from "@/components/site/try-it";
+import { FILM_SIMULATION_NAMES, RecipeSettingsSchema, type FilmSimulation } from "@/lib/recipe/schema";
 import { publishedRecipes, toCard } from "@/lib/server/data";
-import { HERO } from "@/lib/site-config";
+import { DEFAULT_PHOTO, HERO } from "@/lib/site-config";
+
+const look = (sim: FilmSimulation) => RecipeSettingsSchema.parse({ filmSimulation: sim });
+
+const FEATURES: { title: string; body: string; sim: FilmSimulation }[] = [
+  { title: "Preview before you shoot", body: "See any recipe on your own photos — all 20 X‑T30 III simulations, rendered on your device in real time.", sim: "classicChrome" },
+  { title: "Tune every setting", body: "Parameter cards with −/+ steppers, ranges taken from the camera, and hold‑to‑compare with the original.", sim: "nostalgicNeg" },
+  { title: "Screenshot to recipe", body: "Snap a recipe card, a forum post or a friend’s story. FilmLab reads it on‑device first; you review every field.", sim: "acrosR" },
+  { title: "C1–C7, without the dread", body: "Arrange sets of seven, see a per‑setting diff, back up first. Camera writing is experimental and off by default.", sim: "eterna" },
+];
+
+const CAMERAS = [
+  ["X‑T30 III", "Designed for", "X‑Trans CMOS 4 · X‑Processor 5"],
+  ["X‑T5 · X‑T50", "Recipes translate", "Unsupported settings are flagged"],
+  ["X‑S20 · X‑E5", "Recipes translate", "Unsupported settings are flagged"],
+  ["X100VI", "Recipes translate", "Unsupported settings are flagged"],
+];
 
 const FAQ = [
   ["Is the preview what my camera will produce?", "No — it's FilmLab's own approximation, rendered on your device. It's great for comparing looks and choosing a starting point. Only a JPEG produced by the camera itself is the real thing, and FilmLab always labels which is which."],
@@ -19,177 +34,185 @@ const FAQ = [
   ["How do I import a recipe I found online?", "Take a screenshot (or paste the text) and FilmLab reads it — on-device first, with AI only when the on-device pass can't read everything. You review every field before saving."],
 ];
 
-const CAMERAS = [
-  { name: "X-T30 III", status: "Designed for" },
-  { name: "X-T5", status: "Recipes translate" }, { name: "X-T50", status: "Recipes translate" },
-  { name: "X-S20", status: "Recipes translate" }, { name: "X100VI", status: "Recipes translate" }, { name: "X-E5", status: "Recipes translate" },
-];
+function SectionTitle({ children, aside }: { children: React.ReactNode; aside?: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-4">
+      <h2 className="font-display text-6xl font-normal uppercase leading-[0.85] tracking-[-0.05em] sm:text-8xl">{children}</h2>
+      {aside}
+    </div>
+  );
+}
+
+const pillDark = "group inline-flex items-center gap-1.5 rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background transition-opacity hover:opacity-85 active:scale-[.98]";
+const pillSoft = "group inline-flex items-center gap-1.5 rounded-full border border-hairline bg-surface px-5 py-3 text-sm font-medium transition-colors hover:bg-surface-raised active:scale-[.98]";
+const arrow = <ArrowUpRight className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />;
+
+function SimTile({ sim, className }: { sim: FilmSimulation; className?: string }) {
+  return (
+    <Link href={`/recipes?sim=${sim}`} className={`group relative block overflow-hidden rounded-[20px] bg-surface ${className ?? ""}`}>
+      <RecipeThumb settings={look(sim)} className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" />
+      <span className="absolute bottom-2 left-2 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-black backdrop-blur">{FILM_SIMULATION_NAMES[sim]}</span>
+    </Link>
+  );
+}
 
 export default async function Home() {
   const recipes = (await publishedRecipes()).map(toCard);
+  const enter = "animate-in fade-in slide-in-from-bottom-4 fill-mode-both duration-700 ease-out motion-reduce:animate-none";
+
   return (
     <>
-      {/* HERO */}
-      <section className="relative flex min-h-[100svh] items-end overflow-hidden pb-24 pt-32 sm:items-center sm:pb-0">
-        <HeroFilm src={HERO.src} credit={HERO.credit} position={HERO.position} />
-        <div className="relative mx-auto w-full max-w-6xl px-5">
-          <div className="animate-in fade-in slide-in-from-bottom-6 fill-mode-both duration-1000 ease-out motion-reduce:animate-none" style={{ animationDelay: "100ms" }}>
-            <p className="inline-flex items-center gap-2 rounded-full border border-hairline bg-black/40 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[.18em] text-primary backdrop-blur">
-              <Camera className="size-3.5" /> For FUJIFILM X-T30 III
-            </p>
+      {/* HERO — photo with cut-out panels (desktop); stacked on mobile */}
+      <section className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10 pt-10 sm:pt-20">
+        <h1 className={`font-display text-[13vw] font-normal leading-[0.92] tracking-[-0.055em] sm:text-7xl lg:hidden ${enter}`}>
+          Find your look before the shutter
+        </h1>
+
+        <div className={`relative mt-8 h-[72svh] max-h-[720px] min-h-[420px] lg:mt-0 lg:h-[680px] ${enter}`} style={{ animationDelay: "80ms" }}>
+          <div className="absolute inset-0 overflow-hidden rounded-[var(--fl-notch)]">
+            <HeroFilm src={HERO.src} credit={HERO.credit} position={HERO.position} />
           </div>
-          <div className="animate-in fade-in slide-in-from-bottom-6 fill-mode-both duration-1000 ease-out motion-reduce:animate-none" style={{ animationDelay: "180ms" }}>
-            <h1 className="mt-6 max-w-4xl font-display text-5xl font-bold leading-[0.95] tracking-tight sm:text-7xl lg:text-8xl">
-              Find your look.<br />
-              <span className="italic text-primary">Before the shutter.</span>
+
+          {/* top-left: headline */}
+          <div className="absolute left-0 top-0 hidden rounded-br-[var(--fl-notch)] bg-background pb-5 pr-8 lg:block">
+            <h1 className="font-display text-[4.25rem] font-normal leading-[0.92] tracking-[-0.055em]">
+              Find your look<br />before the shutter
             </h1>
+            <span className="fl-notch fl-notch-br -right-[var(--fl-notch)] top-0" />
+            <span className="fl-notch fl-notch-br -bottom-[var(--fl-notch)] left-0" />
           </div>
-          <div className="animate-in fade-in slide-in-from-bottom-6 fill-mode-both duration-1000 ease-out motion-reduce:animate-none" style={{ animationDelay: "260ms" }}>
-            <p className="mt-6 max-w-xl text-lg text-white/75 sm:text-xl">
-              Preview film simulation recipes on your own photos, tune every setting with your thumb, and keep your C1–C7 slots in order.
-            </p>
+
+          {/* top-right: two more looks */}
+          <div className="absolute right-0 top-0 hidden gap-4 rounded-bl-[var(--fl-notch)] bg-background pb-4 pl-4 lg:flex">
+            <SimTile sim="acrosR" className="size-32" />
+            <SimTile sim="classicNeg" className="size-32" />
+            <span className="fl-notch fl-notch-bl -left-[var(--fl-notch)] top-0" />
+            <span className="fl-notch fl-notch-bl -bottom-[var(--fl-notch)] right-0" />
           </div>
-          <div className="animate-in fade-in slide-in-from-bottom-6 fill-mode-both duration-1000 ease-out motion-reduce:animate-none" style={{ animationDelay: "340ms" }}>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <Link href="/recipes" className="group inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3.5 font-bold text-primary-foreground transition-transform active:scale-95">
-                Browse recipes <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link href="/#try" className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/30 px-6 py-3.5 font-bold backdrop-blur transition-colors hover:bg-white/10">
-                Try it on your photo
-              </Link>
-            </div>
-            <p className="mt-5 text-sm text-white/55">Free · Previews stay on your device · Unofficial</p>
+
+          {/* bottom-left: actions */}
+          <div className="absolute bottom-0 left-0 hidden gap-2 rounded-tr-[var(--fl-notch)] bg-background pr-4 pt-4 lg:flex">
+            <Link href="/recipes" className={pillDark}>Browse recipes {arrow}</Link>
+            <Link href="/#try" className={pillSoft}>Try it on your photo</Link>
+            <span className="fl-notch fl-notch-tr -top-[var(--fl-notch)] left-0" />
+            <span className="fl-notch fl-notch-tr -right-[var(--fl-notch)] bottom-0" />
           </div>
         </div>
-      </section>
 
-      <SimulationMarquee />
+        <div className={`mt-6 flex flex-wrap gap-3 lg:hidden ${enter}`} style={{ animationDelay: "160ms" }}>
+          <Link href="/recipes" className={pillDark}>Browse recipes {arrow}</Link>
+          <Link href="/#try" className={pillSoft}>Try it on your photo</Link>
+        </div>
 
-      {/* INTRO */}
-      <section id="features" className="relative mx-auto grid max-w-6xl items-center gap-14 px-5 py-28 lg:grid-cols-2">
-        <div className="fl-glow pointer-events-none absolute inset-x-0 top-0 h-96" />
-        <Reveal className="relative">
-          <p className="text-sm font-semibold uppercase tracking-[.18em] text-primary">Studio</p>
-          <h2 className="mt-4 font-display text-4xl font-bold leading-tight tracking-tight sm:text-6xl">
-            Every setting.<br /><span className="italic text-primary">One thumb.</span>
-          </h2>
-          <p className="mt-6 max-w-md text-lg text-muted-foreground">
-            Swipe through parameter cards, nudge with −/+, and watch the look change instantly. Ranges come straight from the X-T30 III, so you can&apos;t dial in a value the camera won&apos;t take.
+        <div className={`mt-12 grid gap-6 border-t border-hairline pt-8 text-muted-foreground sm:grid-cols-[1.4fr_1fr] ${enter}`} style={{ animationDelay: "220ms" }}>
+          <p className="max-w-xl text-lg leading-relaxed text-foreground sm:text-xl">
+            Preview film simulation recipes on your own photos, tune every setting, and keep your C1–C7 slots in order — made for the FUJIFILM X‑T30 III.
           </p>
-          <ul className="mt-8 space-y-3 text-sm">
-            {["All 20 film simulations, incl. REALA ACE and Nostalgic Neg.", "Hold to compare with the original", "Unset stays unset — the camera keeps its own value"].map((t) => (
-              <li key={t} className="flex items-center gap-3"><span className="grid size-6 place-items-center rounded-full bg-accent text-primary"><Check className="size-3.5" /></span>{t}</li>
-            ))}
-          </ul>
-        </Reveal>
-        <Reveal delay={0.1} className="relative">
-          <div className="fl-float"><Phone><TuneMock /></Phone></div>
-          <p className="mt-6 text-center text-xs text-tertiary">Tap the cards and −/+ — it&apos;s interactive.</p>
-        </Reveal>
-      </section>
-
-      {/* FEATURE ROWS */}
-      <section className="mx-auto max-w-6xl space-y-32 px-5 pb-28">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-          <Reveal>
-            <ScanBadge />
-            <h3 className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-5xl">Screenshot in.<br /><span className="italic text-primary">Recipe out.</span></h3>
-            <p className="mt-5 max-w-md text-lg text-muted-foreground">
-              Found a recipe on a forum, a card or a friend&apos;s story? Snap it. FilmLab reads it on your iPhone first, and only asks AI for help with the tricky ones. Every field is yours to review — nothing is guessed.
-            </p>
-          </Reveal>
-          <Reveal delay={0.1}><ImportMock /></Reveal>
-        </div>
-
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-          <Reveal delay={0.1} className="lg:order-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-primary"><Lock className="size-3.5" /> Safety first</span>
-            <h3 className="mt-4 font-display text-3xl font-bold tracking-tight sm:text-5xl">C1–C7,<br /><span className="italic text-primary">without the dread.</span></h3>
-            <p className="mt-5 max-w-md text-lg text-muted-foreground">
-              Arrange Sets of seven recipes, see exactly what changes in each slot, and write only after a backup and your explicit tap. Camera writing is experimental and off by default.
-            </p>
-          </Reveal>
-          <Reveal className="lg:order-1"><WriteMock /></Reveal>
-        </div>
-      </section>
-
-      {/* TRY IT */}
-      <section id="try" className="border-y border-hairline bg-surface/40">
-        <div className="mx-auto max-w-6xl px-5 py-28">
-          <Reveal>
-            <div className="flex flex-wrap items-end justify-between gap-6">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[.18em] text-primary"><SlidersHorizontal className="mr-1.5 inline size-4" />Try it</p>
-                <h2 className="mt-4 font-display text-4xl font-bold tracking-tight sm:text-6xl">Drag. Compare. <span className="italic text-primary">Decide.</span></h2>
-              </div>
-              <p className="max-w-sm text-muted-foreground">Pick a simulation, drag the divider, or drop in your own photo. It renders right here in your browser.</p>
-            </div>
-          </Reveal>
-          <Reveal delay={0.1} className="mx-auto mt-10 max-w-4xl"><TryIt /></Reveal>
+          <p className="text-sm sm:text-right">Free · Previews stay on your device · Unofficial</p>
         </div>
       </section>
 
       {/* RECIPES */}
-      <section className="py-28">
-        <div className="mx-auto flex max-w-6xl items-end justify-between gap-4 px-5">
-          <Reveal>
-            <h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Fresh recipes</h2>
-            <p className="mt-2 text-muted-foreground">Starter looks to try tonight</p>
-          </Reveal>
-          <Link href="/recipes" className="group inline-flex shrink-0 items-center gap-1 font-bold text-primary">See all <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" /></Link>
-        </div>
-        <div className="mx-auto mt-10 flex max-w-6xl snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-4 [scrollbar-width:none]">
-          {recipes.slice(0, 10).map((r, i) => (
-            <div key={r.slug} className="w-64 shrink-0 snap-start animate-in fade-in slide-in-from-right-6 fill-mode-both duration-700 motion-reduce:animate-none sm:w-72" style={{ animationDelay: `${Math.min(i, 6) * 70}ms` }}>
-              <RecipeCard r={r} />
+      <section className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10 pt-40 sm:pt-56">
+        <Reveal>
+          <SectionTitle aside={recipes.length > 0 && <Link href="/recipes" className={pillSoft}>View all {recipes.length} {arrow}</Link>}>Recipes</SectionTitle>
+        </Reveal>
+        {recipes.length > 0 ? (
+          <div className="mt-16 grid gap-x-8 gap-y-16 sm:grid-cols-2 lg:gap-x-10 lg:gap-y-20">
+            {recipes.slice(0, 6).map((r, i) => (
+              <Reveal key={r.slug} delay={(i % 2) * 0.08}><RecipeCard r={r} size="lg" /></Reveal>
+            ))}
+          </div>
+        ) : (
+          <Reveal className="mt-16">
+            <div className="grid items-center gap-8 rounded-[var(--fl-radius-card)] bg-surface p-8 sm:grid-cols-[1fr_1.2fr] sm:p-14">
+              <div>
+                <p className="font-display text-3xl font-normal tracking-[-0.03em]">The first recipes are on their way.</p>
+                <p className="mt-3 text-muted-foreground">Meanwhile, try the looks on Mt Fuji — or on your own photo.</p>
+                <Link href="/#try" className={`${pillDark} mt-6`}>Try the preview {arrow}</Link>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <SimTile sim="classicChrome" className="aspect-[4/3]" />
+                <SimTile sim="velvia" className="aspect-[4/3]" />
+              </div>
             </div>
+          </Reveal>
+        )}
+      </section>
+
+      {/* FEATURES — service-list rows */}
+      <section id="features" className="mx-auto max-w-6xl scroll-mt-24 px-5 sm:px-8 lg:px-10 pt-40 sm:pt-56">
+        <Reveal><SectionTitle>Features</SectionTitle></Reveal>
+        <div className="mt-16 border-t border-hairline">
+          {FEATURES.map((f, i) => (
+            <Reveal key={f.title}>
+              <div className="group grid items-center gap-5 border-b border-hairline py-10 sm:grid-cols-[3rem_1fr_1.1fr_11rem] sm:gap-10 sm:py-12">
+                <span className="font-mono text-sm text-tertiary">0{i + 1}</span>
+                <h3 className="font-display text-3xl font-normal leading-tight tracking-[-0.035em] sm:text-4xl">{f.title}</h3>
+                <p className="max-w-md leading-relaxed text-muted-foreground">{f.body}</p>
+                <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-surface sm:w-44">
+                  <RecipeThumb settings={look(f.sim)} className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105" />
+                </div>
+              </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
-      {/* COMPATIBILITY */}
-      <section className="mx-auto max-w-6xl px-5 pb-28">
+      {/* TRY IT */}
+      <section id="try" className="mx-auto max-w-6xl scroll-mt-24 px-5 sm:px-8 lg:px-10 pt-40 sm:pt-56">
         <Reveal>
-          <div className="rounded-[32px] border border-hairline bg-surface p-8 sm:p-12">
-            <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Made for the X-T30 III.</h2>
-            <p className="mt-3 max-w-2xl text-muted-foreground">Ranges, simulations and slot behaviour are modelled on the X-T30 III (X-Trans CMOS 4, X-Processor 5). Recipes written for other bodies import fine — FilmLab flags anything the X-T30 III can&apos;t do.</p>
-            <div className="mt-8 flex flex-wrap gap-2.5">
-              {CAMERAS.map((c, i) => (
-                <span key={c.name} className={i === 0 ? "inline-flex items-center gap-2 rounded-full border border-primary bg-accent px-4 py-2 font-semibold text-primary" : "inline-flex items-center gap-2 rounded-full border border-hairline bg-surface-raised px-4 py-2 font-semibold"}>
-                  {i === 0 ? <Check className="size-4" /> : <CircleDashed className="size-4 text-muted-foreground" />}{c.name}
-                  <span className="text-xs font-medium text-muted-foreground">{c.status}</span>
-                </span>
-              ))}
-            </div>
-          </div>
+          <SectionTitle aside={<p className="max-w-xs text-muted-foreground">Pick a simulation, drag the divider, or drop in your own photo. It renders in your browser.</p>}>Try it</SectionTitle>
         </Reveal>
+        <Reveal delay={0.08} className="mt-16"><TryIt /></Reveal>
+      </section>
+
+      {/* CAMERAS — awards-style rows */}
+      <section className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10 pt-40 sm:pt-56">
+        <Reveal><SectionTitle>Cameras</SectionTitle></Reveal>
+        <div className="mt-16 border-t border-hairline">
+          {CAMERAS.map(([name, status, note], i) => (
+            <Reveal key={name}>
+              <div className="grid grid-cols-[1fr_auto] items-baseline gap-x-6 gap-y-1 border-b border-hairline py-7 sm:grid-cols-[1.2fr_1fr_1fr] sm:py-9">
+                <span className="font-display text-2xl font-normal tracking-[-0.03em] sm:text-3xl">{name}</span>
+                <span className={i === 0 ? "text-sm font-medium" : "text-sm text-muted-foreground"}>{status}</span>
+                <span className="col-span-2 text-sm text-tertiary sm:col-span-1 sm:text-right">{note}</span>
+              </div>
+            </Reveal>
+          ))}
+        </div>
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="mx-auto max-w-3xl px-5 pb-28">
-        <Reveal><h2 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Questions</h2></Reveal>
-        <Reveal delay={0.08}>
-          <Accordion className="mt-8">
+      <section id="faq" className="mx-auto grid max-w-6xl scroll-mt-24 gap-12 px-5 sm:px-8 lg:px-10 pt-40 sm:pt-56 lg:grid-cols-[1fr_1.5fr]">
+        <Reveal><SectionTitle>FAQ</SectionTitle></Reveal>
+        <Reveal delay={0.06}>
+          <Accordion className="border-t border-hairline">
             {FAQ.map(([q, a]) => (
               <AccordionItem key={q} value={q} className="border-hairline">
-                <AccordionTrigger className="py-5 text-left font-display text-lg font-semibold hover:no-underline">{q}</AccordionTrigger>
-                <AccordionContent className="pb-5 text-base leading-relaxed text-muted-foreground">{a}</AccordionContent>
+                <AccordionTrigger className="py-7 text-left font-display text-xl font-normal tracking-[-0.02em] hover:no-underline">{q}</AccordionTrigger>
+                <AccordionContent className="pb-7 pr-8 text-base leading-relaxed text-muted-foreground">{a}</AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
         </Reveal>
       </section>
 
-      {/* CTA BAND */}
-      <section className="px-5 pb-28">
+      {/* CTA — card on a photo */}
+      <section className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10 pt-40 sm:pt-56">
         <Reveal>
-          <div className="relative mx-auto max-w-6xl overflow-hidden rounded-[36px] border border-hairline bg-surface px-8 py-16 text-center sm:py-20">
-            <div className="fl-glow pointer-events-none absolute inset-0" />
-            <ScanText className="relative mx-auto size-10 text-primary" />
-            <h2 className="relative mt-5 font-display text-4xl font-bold tracking-tight sm:text-6xl">Your next look is<br /><span className="italic text-primary">one recipe away.</span></h2>
-            <div className="relative mt-9 flex flex-wrap justify-center gap-3">
-              <Link href="/recipes" className="rounded-full bg-primary px-7 py-3.5 font-bold text-primary-foreground transition-transform active:scale-95">Browse recipes</Link>
-              <Link href="/#try" className="rounded-full border border-white/25 px-7 py-3.5 font-bold transition-colors hover:bg-white/10">Try the preview</Link>
+          <div className="relative overflow-hidden rounded-[var(--fl-notch)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={DEFAULT_PHOTO} alt="" aria-hidden className="absolute inset-0 size-full object-cover" style={{ objectPosition: HERO.position }} />
+            <div className="relative flex min-h-[600px] items-end p-3 sm:p-8">
+              <div className="w-full max-w-md rounded-[20px] bg-background p-8 sm:p-12">
+                <p className="font-display text-4xl font-normal leading-[0.95] tracking-[-0.045em] sm:text-5xl">Your next look is one recipe away.</p>
+                <p className="mt-5 leading-relaxed text-muted-foreground">Browse the collection, or drop a screenshot into the app and let FilmLab read it.</p>
+                <div className="mt-9 flex flex-wrap gap-3">
+                  <Link href="/recipes" className={pillDark}>Browse recipes {arrow}</Link>
+                  <Link href="/#try" className={pillSoft}>Try the preview</Link>
+                </div>
+              </div>
             </div>
           </div>
         </Reveal>

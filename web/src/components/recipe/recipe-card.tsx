@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Film } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { FILM_SIMULATION_NAMES, type FilmSimulation, type RecipeSettings } from "@/lib/recipe/schema";
 import { RecipeThumb } from "./recipe-thumb";
 import { cn } from "@/lib/utils";
@@ -16,27 +16,30 @@ export type RecipeCardData = {
 const coverLabel = (kind: string | null) =>
   kind === "camera-jpeg" ? "Camera JPEG" : kind === "approximate-preview" ? "Approximate" : "Photo";
 
-/** Large rounded photo card — the web twin of the app's PhotoRecipeCard. */
-export function RecipeCard({ r, className }: { r: RecipeCardData; className?: string }) {
+/** Project-style card: big rounded photo, name and simulation underneath. */
+export function RecipeCard({ r, className, size = "md" }: { r: RecipeCardData; className?: string; size?: "md" | "lg" }) {
+  const img = "size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]";
   return (
-    <Link href={`/recipes/${r.slug}`} className={cn("group block focus-visible:outline-none", className)}>
-      <div className="relative aspect-square overflow-hidden rounded-card border border-hairline bg-surface transition-all duration-500 ease-out group-hover:-translate-y-1 group-hover:border-white/20 group-hover:shadow-[0_24px_60px_-20px_rgba(51,166,145,.45)] group-focus-visible:ring-2 group-focus-visible:ring-primary">
+    <Link href={`/recipes/${r.slug}`} className={cn("group block rounded-[var(--fl-radius-card)] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-foreground", className)}>
+      <div className="relative aspect-[4/3] overflow-hidden rounded-[var(--fl-radius-card)] bg-surface">
         {r.cover ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={r.cover.url} alt="" className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]" />
+          <img src={r.cover.url} alt="" className={img} />
         ) : (
-          <RecipeThumb settings={r.settings} className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]" />
+          <RecipeThumb settings={r.settings} className={img} />
         )}
-        <span className="absolute bottom-3 right-3 rounded-full bg-black/55 px-3 py-1.5 text-xs font-bold backdrop-blur-md">
+        <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-black backdrop-blur">
           {r.cover ? coverLabel(r.cover.kind) : "Approximate"}
         </span>
       </div>
-      <div className="mt-3 px-1">
-        <div className="truncate font-display text-lg font-bold tracking-tight">{r.name}</div>
-        <div className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Film className="size-4 shrink-0 text-primary" />
-          <span className="truncate">{FILM_SIMULATION_NAMES[r.filmSimulation]}{r.author ? ` · ${r.author}` : ""}</span>
+      <div className="mt-5 flex items-start justify-between gap-4 px-0.5">
+        <div className="min-w-0">
+          <div className={cn("truncate font-display font-normal tracking-[-0.03em]", size === "lg" ? "text-2xl sm:text-3xl" : "text-xl")}>{r.name}</div>
+          <div className="mt-1.5 truncate text-sm text-muted-foreground">
+            {FILM_SIMULATION_NAMES[r.filmSimulation]}{r.author ? ` · ${r.author}` : ""}
+          </div>
         </div>
+        <ArrowUpRight className="mt-1 size-5 shrink-0 text-tertiary transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-foreground" />
       </div>
     </Link>
   );

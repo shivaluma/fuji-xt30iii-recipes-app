@@ -1,38 +1,37 @@
 import { display, LABELS, type FieldKey, type RecipeSettings } from "@/lib/recipe/schema";
 import { cn } from "@/lib/utils";
 
-const SECONDARY: FieldKey[] = [
-  "colorChrome", "colorChromeFXBlue", "dynamicRange", "highlight", "shadow",
-  "color", "sharpness", "highISONR", "clarity", "dRangePriority",
-  "grainSize", "monochromaticWarmCool", "monochromaticMagentaGreen", "suggestedExposureCompensation",
+const FIELDS: FieldKey[] = [
+  "dynamicRange", "dRangePriority", "highlight", "shadow", "color", "clarity",
+  "sharpness", "highISONR", "colorChrome", "colorChromeFXBlue", "grainRoughness", "grainSize",
+  "monochromaticWarmCool", "monochromaticMagentaGreen", "suggestedExposureCompensation",
 ];
 
-function Tile({ label, value, big }: { label: string; value: string; big?: boolean }) {
-  const muted = value === "—" || value === "n/a";
+function Row({ label, value, wide }: { label: string; value: string; wide?: boolean }) {
+  const unset = value === "—";
   return (
-    <div className={cn("rounded-small border border-hairline bg-surface-raised/70 px-3 py-3 text-center", big && "py-4")}>
-      <div className={cn("font-display font-semibold tabular-nums", big ? "text-lg" : "text-base", muted && "text-tertiary")}>{value}</div>
-      <div className="mt-1 text-[10px] font-semibold uppercase tracking-[.14em] text-muted-foreground">{label}</div>
+    <div className={cn("flex items-baseline justify-between gap-4 border-b border-hairline py-4", wide && "sm:col-span-2")}>
+      <dt className="shrink-0 text-sm text-muted-foreground">{label}</dt>
+      <dd className={cn("text-right font-medium tabular-nums", unset && "text-tertiary")}>{value}</dd>
     </div>
   );
 }
 
-/** Recipe settings as tiles. Unset values show "—" (camera keeps its own value). */
+/** Recipe settings as a two-column spec list. Unset values show "—" (camera keeps its own value). */
 export function SettingsGrid({ settings }: { settings: RecipeSettings }) {
-  const wb = display(settings, "whiteBalance");
   const kelvin = display(settings, "kelvin");
+  const wb = kelvin !== "n/a" && kelvin !== "—" ? kelvin : display(settings, "whiteBalance");
   const red = display(settings, "wbShiftRed"), blue = display(settings, "wbShiftBlue");
-  const visible = SECONDARY.filter((k) => display(settings, k) !== "n/a");
+  const shift = red === "—" && blue === "—" ? "—" : `R ${red} · B ${blue}`;
+  const rows: [string, string][] = [
+    ["White balance", wb],
+    ["WB shift", shift],
+    ...FIELDS.filter((k) => display(settings, k) !== "n/a").map((k) => [LABELS[k], display(settings, k)] as [string, string]),
+  ];
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-        <Tile big label="Film simulation" value={display(settings, "filmSimulation")} />
-        <Tile big label={`WB · R ${red} B ${blue}`} value={kelvin !== "n/a" && kelvin !== "—" ? kelvin : wb} />
-        <Tile big label="Grain effect" value={display(settings, "grainRoughness")} />
-      </div>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {visible.map((k) => <Tile key={k} label={LABELS[k]} value={display(settings, k)} />)}
-      </div>
-    </div>
+    <dl className="grid border-t border-hairline sm:grid-cols-2 sm:gap-x-12">
+      <Row wide label="Film simulation" value={display(settings, "filmSimulation")} />
+      {rows.map(([label, value]) => <Row key={label} label={label} value={value} />)}
+    </dl>
   );
 }

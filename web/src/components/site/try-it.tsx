@@ -11,8 +11,8 @@ export function TryIt() {
   const [sim, setSim] = useState<FilmSimulation>("classicChrome");
   const settings = useMemo(() => RecipeSettingsSchema.parse({ filmSimulation: sim }), [sim]);
   return (
-    <div className="space-y-5">
-      <div className="flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+    <div className="space-y-6">
+      <div className="flex gap-2.5 overflow-x-auto pb-1 [scrollbar-width:none]">
         {PICKS.map((s) => (
           <Chip key={s} active={sim === s} onClick={() => setSim(s)} className="shrink-0">{FILM_SIMULATION_NAMES[s]}</Chip>
         ))}

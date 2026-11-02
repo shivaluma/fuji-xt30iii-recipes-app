@@ -7,8 +7,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-geist-sans), system-ui, sans-serif;
-  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", var(--font-geist-sans), system-ui, sans-serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-inter-tight), var(--font-inter), system-ui, sans-serif;
   --color-surface: var(--fl-surface);
   --color-surface-raised: var(--fl-surface-raised);
   --color-hairline: var(--fl-hairline);
@@ -59,48 +59,49 @@
 }
 
 
-:root, .dark {
-  /* FilmLab design tokens — mirrored 1:1 from the iOS app (FilmLab/SharedUI/Theme.swift). */
-  --fl-background: #000000;
-  --fl-surface: #1c1c1d;          /* Theme.surface (0.11, 0.11, 0.115) */
-  --fl-surface-raised: #2b2b2e;   /* Theme.surfaceRaised (0.17, 0.17, 0.18) */
-  --fl-hairline: rgb(255 255 255 / 9%);
-  --fl-text: rgb(255 255 255 / 96%);
-  --fl-text-secondary: rgb(255 255 255 / 55%);
-  --fl-text-tertiary: rgb(255 255 255 / 35%);
-  --fl-accent: #33a691;           /* Theme.accent (0.20, 0.65, 0.57) — teal */
-  --fl-accent-muted: rgb(51 166 145 / 18%);
-  --fl-on-accent: #000000;
-  --fl-warning: #fabf4d;
-  --fl-danger: #f26159;
-  --fl-authentic: #5cd19e;
-  --fl-radius-card: 22px;         /* Theme.corner */
-  --fl-radius-small: 16px;        /* Theme.cornerSmall */
+:root {
+  /* FilmLab web design tokens — light, neutral, editorial. Photos carry the colour; the UI stays quiet. */
+  --fl-background: #ffffff;
+  --fl-surface: #f3f3f1;          /* soft panels: nav box, inputs, cards */
+  --fl-surface-raised: #e8e8e5;   /* hover / pressed */
+  --fl-hairline: #e6e6e3;
+  --fl-text: #0c0c0c;
+  --fl-text-secondary: #6a6a67;
+  --fl-text-tertiary: #9b9b97;
+  --fl-accent: #0c0c0c;           /* primary actions are ink-black pills */
+  --fl-accent-muted: #f3f3f1;
+  --fl-on-accent: #ffffff;
+  --fl-warning: #b7791f;
+  --fl-danger: #cf3f3a;
+  --fl-authentic: #2f7d55;
+  --fl-radius-card: 24px;
+  --fl-radius-small: 16px;
+  --fl-notch: 28px;               /* hero cut-out radius */
 
   --background: var(--fl-background);
   --foreground: var(--fl-text);
-  --card: var(--fl-surface);
+  --card: var(--fl-background);
   --card-foreground: var(--fl-text);
-  --popover: var(--fl-surface-raised);
+  --popover: var(--fl-background);
   --popover-foreground: var(--fl-text);
   --primary: var(--fl-accent);
   --primary-foreground: var(--fl-on-accent);
-  --secondary: var(--fl-surface-raised);
+  --secondary: var(--fl-surface);
   --secondary-foreground: var(--fl-text);
   --muted: var(--fl-surface);
   --muted-foreground: var(--fl-text-secondary);
-  --accent: var(--fl-accent-muted);
-  --accent-foreground: var(--fl-accent);
+  --accent: var(--fl-surface);
+  --accent-foreground: var(--fl-text);
   --destructive: var(--fl-danger);
   --border: var(--fl-hairline);
-  --input: rgb(255 255 255 / 12%);
-  --ring: var(--fl-accent);
-  --chart-1: var(--fl-accent);
-  --chart-2: #6aa8f0;
+  --input: #dededa;
+  --ring: rgb(12 12 12 / 35%);
+  --chart-1: #0c0c0c;
+  --chart-2: #5b7fa6;
   --chart-3: var(--fl-warning);
   --chart-4: var(--fl-danger);
-  --chart-5: #b48ef0;
-  --radius: 1rem;
+  --chart-5: #8a7bb8;
+  --radius: 0.875rem;
   --sidebar: var(--fl-surface);
   --sidebar-foreground: var(--fl-text);
   --sidebar-primary: var(--fl-accent);
@@ -108,7 +109,7 @@
   --sidebar-accent: var(--fl-surface-raised);
   --sidebar-accent-foreground: var(--fl-text);
   --sidebar-border: var(--fl-hairline);
-  --sidebar-ring: var(--fl-accent);
+  --sidebar-ring: var(--ring);
 }
 
 @layer base {
@@ -122,19 +123,11 @@
     @apply font-sans;
   }
 }
-/* ---------- FilmLab motion ---------- */
-@keyframes fl-marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.fl-marquee { animation: fl-marquee 40s linear infinite; }
-.fl-marquee:hover { animation-play-state: paused; }
-@keyframes fl-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-.fl-float { animation: fl-float 6s ease-in-out infinite; }
-@keyframes fl-grain { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(-2%, 1%); } 50% { transform: translate(1%, -2%); } 75% { transform: translate(2%, 2%); } }
-.fl-grain::after {
-  content: ""; position: absolute; inset: -10%; pointer-events: none; opacity: .07; mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-  animation: fl-grain 1.2s steps(4) infinite;
-}
-.fl-glow { background: radial-gradient(60% 60% at 50% 0%, rgb(51 166 145 / 22%), transparent 70%); }
-@media (prefers-reduced-motion: reduce) {
-  .fl-marquee, .fl-float, .fl-grain::after { animation: none !important; }
-}
+/* ---------- Hero cut-outs ----------
+   A notch is a background-coloured panel laid over a photo. These squares round the photo's edge
+   where it meets the panel ("inverted corners"). The suffix is where the circle's centre sits:
+   br → photo gets a rounded top-left corner, bl → top-right, tr → bottom-left. */
+.fl-notch { position: absolute; width: var(--fl-notch); height: var(--fl-notch); pointer-events: none; }
+.fl-notch-br { background: radial-gradient(circle at 100% 100%, transparent calc(var(--fl-notch) - .5px), var(--background) var(--fl-notch)); }
+.fl-notch-bl { background: radial-gradient(circle at 0 100%, transparent calc(var(--fl-notch) - .5px), var(--background) var(--fl-notch)); }
+.fl-notch-tr { background: radial-gradient(circle at 100% 0, transparent calc(var(--fl-notch) - .5px), var(--background) var(--fl-notch)); }

@@ -22,7 +22,7 @@ export function HeroPreview({ settings }: { settings: RecipeSettings }) {
       original={pair?.o ?? null}
       processed={pair?.r ?? null}
       className="w-full"
-      badge={<span className="rounded-full border border-hairline bg-black/60 px-3 py-1.5 text-xs font-semibold backdrop-blur">Approximate preview · drag to compare</span>}
+      badge={<span className="rounded-full bg-white/90 px-2.5 py-1 text-[11px] font-medium text-black backdrop-blur">Approximate preview · drag to compare</span>}
     />
   );
 }

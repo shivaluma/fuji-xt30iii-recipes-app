@@ -13,7 +13,7 @@ RUN corepack enable
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-# The build prerenders pages from a throwaway database seeded from data/seed-recipes.json.
+# The build prerenders pages from a throwaway (empty) database.
 ENV DATA_DIR=/tmp/build-data
 RUN pnpm build
 
@@ -29,9 +29,6 @@ RUN groupadd --system --gid 1001 nodejs && useradd --system --uid 1001 --gid nod
 COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=build --chown=nextjs:nodejs /app/public ./public
-# Seed file lives outside the data volume so mounting /app/data doesn't hide it.
-COPY --from=build --chown=nextjs:nodejs /app/data/seed-recipes.json ./seed/seed-recipes.json
-ENV SEED_PATH=/app/seed/seed-recipes.json
 USER nextjs
 EXPOSE 3000
 # Mount a persistent volume here: SQLite database + uploaded covers.
