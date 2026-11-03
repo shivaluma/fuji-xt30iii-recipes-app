@@ -13,3 +13,16 @@ export const HERO = {
 
 /** Default photo for recipe thumbnails, recipe previews and app mock-ups (same as the hero). */
 export const DEFAULT_PHOTO = HERO.src;
+
+/** Canonical origin for metadata, sitemap and structured data. Override with NEXT_PUBLIC_SITE_URL. */
+export const SITE = {
+  url: (process.env.NEXT_PUBLIC_SITE_URL || "https://filmlab.requiem.one").replace(/\/+$/, ""),
+  name: "FilmLab",
+  title: "FilmLab — film recipes for Fujifilm X-Trans IV & V",
+  description:
+    "Preview Fujifilm film simulation recipes for X-Trans IV and X-Trans V cameras on your own photos, see which bodies each recipe works on, and read recipes from screenshots. Unofficial; not affiliated with Fujifilm.",
+  keywords: [
+    "Fujifilm recipes", "film simulation recipes", "Fuji recipes", "X-Trans IV recipes", "X-Trans V recipes",
+    "Classic Chrome", "Classic Negative", "Nostalgic Negative", "Reala Ace", "Acros", "X-T30 III", "X100VI", "X-T5",
+  ],
+};

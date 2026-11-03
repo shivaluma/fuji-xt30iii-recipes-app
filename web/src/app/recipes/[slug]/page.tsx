@@ -12,6 +12,8 @@ import { GENERATION_LABEL, inferGeneration } from "@/lib/recipe/cameras";
 import { Reveal } from "@/components/site/reveal";
 import { FILM_SIMULATION_NAMES, type FieldKey } from "@/lib/recipe/schema";
 import { publishedRecipe, publishedRecipes } from "@/lib/server/data";
+import { JsonLd } from "@/components/site/json-ld";
+import { SITE } from "@/lib/site-config";
 
 /** Prerender published recipes; new ones render on first request. (Cache Components needs ≥1 entry.) */
 export async function generateStaticParams() {
@@ -21,9 +23,29 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps<"/recipes/[slug]">): Promise<Metadata> {
   const r = await publishedRecipe((await params).slug);
-  if (!r) return {};
+  if (!r) return { title: "Recipe not found", robots: { index: false } };
+  const title = `${r.name} — ${FILM_SIMULATION_NAMES[r.filmSimulation]} recipe`;
+  const description = describe(r);
+  const url = `/recipes/${r.slug}`;
+  const author = r.recipe.provenance.author ?? (r.recipe.provenance.kind === "filmLabOriginal" ? "FilmLab" : undefined);
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article", url, title: `${title} · FilmLab`, description,
+      publishedTime: r.publishedAt ?? undefined, modifiedTime: r.updatedAt, authors: author ? [author] : undefined,
+    },
+    twitter: { card: "summary_large_image", title: `${title} · FilmLab`, description },
+  };
+}
+
+/** Search snippet: the curator's summary, else a generated line naming the look and the cameras. */
+function describe(r: NonNullable<Awaited<ReturnType<typeof publishedRecipe>>>) {
   const g = inferGeneration(r.recipe);
-  return { title: r.name, description: r.summary || `${FILM_SIMULATION_NAMES[r.filmSimulation]} film recipe for Fujifilm ${g ? GENERATION_LABEL[g] : "X-Trans"} cameras` };
+  const base = `${r.name}: a ${FILM_SIMULATION_NAMES[r.filmSimulation]} film simulation recipe for Fujifilm ${g ? GENERATION_LABEL[g] : "X-Trans"} cameras.`;
+  const text = r.summary ? `${r.summary.trim()} ${base}` : `${base} Full settings, compatible bodies, and a live preview on your own photo.`;
+  return text.length > 300 ? `${text.slice(0, 297).trimEnd()}…` : text;
 }
 
 const BEST_FOR: Record<string, string> = {
@@ -48,8 +70,36 @@ async function Recipe({ params }: { params: PageProps<"/recipes/[slug]">["params
   const generation = inferGeneration(r);
   const madeFor = r.compatibleCameras.find((c) => c !== "X-T30 III") ?? null;
 
+  const pageUrl = `${SITE.url}/recipes/${row.slug}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "CreativeWork", "@id": `${pageUrl}#recipe`, url: pageUrl, name: r.name, description: describe(row),
+        genre: "Film simulation recipe", inLanguage: "en",
+        about: [{ "@type": "Thing", name: `${FILM_SIMULATION_NAMES[s.filmSimulation]} film simulation` }, ...(generation ? [{ "@type": "Thing", name: `Fujifilm ${GENERATION_LABEL[generation]}` }] : [])],
+        keywords: [FILM_SIMULATION_NAMES[s.filmSimulation], ...(generation ? [GENERATION_LABEL[generation]] : []), ...bestFor].join(", "),
+        image: row.photos.length ? row.photos.map((p) => `${SITE.url}/api/media/${p.file}`) : `${pageUrl}/opengraph-image`,
+        ...(row.publishedAt ? { datePublished: row.publishedAt } : {}),
+        dateModified: row.updatedAt,
+        ...(author ? { author: author === "FilmLab" ? { "@id": `${SITE.url}/#org` } : { "@type": "Person", name: author } } : {}),
+        publisher: { "@id": `${SITE.url}/#org` },
+        isPartOf: { "@id": `${SITE.url}/#website` },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "FilmLab", item: SITE.url },
+          { "@type": "ListItem", position: 2, name: "Recipes", item: `${SITE.url}/recipes` },
+          { "@type": "ListItem", position: 3, name: r.name, item: pageUrl },
+        ],
+      },
+    ],
+  };
+
   return (
     <>
+      <JsonLd data={jsonLd} />
       <div className="flex items-center justify-between gap-3">
         <Link href="/recipes" className="group inline-flex items-center gap-1.5 text-sm font-medium transition-opacity hover:opacity-60">
           <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" /> All recipes

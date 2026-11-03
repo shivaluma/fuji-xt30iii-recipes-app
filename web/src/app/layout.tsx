@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteNav } from "@/components/site/site-nav";
+import { SITE } from "@/lib/site-config";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin", "vietnamese"] });
@@ -10,9 +11,20 @@ const interTight = Inter_Tight({ variable: "--font-inter-tight", subsets: ["lati
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: { default: "FilmLab — film recipes for Fujifilm X-Trans IV & V", template: "%s · FilmLab" },
-  description: "Preview film simulation recipes for Fujifilm X-Trans IV and X-Trans V cameras on your own photos, see which bodies each recipe works on, and read recipes from screenshots. Unofficial; not affiliated with Fujifilm.",
+  metadataBase: new URL(SITE.url),
+  title: { default: SITE.title, template: "%s · FilmLab" },
+  description: SITE.description,
+  applicationName: SITE.name,
+  keywords: SITE.keywords,
+  category: "photography",
+  creator: SITE.name,
+  formatDetection: { telephone: false, email: false, address: false },
+  openGraph: { type: "website", siteName: SITE.name, locale: "en_US", title: SITE.title, description: SITE.description },
+  twitter: { card: "summary_large_image", title: SITE.title, description: SITE.description },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 } },
 };
+
+export const viewport: Viewport = { themeColor: "#ffffff", colorScheme: "light" };
 
 const FOOTER_LINKS = [
   { title: "Explore", links: [{ href: "/recipes", label: "All recipes" }, { href: "/#try", label: "Try it" }, { href: "/#features", label: "Features" }, { href: "/#faq", label: "FAQ" }] },

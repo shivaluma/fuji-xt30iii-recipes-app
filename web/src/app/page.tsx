@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { JsonLd } from "@/components/site/json-ld";
 import { ArrowUpRight } from "lucide-react";
 import { RecipeCard } from "@/components/recipe/recipe-card";
 import { RecipeThumb } from "@/components/recipe/recipe-thumb";
@@ -9,7 +11,9 @@ import { TryIt } from "@/components/site/try-it";
 import { FILM_SIMULATION_NAMES, RecipeSettingsSchema, type FilmSimulation } from "@/lib/recipe/schema";
 import { publishedRecipes, toCard } from "@/lib/server/data";
 import { GENERATIONS, GENERATION_LABEL, camerasIn } from "@/lib/recipe/cameras";
-import { DEFAULT_PHOTO, HERO } from "@/lib/site-config";
+import { DEFAULT_PHOTO, HERO, SITE } from "@/lib/site-config";
+
+export const metadata: Metadata = { alternates: { canonical: "/" }, openGraph: { url: "/" } };
 
 const look = (sim: FilmSimulation) => RecipeSettingsSchema.parse({ filmSimulation: sim });
 
@@ -60,8 +64,24 @@ export default async function Home() {
   const recipes = (await publishedRecipes()).map(toCard);
   const enter = "animate-in fade-in slide-in-from-bottom-4 fill-mode-both duration-700 ease-out motion-reduce:animate-none";
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite", "@id": `${SITE.url}/#website`, url: SITE.url, name: SITE.name, description: SITE.description, inLanguage: "en",
+        potentialAction: { "@type": "SearchAction", target: { "@type": "EntryPoint", urlTemplate: `${SITE.url}/recipes?q={search_term_string}` }, "query-input": "required name=search_term_string" },
+      },
+      { "@type": "Organization", "@id": `${SITE.url}/#org`, name: SITE.name, url: SITE.url, logo: `${SITE.url}/apple-icon`, sameAs: ["https://github.com/shivaluma/fuji-xt30iii-recipes-app"] },
+      {
+        "@type": "FAQPage", "@id": `${SITE.url}/#faq`,
+        mainEntity: FAQ.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+      },
+    ],
+  };
+
   return (
     <>
+      <JsonLd data={jsonLd} />
       {/* HERO — photo with cut-out panels (desktop); stacked on mobile */}
       <section className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10 pt-10 sm:pt-20">
         <h1 className={`font-display text-[13vw] font-normal leading-[0.92] tracking-[-0.055em] sm:text-7xl lg:hidden ${enter}`}>

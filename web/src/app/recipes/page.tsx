@@ -9,8 +9,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { FILM_SIMULATION_NAMES, FILM_SIMULATIONS, type FilmSimulation } from "@/lib/recipe/schema";
 import { publishedRecipes, toCard } from "@/lib/server/data";
 import { cn } from "@/lib/utils";
+import { JsonLd } from "@/components/site/json-ld";
+import { SITE } from "@/lib/site-config";
 
-export const metadata: Metadata = { title: "Recipes" };
+export const metadata: Metadata = {
+  title: "Fujifilm film simulation recipes",
+  description: "Browse film simulation recipes for Fujifilm X-Trans IV and X-Trans V cameras. Filter by look or camera, see the full settings, and preview each recipe on your own photo.",
+  // Filtered/search views (?sim, ?gen, ?camera, ?q) all point at the main list.
+  alternates: { canonical: "/recipes" },
+  openGraph: { url: "/recipes", title: "Fujifilm film simulation recipes · FilmLab" },
+  twitter: { card: "summary_large_image", title: "Fujifilm film simulation recipes · FilmLab" },
+};
 
 const chip = (active: boolean) =>
   cn("shrink-0 rounded-full border px-3.5 py-1.5 text-sm transition-colors active:scale-[.98]",
@@ -48,8 +57,22 @@ async function Results({ searchParams }: { searchParams: PageProps<"/recipes">["
     );
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Fujifilm film simulation recipes",
+    url: `${SITE.url}/recipes`,
+    isPartOf: { "@id": `${SITE.url}/#website` },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: all.length,
+      itemListElement: all.map((r, i) => ({ "@type": "ListItem", position: i + 1, url: `${SITE.url}/recipes/${r.slug}`, name: r.name })),
+    },
+  };
+
   return (
     <>
+      <JsonLd data={jsonLd} />
       <div className="space-y-5">
       <div className="flex flex-col gap-5 border-y border-hairline py-6 lg:flex-row lg:gap-8 lg:items-center">
         <form action="/recipes" className="relative lg:w-80 lg:shrink-0">
