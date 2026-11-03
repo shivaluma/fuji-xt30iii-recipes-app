@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronDown } from "lucide-react";
 import { GENERATIONS, GENERATION_LABEL, camerasIn } from "@/lib/recipe/cameras";
 
 /** "Works on my camera" picker for the recipes list; keeps the other filters in the URL. */
@@ -8,6 +9,7 @@ export function CameraFilter({ value }: { value?: string }) {
   const router = useRouter();
   const params = useSearchParams();
   return (
+    <span className="relative inline-flex">
     <select
       aria-label="Works on my camera"
       value={value ?? ""}
@@ -17,7 +19,7 @@ export function CameraFilter({ value }: { value?: string }) {
         p.delete("gen");
         router.push(p.size ? `/recipes?${p}` : "/recipes", { scroll: false });
       }}
-      className="h-9 rounded-full border border-hairline bg-background px-3.5 pr-8 text-sm outline-none transition-colors hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring"
+      className="h-9 cursor-pointer appearance-none rounded-full border border-hairline bg-background pl-4 pr-10 text-sm outline-none transition-colors hover:border-foreground/30 focus-visible:ring-2 focus-visible:ring-ring"
     >
       <option value="">Any camera</option>
       {GENERATIONS.map((g) => (
@@ -26,5 +28,8 @@ export function CameraFilter({ value }: { value?: string }) {
         </optgroup>
       ))}
     </select>
+    {/* Own chevron: the native arrow ignores padding and hugs the pill's rounded edge. */}
+    <ChevronDown aria-hidden className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+    </span>
   );
 }

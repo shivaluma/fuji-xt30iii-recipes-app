@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { ImagePlus, Loader2, Star, X } from "lucide-react";
+import { ImagePlus, Loader2, Star, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MAX_PHOTOS, PHOTO_KIND_LABELS, preparePhoto, type Draft, type PhotoKind } from "./lib";
 
@@ -42,10 +42,13 @@ export function PhotoManager({
               className="absolute right-2 top-2 grid size-7 place-items-center rounded-full bg-white/90 text-black opacity-0 shadow-sm transition-opacity group-hover:opacity-100 focus-visible:opacity-100">
               <X className="size-3.5" />
             </button>
-            <select value={p.kind} disabled={busy} onChange={(e) => onKind(p.id, e.target.value as PhotoKind)} aria-label="What this photo is"
-              className="absolute inset-x-2 bottom-2 h-8 rounded-full border-0 bg-white/90 px-3 text-xs text-black backdrop-blur">
-              {Object.entries(PHOTO_KIND_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
-            </select>
+            <div className="absolute inset-x-2 bottom-2">
+              <select value={p.kind} disabled={busy} onChange={(e) => onKind(p.id, e.target.value as PhotoKind)} aria-label="What this photo is"
+                className="h-8 w-full cursor-pointer appearance-none rounded-full border-0 bg-white/90 pl-3 pr-8 text-xs text-black backdrop-blur">
+                {Object.entries(PHOTO_KIND_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+              </select>
+              <ChevronDown aria-hidden className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-black/60" />
+            </div>
           </figure>
         ))}
         {room > 0 && (
