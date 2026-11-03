@@ -58,7 +58,12 @@ After deploying, in the iOS app go to **Library › Settings › Web showcase**,
 | DELETE | `/api/recipes/:slug` | token | Delete |
 | GET | `/api/recipes/:slug/export` | – | FilmLab transfer JSON (import in the app) |
 | POST | `/api/recipes/:slug/cover` | token | multipart `file` + `kind` = `photo` \| `camera-jpeg` \| `approximate-preview` |
-| GET | `/api/media/:file` | – | Uploaded cover |
+| GET | `/api/media/:file` | – | Uploaded cover or gallery photo |
+| GET | `/api/gallery?recipe=` | – | Gallery photos in display order, each with its linked recipe (links to drafts hidden; `&all=1` with token shows them) |
+| POST | `/api/gallery` | token | multipart: `file` parts (≤ 20, ≤ 15 MB each), each with optional `title`, `caption`, `recipe` (slug), `width`, `height` at the same index. New photos go first |
+| PATCH | `/api/gallery/:id` | token | `{title?, caption?, recipe?: slug \| null}` |
+| PUT | `/api/gallery` | token | `{order: [ids…]}` sets the display order |
+| DELETE | `/api/gallery/:id` | token | Removes the photo and its file |
 | POST | `/api/extract` | token | Image (multipart `file` or JSON `imageBase64`) and/or `text` → a **draft** plus `meta` (model, latency, tokens, cost). Nothing is stored or logged. Rate-limited to 30/hour. |
 
 ## Notes and limits
@@ -72,5 +77,9 @@ After deploying, in the iOS app go to **Library › Settings › Web showcase**,
 - **Copyright**
   - Recipe settings are facts. Credit the author (the draft keeps the credit it found).
   - Only upload cover images you own. The site labels covers as Photo, Camera JPEG or Approximate preview.
+- **Gallery** (`/gallery`, Admin › Gallery)
+  - Your favourite photos, each optionally linked to the recipe it was shot with. Recipe pages show the photos linked to them ("Shot with this recipe").
+  - Admin re-encodes uploads in the browser (3200 px long edge, JPEG 92%), so EXIF and GPS location never reach the server.
+  - Deleting a recipe unlinks its gallery photos instead of deleting them.
 - **Unknown recipe URLs** render the not-found page with `noindex`. With Partial Prerendering the HTTP status is 200, because the shell streams first.
 - **Caching:** public reads use `'use cache'` with tags, and writes call `revalidateTag(…, "max")`. The cache is in-memory per process (fine for one replica).

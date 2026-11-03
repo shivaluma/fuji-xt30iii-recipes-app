@@ -71,6 +71,19 @@ function open(): DatabaseSync {
       created_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS recipe_photos_recipe ON recipe_photos(recipe_id, position);
+    CREATE TABLE IF NOT EXISTS gallery_photos (
+      id TEXT PRIMARY KEY,
+      file TEXT NOT NULL,
+      title TEXT NOT NULL DEFAULT '',
+      caption TEXT NOT NULL DEFAULT '',
+      recipe_id TEXT,
+      width INTEGER,
+      height INTEGER,
+      position INTEGER NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS gallery_photos_position ON gallery_photos(position);
+    CREATE INDEX IF NOT EXISTS gallery_photos_recipe ON gallery_photos(recipe_id);
   `);
   // Additive migrations for existing databases.
   const columns = (db.prepare("PRAGMA table_info(recipes)").all() as { name: string }[]).map((c) => c.name);
@@ -222,6 +235,8 @@ export function deleteRecipe(slug: string) {
   const files = new Set([...row.photos.map((p) => p.file), ...(row.coverFile ? [row.coverFile] : [])]);
   files.forEach(removeFile);
   open().prepare("DELETE FROM recipe_photos WHERE recipe_id = ?").run(row.id);
+  // Gallery photos are the owner's favourites in their own right: keep them, just unlink.
+  open().prepare("UPDATE gallery_photos SET recipe_id = NULL WHERE recipe_id = ?").run(row.id);
   open().prepare("DELETE FROM recipes WHERE slug = ?").run(slug);
   return true;
 }
@@ -229,4 +244,104 @@ export function deleteRecipe(slug: string) {
 /** Counts a FilmLab-file download (public, unauthenticated; best-effort). */
 export function countDownload(slug: string) {
   open().prepare("UPDATE recipes SET downloads = downloads + 1 WHERE slug = ? AND status = 'published'").run(slug);
+}
+
+// ---------------------------------------------------------------------------------------------
+// Gallery: the owner's favourite photos, each optionally linked to the recipe it was shot with.
+
+export const MAX_GALLERY_PHOTOS = 500;
+
+/** The linked recipe as the gallery shows it. `published` false = linked to a draft (not linked publicly). */
+export type GalleryRecipeLink = { slug: string; name: string; filmSimulation: FilmRecipe["settings"]["filmSimulation"]; published: boolean };
+
+export type GalleryItem = {
+  id: string; file: string; title: string; caption: string;
+  width: number | null; height: number | null; position: number; createdAt: string;
+  recipe: GalleryRecipeLink | null;
+};
+
+type GalleryDBRow = {
+  id: string; file: string; title: string; caption: string; width: number | null; height: number | null; position: number; created_at: string;
+  r_slug: string | null; r_name: string | null; r_sim: string | null; r_status: string | null;
+};
+
+const toGalleryItem = (g: GalleryDBRow): GalleryItem => ({
+  id: g.id, file: g.file, title: g.title, caption: g.caption, width: g.width, height: g.height, position: g.position, createdAt: g.created_at,
+  recipe: g.r_slug
+    ? { slug: g.r_slug, name: g.r_name!, filmSimulation: g.r_sim as GalleryRecipeLink["filmSimulation"], published: g.r_status === "published" }
+    : null,
+});
+
+const GALLERY_SELECT = `SELECT g.id, g.file, g.title, g.caption, g.width, g.height, g.position, g.created_at,
+  r.slug AS r_slug, r.name AS r_name, r.film_simulation AS r_sim, r.status AS r_status
+  FROM gallery_photos g LEFT JOIN recipes r ON r.id = g.recipe_id`;
+
+/** In display order. Public callers pass `publicOnly`, which hides links to draft recipes. */
+export function listGallery(opts: { recipeSlug?: string; publicOnly?: boolean } = {}): GalleryItem[] {
+  const where = opts.recipeSlug ? "WHERE r.slug = ?" : "";
+  const rows = open().prepare(`${GALLERY_SELECT} ${where} ORDER BY g.position, g.created_at`)
+    .all(...(opts.recipeSlug ? [opts.recipeSlug] : [])) as GalleryDBRow[];
+  return rows.map(toGalleryItem)
+    .map((g) => (opts.publicOnly && g.recipe && !g.recipe.published ? { ...g, recipe: null } : g))
+    .filter((g) => !(opts.publicOnly && opts.recipeSlug && !g.recipe));
+}
+
+export function getGalleryItem(id: string): GalleryItem | null {
+  const row = open().prepare(`${GALLERY_SELECT} WHERE g.id = ?`).get(id) as GalleryDBRow | undefined;
+  return row ? toGalleryItem(row) : null;
+}
+
+const recipeIdFor = (slug: string | null | undefined) => {
+  if (!slug) return null;
+  const r = open().prepare("SELECT id FROM recipes WHERE slug = ?").get(slug) as { id: string } | undefined;
+  if (!r) throw new GalleryError(`No recipe “${slug}”`);
+  return r.id;
+};
+
+export class GalleryError extends Error {}
+
+/** Adds an uploaded file at the top of the gallery (newest favourites first). */
+export function addGalleryPhoto(file: string, meta: { title?: string; caption?: string; recipeSlug?: string | null; width?: number | null; height?: number | null }) {
+  const d = open();
+  const count = (d.prepare("SELECT COUNT(*) AS n FROM gallery_photos").get() as { n: number }).n;
+  if (count >= MAX_GALLERY_PHOTOS) throw new GalleryError(`The gallery holds up to ${MAX_GALLERY_PHOTOS} photos`);
+  const recipeId = recipeIdFor(meta.recipeSlug);
+  const top = (d.prepare("SELECT MIN(position) AS p FROM gallery_photos").get() as { p: number | null }).p;
+  const id = crypto.randomUUID();
+  d.prepare("INSERT INTO gallery_photos (id, file, title, caption, recipe_id, width, height, position, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+    .run(id, file, meta.title?.trim() ?? "", meta.caption?.trim() ?? "", recipeId, meta.width ?? null, meta.height ?? null,
+      (top ?? 1) - 1, new Date().toISOString());
+  return getGalleryItem(id)!;
+}
+
+/** `recipeSlug: null` unlinks; undefined leaves the link alone. */
+export function updateGalleryPhoto(id: string, patch: { title?: string; caption?: string; recipeSlug?: string | null }) {
+  const item = getGalleryItem(id);
+  if (!item) return null;
+  const d = open();
+  if (patch.title !== undefined) d.prepare("UPDATE gallery_photos SET title = ? WHERE id = ?").run(patch.title.trim(), id);
+  if (patch.caption !== undefined) d.prepare("UPDATE gallery_photos SET caption = ? WHERE id = ?").run(patch.caption.trim(), id);
+  if (patch.recipeSlug !== undefined) d.prepare("UPDATE gallery_photos SET recipe_id = ? WHERE id = ?").run(recipeIdFor(patch.recipeSlug), id);
+  return getGalleryItem(id);
+}
+
+/** Sets the display order to `ids`; photos not listed keep their relative order after them. */
+export function reorderGallery(ids: string[]) {
+  const d = open();
+  const current = (d.prepare("SELECT id FROM gallery_photos ORDER BY position, created_at").all() as { id: string }[]).map((r) => r.id);
+  const known = new Set(current);
+  const listed = [...new Set(ids)].filter((id) => known.has(id));
+  const order = [...listed, ...current.filter((id) => !listed.includes(id))];
+  const set = d.prepare("UPDATE gallery_photos SET position = ? WHERE id = ?");
+  d.exec("BEGIN");
+  try { order.forEach((id, i) => set.run(i, id)); d.exec("COMMIT"); } catch (e) { d.exec("ROLLBACK"); throw e; }
+  return listGallery();
+}
+
+export function deleteGalleryPhoto(id: string) {
+  const item = getGalleryItem(id);
+  if (!item) return false;
+  open().prepare("DELETE FROM gallery_photos WHERE id = ?").run(id);
+  removeFile(item.file);
+  return true;
 }

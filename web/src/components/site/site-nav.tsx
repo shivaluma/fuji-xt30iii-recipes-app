@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 
 const LINKS = [
   { href: "/recipes", label: "Recipes", mobile: true },
+  { href: "/gallery", label: "Gallery", mobile: true },
   { href: "/#try", label: "Try it", mobile: true },
   { href: "/#features", label: "Features" },
   { href: "/#faq", label: "FAQ" },
@@ -37,7 +38,7 @@ export function SiteNav() {
         <div className="flex items-center gap-5 rounded-2xl bg-surface px-5 py-3 sm:gap-8">
           <Link href="/" className="font-display text-[15px] font-semibold tracking-tight">©FilmLab</Link>
           {LINKS.map((l) => {
-            const active = l.href === "/recipes" && pathname.startsWith("/recipes");
+            const active = (l.href === "/recipes" || l.href === "/gallery") && pathname.startsWith(l.href);
             return (
               <Link
                 key={l.href}

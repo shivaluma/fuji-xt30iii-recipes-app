@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Download } from "lucide-react";
 import { HeroPreview } from "@/components/recipe/hero-preview";
 import { PhotoGallery } from "@/components/recipe/photo-gallery";
 import { RecipePreview } from "@/components/recipe/recipe-preview";
@@ -11,7 +11,8 @@ import { WorksOn } from "@/components/recipe/works-on";
 import { GENERATION_LABEL, inferGeneration } from "@/lib/recipe/cameras";
 import { Reveal } from "@/components/site/reveal";
 import { FILM_SIMULATION_NAMES, type FieldKey } from "@/lib/recipe/schema";
-import { publishedRecipe, publishedRecipes } from "@/lib/server/data";
+import { GalleryGrid } from "@/components/gallery/gallery-grid";
+import { publishedGallery, publishedRecipe, publishedRecipes, toTile } from "@/lib/server/data";
 import { JsonLd } from "@/components/site/json-ld";
 import { SITE } from "@/lib/site-config";
 
@@ -62,6 +63,7 @@ async function Recipe({ params }: { params: PageProps<"/recipes/[slug]">["params
   if (!row) notFound();
   const r = row.recipe;
   const s = r.settings;
+  const shotWith = await publishedGallery(row.slug);
   const settingCount = 1 + (Object.keys(s) as (FieldKey | "filmSimulation")[])
     .filter((k) => k !== "filmSimulation" && (s[k as FieldKey] as { state: string }).state === "value").length;
   const bestFor = [...new Set([...r.tags, ...r.moods.map((m) => MOOD_FALLBACK[m]).filter(Boolean)])]
@@ -168,6 +170,18 @@ async function Recipe({ params }: { params: PageProps<"/recipes/[slug]">["params
           {r.provenance.note && <p className="text-xs text-tertiary">{r.provenance.note}</p>}
         </div>
       </article>
+
+      {shotWith.length > 0 && (
+        <section className="mt-40 space-y-10 sm:mt-56">
+          <Reveal className="flex flex-wrap items-end justify-between gap-4">
+            <h2 className="font-display text-5xl font-normal uppercase leading-[0.88] tracking-[-0.05em] sm:text-6xl">Shot with this recipe</h2>
+            <Link href={`/gallery?recipe=${row.slug}`} className="inline-flex items-center gap-1 text-sm font-medium transition-opacity hover:opacity-60">
+              See in the gallery <ArrowUpRight className="size-3.5" />
+            </Link>
+          </Reveal>
+          <GalleryGrid photos={shotWith.slice(0, 6).map((g) => ({ ...toTile(g), recipe: null }))} />
+        </section>
+      )}
 
       <section className="mt-40 grid gap-12 sm:mt-56 lg:grid-cols-[1fr_1.6fr] lg:gap-20">
         <Reveal>

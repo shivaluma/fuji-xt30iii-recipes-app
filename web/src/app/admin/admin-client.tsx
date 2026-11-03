@@ -8,8 +8,9 @@ import { cn } from "@/lib/utils";
 import { ApiError, api, useToken } from "./lib";
 import { ImportPanel } from "./import-panel";
 import { RecipesPanel } from "./recipes-panel";
+import { GalleryPanel } from "./gallery-panel";
 
-type Tab = "import" | "recipes";
+type Tab = "import" | "recipes" | "gallery";
 
 export function AdminClient() {
   const [token, setToken] = useToken();
@@ -27,7 +28,7 @@ export function AdminClient() {
       </div>
 
       <div className="flex gap-8 border-b border-hairline">
-        {([["import", "Import"], ["recipes", "Recipes"]] as const).map(([k, label]) => (
+        {([["import", "Import"], ["recipes", "Recipes"], ["gallery", "Gallery"]] as const).map(([k, label]) => (
           <button key={k} type="button" onClick={() => setTab(k)} aria-pressed={tab === k}
             className={cn("-mb-px border-b-2 pb-4 font-display text-2xl tracking-[-0.03em] transition-colors",
               tab === k ? "border-foreground" : "border-transparent text-tertiary hover:text-foreground")}>
@@ -39,6 +40,7 @@ export function AdminClient() {
       {/* Both stay mounted so an import queue survives switching tabs. */}
       <div hidden={tab !== "import"}><ImportPanel token={token} onSaved={refresh} /></div>
       <div hidden={tab !== "recipes"}><RecipesPanel token={token} version={version} onChange={refresh} /></div>
+      <div hidden={tab !== "gallery"}><GalleryPanel token={token} version={version} /></div>
     </div>
   );
 }

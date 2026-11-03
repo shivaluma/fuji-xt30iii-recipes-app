@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: "#ffffff", colorScheme: "light" };
 
 const FOOTER_LINKS = [
-  { title: "Explore", links: [{ href: "/recipes", label: "All recipes" }, { href: "/#try", label: "Try it" }, { href: "/#features", label: "Features" }, { href: "/#faq", label: "FAQ" }] },
+  { title: "Explore", links: [{ href: "/recipes", label: "All recipes" }, { href: "/gallery", label: "Gallery" }, { href: "/#try", label: "Try it" }, { href: "/#features", label: "Features" }, { href: "/#faq", label: "FAQ" }] },
   { title: "Project", links: [{ href: "https://github.com/shivaluma/fuji-xt30iii-recipes-app", label: "GitHub" }, { href: "/admin", label: "Admin" }] },
 ];
 

@@ -74,3 +74,61 @@ describe("recipe photos", () => {
     expect(exists("c.jpg")).toBe(false);
   });
 });
+
+describe("gallery", () => {
+  let slug = "";
+  beforeAll(() => {
+    slug = db.upsertRecipe({ ...recipe, id: crypto.randomUUID().toUpperCase(), name: "Gallery Test Recipe" }, { status: "published" }).slug;
+  });
+
+  it("adds new favourites at the top, with an optional recipe link and size", () => {
+    ["g1.jpg", "g2.jpg", "g3.jpg"].forEach(touchFile);
+    db.addGalleryPhoto("g1.jpg", { title: "First" });
+    db.addGalleryPhoto("g2.jpg", { title: "  Second  ", recipeSlug: slug, width: 3200, height: 2133 });
+    db.addGalleryPhoto("g3.jpg", {});
+    const all = db.listGallery();
+    expect(all.map((g) => g.file)).toEqual(["g3.jpg", "g2.jpg", "g1.jpg"]);
+    const second = all[1];
+    expect(second.title).toBe("Second");
+    expect(second.recipe).toMatchObject({ slug, name: "Gallery Test Recipe", published: true });
+    expect([second.width, second.height]).toEqual([3200, 2133]);
+    expect(db.listGallery({ recipeSlug: slug }).map((g) => g.file)).toEqual(["g2.jpg"]);
+  });
+
+  it("rejects links to recipes that don't exist", () => {
+    expect(() => db.addGalleryPhoto("nope.jpg", { recipeSlug: "no-such-recipe" })).toThrow(db.GalleryError);
+  });
+
+  it("hides links to draft recipes from the public, but keeps them for the owner", () => {
+    db.updateMeta(slug, { status: "draft" });
+    const g2 = db.listGallery().find((g) => g.file === "g2.jpg")!;
+    expect(g2.recipe?.published).toBe(false);
+    expect(db.listGallery({ publicOnly: true }).find((g) => g.file === "g2.jpg")!.recipe).toBeNull();
+    expect(db.listGallery({ recipeSlug: slug, publicOnly: true })).toEqual([]);
+    db.updateMeta(slug, { status: "published" });
+  });
+
+  it("edits title, caption and link; null unlinks", () => {
+    const g1 = db.listGallery().find((g) => g.file === "g1.jpg")!;
+    const edited = db.updateGalleryPhoto(g1.id, { caption: "Kyoto, dusk", recipeSlug: slug })!;
+    expect(edited.caption).toBe("Kyoto, dusk");
+    expect(edited.recipe?.slug).toBe(slug);
+    expect(db.updateGalleryPhoto(g1.id, { recipeSlug: null })!.recipe).toBeNull();
+    expect(db.updateGalleryPhoto("missing", { title: "x" })).toBeNull();
+  });
+
+  it("reorders; unknown and missing ids are handled", () => {
+    const [a, b, c] = db.listGallery().map((g) => g.id);
+    expect(db.reorderGallery([c, "00000000-0000-0000-0000-000000000000", a]).map((g) => g.id)).toEqual([c, a, b]);
+  });
+
+  it("unlinks (not deletes) photos when their recipe is deleted; deleting a photo removes its file", () => {
+    const g2 = db.listGallery().find((g) => g.file === "g2.jpg")!;
+    db.deleteRecipe(slug);
+    expect(db.getGalleryItem(g2.id)!.recipe).toBeNull();
+    expect(exists("g2.jpg")).toBe(true);
+    expect(db.deleteGalleryPhoto(g2.id)).toBe(true);
+    expect(exists("g2.jpg")).toBe(false);
+    expect(db.deleteGalleryPhoto(g2.id)).toBe(false);
+  });
+});

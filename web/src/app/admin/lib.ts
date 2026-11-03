@@ -153,7 +153,7 @@ export async function uploadPhotos(token: string, slug: string, photos: { blob: 
  * Sample photos are re-encoded in the browser (max 2560 px, JPEG): smaller pages, and EXIF —
  * including GPS location — is dropped before anything is uploaded.
  */
-export async function preparePhoto(file: File, maxEdge = 2560): Promise<{ blob: Blob; previewUrl: string }> {
+export async function preparePhoto(file: File, maxEdge = 2560): Promise<{ blob: Blob; previewUrl: string; width: number; height: number }> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, maxEdge / Math.max(bitmap.width, bitmap.height));
   const w = Math.round(bitmap.width * scale), h = Math.round(bitmap.height * scale);
@@ -161,7 +161,7 @@ export async function preparePhoto(file: File, maxEdge = 2560): Promise<{ blob: 
   canvas.getContext("2d")!.drawImage(bitmap, 0, 0, w, h);
   bitmap.close();
   const blob = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.92 });
-  return { blob, previewUrl: URL.createObjectURL(blob) };
+  return { blob, previewUrl: URL.createObjectURL(blob), width: w, height: h };
 }
 
 /** Run async jobs with a fixed concurrency. */
@@ -171,3 +171,9 @@ export async function pool<T>(items: T[], limit: number, job: (item: T) => Promi
     for (let item = queue.shift(); item !== undefined; item = queue.shift()) await job(item);
   }));
 }
+
+/** A gallery photo as the admin API returns it. */
+export type GalleryPhoto = {
+  id: string; url: string; title: string; caption: string; width: number | null; height: number | null;
+  recipe: { slug: string; name: string; filmSimulation: FilmSimulation; published: boolean } | null;
+};
