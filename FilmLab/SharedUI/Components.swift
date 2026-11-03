@@ -15,8 +15,8 @@ struct FidelityBadge: View {
                 .monospacedDigit()
         }
         .padding(.horizontal, 10).padding(.vertical, 5)
-        .background(Theme.photoPill, in: Capsule())
-        .foregroundStyle(Theme.photoPillText)
+        .foregroundStyle(Color.primary)
+        .floatingCapsule()
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Preview type: \(fidelity.badge(model: model))\(stale ? ", outdated" : "")")
         .accessibilityIdentifier("fidelityBadge")
@@ -186,12 +186,11 @@ struct FilterChip: View {
     var body: some View {
         Button(action: action) {
             Text(title).font(.footnote.weight(.medium))
-                .padding(.horizontal, 14).padding(.vertical, 8)
-                .background(isOn ? Theme.accent : Theme.background, in: Capsule())
-                .overlay(Capsule().strokeBorder(isOn ? .clear : Theme.chipStroke, lineWidth: 1))
-                .foregroundStyle(isOn ? Theme.onAccent : Theme.textSecondary)
         }
-        .buttonStyle(.plain)
+        .tint(isOn ? Theme.accent : nil)
+        .foregroundStyle(isOn ? Theme.onAccent : Theme.textPrimary)
+        .chipStyle(selected: isOn)
+        .controlSize(.small)
         .accessibilityAddTraits(isOn ? .isSelected : [])
     }
 }

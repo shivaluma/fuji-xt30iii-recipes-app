@@ -129,9 +129,9 @@ struct CameraRecognitionTests {
         #expect(FilmRecipe(name: "t", settings: .neutral(.classicChrome), compatibleCameras: ["X-T30 III", "GFX100S"]).inferredGeneration == nil)
     }
 
-    @Test("Starter recipes are tagged: V only when they need a V simulation")
-    func starterTags() {
-        for r in StarterRecipes.all {
+    @Test("Fixture recipes are tagged: V only when they need a V simulation")
+    func fixtureTags() {
+        for r in TestRecipes.all {
             let vOnly = r.filmSimulation == .realaAce || r.filmSimulation == .nostalgicNeg
             #expect(r.xTransGeneration == (vOnly ? .v : .iv), "\(r.name)")
         }
@@ -202,13 +202,13 @@ struct CameraCompatibilityTests {
         #expect(notes[0].message.contains("community-reported"))
     }
 
-    @Test("Every X-Trans IV starter works on the X-T4 and every starter on the X-T30 III")
-    func startersAcrossBodies() throws {
+    @Test("Every X-Trans IV fixture works on the X-T4 and every fixture on the X-T30 III")
+    func fixturesAcrossBodies() throws {
         let xt4 = try profile("X-T4")
-        for r in StarterRecipes.all where r.xTransGeneration == .iv {
+        for r in TestRecipes.all where r.xTransGeneration == .iv {
             #expect(r.compatibility(with: xt4).isUsable, "\(r.name)")
         }
-        for r in StarterRecipes.all { #expect(r.compatibility(with: .xt30III) == .supported, "\(r.name)") }
+        for r in TestRecipes.all { #expect(r.compatibility(with: .xt30III) == .supported, "\(r.name)") }
     }
 
     @Test("Tune panel marks settings the body lacks as unavailable")
@@ -252,11 +252,11 @@ struct GenerationJSONTests {
 
     @Test("Transfer documents keep schema version 1 and carry the tag")
     func transfer() throws {
-        let doc = RecipeTransferDocument(exportedAt: Date(), appVersion: "test", recipes: [StarterRecipes.all[0]])
+        let doc = RecipeTransferDocument(exportedAt: Date(), appVersion: "test", recipes: [TestRecipes.all[0]])
         let data = try LibraryPersistence.encoder().encode(doc)
         let back = try LibraryPersistence.decoder().decode(RecipeTransferDocument.self, from: data)
         #expect(back.schemaVersion == 1)
-        #expect(back.recipes.first?.xTransGeneration == StarterRecipes.all[0].xTransGeneration)
+        #expect(back.recipes.first?.xTransGeneration == TestRecipes.all[0].xTransGeneration)
     }
 }
 

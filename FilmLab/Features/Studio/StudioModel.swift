@@ -71,9 +71,22 @@ final class StudioModel {
         self.renderer = renderer
         self.library = library
         self.cameraRenderService = cameraRenderService
-        let start = StarterRecipes.all.first ?? FilmRecipe(name: "New Recipe", settings: .neutral())
+        // FilmLab ships no recipes: start neutral, then adopt the first web recipe once the
+        // catalogue loads (`adoptWebDefaults`).
+        let start = FilmRecipe(name: "New Recipe", settings: .neutral())
         self.recipe = start
         self.baseRecipeID = start.id
+    }
+
+    /// True until the user loads or edits a recipe: the working copy is still the neutral placeholder.
+    private(set) var hasPlaceholderRecipe = true
+
+    /// Once the website's recipes arrive: show the first one, and fill an empty compare grid.
+    /// Never replaces something the user picked or edited.
+    func adoptWebDefaults(_ recipes: [FilmRecipe]) {
+        guard !recipes.isEmpty else { return }
+        if hasPlaceholderRecipe, !isDirty, let first = recipes.first { load(first) }
+        if compareRecipeIDs.isEmpty { setCompare(Array(recipes.prefix(4).map(\.id))) }
     }
 
     // MARK: Photo
@@ -114,6 +127,7 @@ final class StudioModel {
 
     /// Loads a recipe into the working copy (no camera interaction whatsoever).
     func load(_ r: FilmRecipe) {
+        hasPlaceholderRecipe = false
         cameraTask?.cancel()
         cameraGeneration += 1
         baseRecipeID = r.id

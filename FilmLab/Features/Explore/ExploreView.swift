@@ -57,22 +57,23 @@ struct GenerationFilterBar: View {
     }
 }
 
-/// Searchable local catalog (FilmLab originals + your library). No web scraping.
+/// The recipe catalogue: everything published on the FilmLab website (its public
+/// `GET /api/recipes`, cached on this iPhone for offline use) plus your own saved recipes.
+/// FilmLab ships no recipes of its own.
 struct ExploreView: View {
     @Environment(AppEnvironment.self) private var env
     @State private var query = ""
-    @State private var searching = false
     @State private var situation: Situation?
     @State private var moods: Set<RecipeMood> = []
     @State private var simulation: FilmSimulation?
     @State private var generation: GenerationFilter = .all
     @State private var showFilters = false
     @State private var showImport = false
-    @FocusState private var searchFocused: Bool
 
     private var pool: [FilmRecipe] {
         let library = env.library
-        return library.catalog + library.recipes.filter { r in !library.catalog.contains { $0.id == r.id } }
+        var seen = Set<UUID>()
+        return (library.webRecipes + library.recipes).filter { seen.insert($0.id).inserted }
     }
 
     private var isFiltering: Bool { !query.isEmpty || situation != nil || !moods.isEmpty || simulation != nil || generation != .all }
@@ -93,27 +94,6 @@ struct ExploreView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: Theme.sectionSpacing) {
-                    ScreenHeader(title: "Explore", subtitle: "Film recipes for X-Trans IV & V") {
-                        CircleIconButton(systemName: "magnifyingglass", accessibilityLabel: "Search") {
-                            withAnimation(.snappy) { searching.toggle() }
-                            searchFocused = searching
-                            if !searching { query = "" }
-                        }
-                        CircleIconButton(systemName: "line.3.horizontal.decrease", isOn: !(moods.isEmpty && simulation == nil),
-                                         accessibilityLabel: "Filters") { showFilters = true }
-                        Menu {
-                            Button("New Recipe", systemImage: "plus") {
-                                env.studio.load(FilmRecipe(name: "New Recipe", settings: .neutral()))
-                                env.router.tab = .studio
-                            }
-                            Button("Import from Image or Text…", systemImage: "text.viewfinder") { showImport = true }
-                        } label: {
-                            CircleIconLabel(systemName: "plus", isOn: true)
-                        }
-                        .accessibilityLabel("Add recipe")
-                        .accessibilityIdentifier("exploreAdd")
-                    }
-                    if searching { searchField }
                     VStack(alignment: .leading, spacing: 14) {
                         situations
                         GenerationFilterBar(filter: $generation, cameraName: env.settings.myCamera.name)
@@ -121,27 +101,36 @@ struct ExploreView: View {
                     if isFiltering {
                         resultsGrid
                     } else {
-                        carousel(title: "FilmLab Originals", subtitle: "Starter looks made for this app",
-                                 recipes: env.library.catalog.filter { !$0.filmSimulation.isMonochrome })
-                        let mine = env.library.recipes.filter { $0.provenance.kind != .filmLabOriginal }
-                        if !mine.isEmpty {
-                            carousel(title: "Your Recipes", subtitle: "Saved on this iPhone", recipes: mine)
+                        webSection
+                        if !env.library.recipes.isEmpty {
+                            carousel(title: "Your Recipes", subtitle: "Saved on this iPhone", recipes: env.library.recipes)
                         }
-                        carousel(title: "Black & White", subtitle: "Monochrome starters",
-                                 recipes: pool.filter { $0.filmSimulation.isMonochrome })
+                        let mono = env.library.webRecipes.filter { $0.filmSimulation.isMonochrome }
+                        if !mono.isEmpty {
+                            carousel(title: "Black & White", subtitle: "Monochrome looks from FilmLab", recipes: mono)
+                        }
                     }
-                    VStack(alignment: .leading, spacing: 14) {
-                        Rectangle().fill(Theme.hairline).frame(height: 1)
-                        Text("Starter recipes are original FilmLab creations. Thumbnails are approximate on-device previews on a synthetic test image.")
-                            .font(.caption).foregroundStyle(Theme.textTertiary)
+                    if !env.webFeed.hasNeverLoaded || !env.library.recipes.isEmpty {
+                        VStack(alignment: .leading, spacing: 14) {
+                            Rectangle().fill(Theme.hairline).frame(height: 1)
+                            Text("Recipes come from the FilmLab website (\(env.webFeed.baseURL.host() ?? "filmlab.requiem.one")) and are kept on this iPhone so they work offline. Save one to keep it even if it's taken down. Photo covers come from the website; other thumbnails are approximate on-device previews on a sample photo of Mt Fuji.")
+                                .font(.caption).foregroundStyle(Theme.textTertiary)
+                                .accessibilityIdentifier("exploreSourceNote")
+                        }
+                        .padding(.horizontal, Theme.gutter)
                     }
-                    .padding(.horizontal, Theme.gutter)
                 }
-                .padding(.bottom, 110)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
             .scrollDismissesKeyboard(.interactively)
+            .refreshable { await env.refreshWebRecipes() }
             .background(Theme.background)
-            .hiddenNavigationBar()
+            .navigationTitle("Explore")
+            .navigationSubtitleIfAvailable(exploreSubtitle)
+            .searchable(text: $query, prompt: "Recipes, simulations, tags")
+            .autocorrectionDisabled()
+            .toolbar { toolbar }
             .navigationDestination(for: UUID.self) { id in RecipeDetailView(recipeID: id) }
             .navigationDestination(for: RecipeListRoute.self) { route in
                 RecipeGridScreen(title: route.title, recipes: route.ids.compactMap { env.library.recipe($0) })
@@ -151,22 +140,27 @@ struct ExploreView: View {
         }
     }
 
-    private var searchField: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "magnifyingglass").foregroundStyle(Theme.textSecondary)
-            TextField("Recipes, simulations, tags", text: $query)
-                .focused($searchFocused)
-                .autocorrectionDisabled()
-            if !query.isEmpty {
-                Button { query = "" } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(Theme.textSecondary) }
-                    .accessibilityLabel("Clear search")
+    @ToolbarContentBuilder private var toolbar: some ToolbarContent {
+        ToolbarItem(placement: .trailingBar) {
+            Button { showFilters = true } label: {
+                Image(systemName: moods.isEmpty && simulation == nil
+                      ? "line.3.horizontal.decrease" : "line.3.horizontal.decrease.circle.fill")
             }
+            .accessibilityLabel("Filters")
         }
-        .padding(.horizontal, 18).padding(.vertical, 14)
-        .background(Theme.surface, in: Capsule())
-        .overlay(Capsule().stroke(Theme.hairline, lineWidth: 1))
-        .padding(.horizontal, Theme.gutter)
-        .transition(.move(edge: .top).combined(with: .opacity))
+        ToolbarItem(placement: .trailingBar) {
+            Menu {
+                Button("New Recipe", systemImage: "plus") {
+                    env.studio.load(FilmRecipe(name: "New Recipe", settings: .neutral()))
+                    env.router.tab = .studio
+                }
+                Button("Import from Image or Text…", systemImage: "text.viewfinder") { showImport = true }
+            } label: {
+                Image(systemName: "plus")
+            }
+            .accessibilityLabel("Add recipe")
+            .accessibilityIdentifier("exploreAdd")
+        }
     }
 
     private var situations: some View {
@@ -185,6 +179,68 @@ struct ExploreView: View {
         }
     }
 
+    private var exploreSubtitle: String {
+        let feed = env.webFeed
+        if feed.isLoading && feed.items.isEmpty { return "Loading recipes…" }
+        guard !feed.items.isEmpty else { return "Film recipes for X-Trans IV & V" }
+        return "\(feed.items.count) recipes from FilmLab"
+    }
+
+    /// The catalogue: recipes published on the FilmLab website, from the same API the site uses.
+    @ViewBuilder private var webSection: some View {
+        let feed = env.webFeed
+        let host = feed.baseURL.host() ?? "the FilmLab website"
+        if !feed.items.isEmpty {
+            carousel(title: "Latest Recipes", subtitle: updatedLine(feed, host: host), recipes: feed.recipes)
+            if let error = feed.lastError {
+                Label(error, systemImage: "wifi.exclamationmark").font(.caption).foregroundStyle(Theme.textSecondary)
+                    .padding(.horizontal, Theme.gutter)
+            }
+        } else if feed.isLoading {
+            VStack(alignment: .leading, spacing: 20) {
+                SectionHeader(title: "Latest Recipes", subtitle: "Loading from \(host)…")
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 14) {
+                        ForEach(0..<2, id: \.self) { _ in
+                            RoundedRectangle(cornerRadius: Theme.corner, style: .continuous).fill(Theme.surface)
+                                .frame(width: 290, height: 218)
+                        }
+                    }
+                    .padding(.horizontal, Theme.gutter)
+                }
+                .redacted(reason: .placeholder)
+            }
+        } else {
+            // Nothing cached and no answer from the website (first launch offline, or the site is down).
+            VStack(spacing: 16) {
+                ContentUnavailableView {
+                    Label(feed.lastError == nil ? "No Recipes Yet" : "Recipes Are Offline", systemImage: "wifi.exclamationmark")
+                } description: {
+                    Text(feed.lastError == nil
+                         ? "FilmLab's recipes come from \(host). Pull to refresh to load them."
+                         : "FilmLab's recipes come from \(host), and this iPhone couldn't reach it. Connect to the internet and try again — once loaded, they stay available offline.")
+                } actions: {
+                    Button { Task { await env.refreshWebRecipes() } } label: {
+                        Label("Try Again", systemImage: "arrow.clockwise")
+                    }
+                    .primaryActionStyle()
+                    .accessibilityIdentifier("retryWebRecipes")
+                }
+                if !env.library.recipes.isEmpty {
+                    Text("Your saved recipes are below.").font(.footnote).foregroundStyle(Theme.textSecondary)
+                }
+            }
+            .padding(.horizontal, Theme.gutter)
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("exploreOffline")
+        }
+    }
+
+    private func updatedLine(_ feed: WebRecipeFeed, host: String) -> String {
+        guard let updated = feed.lastUpdated else { return "From \(host)" }
+        return "From \(host) · updated \(updated.formatted(.relative(presentation: .named)))"
+    }
+
     private func carousel(title: String, subtitle: String, recipes: [FilmRecipe]) -> some View {
         VStack(alignment: .leading, spacing: 20) {
             NavigationLink(value: RecipeListRoute(title: title, ids: recipes.map(\.id))) {
@@ -196,7 +252,9 @@ struct ExploreView: View {
                 HStack(alignment: .top, spacing: 14) {
                     ForEach(recipes) { r in
                         NavigationLink(value: r.id) {
-                            PhotoRecipeCard(recipe: r, thumbnail: env.thumbnails.thumbnail(for: r), width: 290, saved: env.library.isSaved(r.id))
+                            let web = env.webFeed.item(for: r.id)
+                            PhotoRecipeCard(recipe: r, thumbnail: env.thumbnails.thumbnail(for: r), width: 290, saved: env.library.isSaved(r.id),
+                                            coverURL: web?.coverURL, coverLabel: web?.coverLabel ?? "Approximate")
                                 .onAppear { env.thumbnails.request(r) }
                         }
                         .buttonStyle(PressScaleStyle())
@@ -242,7 +300,6 @@ struct ExploreView: View {
                 }
                 .padding(Theme.gutter)
             }
-            .background(Theme.background)
             .navigationTitle("Filters")
             .inlineNavigationTitle()
             .toolbar {
@@ -267,7 +324,9 @@ struct RecipeGrid: View {
         LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 28) {
             ForEach(recipes) { r in
                 NavigationLink(value: r.id) {
-                    PhotoRecipeCard(recipe: r, thumbnail: env.thumbnails.thumbnail(for: r), width: nil, saved: env.library.isSaved(r.id))
+                    let web = env.webFeed.item(for: r.id)
+                    PhotoRecipeCard(recipe: r, thumbnail: env.thumbnails.thumbnail(for: r), width: nil, saved: env.library.isSaved(r.id),
+                                    coverURL: web?.coverURL, coverLabel: web?.coverLabel ?? "Approximate")
                         .onAppear { env.thumbnails.request(r) }
                 }
                 .buttonStyle(PressScaleStyle())
@@ -282,7 +341,7 @@ struct RecipeGridScreen: View {
     var recipes: [FilmRecipe]
     var body: some View {
         ScrollView {
-            RecipeGrid(recipes: recipes).padding(.top, 12).padding(.bottom, 110)
+            RecipeGrid(recipes: recipes).padding(.vertical, 12)
         }
         .background(Theme.background)
         .navigationTitle(title)
@@ -387,10 +446,10 @@ struct RecipeDetailView: View {
                 NavigationLink("Check every camera") { CameraCompatibilityList(recipe: r) }
             }
             Section("Provenance") {
-                LabeledContent("Source", value: provenanceLabel(r.provenance.kind))
+                LabeledContent("Source", value: env.webFeed.isPublished(r) ? "FilmLab website" : provenanceLabel(r.provenance.kind))
                 if let a = r.provenance.author { LabeledContent("Author", value: a) }
                 if let l = r.provenance.license { LabeledContent("Licence", value: l) }
-                if let u = r.provenance.sourceURL { Link(u.absoluteString, destination: u) }
+                if let u = r.provenance.sourceURL { Link(env.webFeed.isPublished(r) ? "View on the FilmLab website" : u.absoluteString, destination: u) }
                 if let n = r.provenance.note { Text(n).font(.footnote).foregroundStyle(Theme.textSecondary) }
             }
         }
@@ -421,7 +480,7 @@ struct RecipeDetailView: View {
 
     private func provenanceLabel(_ k: RecipeProvenance.Kind) -> String {
         switch k {
-        case .filmLabOriginal: "FilmLab original"
+        case .filmLabOriginal: "FilmLab (earlier app version)"
         case .userCreated: "Created by you"
         case .duplicated: "Duplicated / tuned"
         case .imported: "Imported file"

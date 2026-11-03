@@ -263,6 +263,7 @@ struct StudioModelTests {
     func makeStudio() async throws -> StudioModel {
         let library = LibraryStore(paths: .temporary())
         library.ensureDemoAssets()
+        library.webRecipes = TestRecipes.all        // stands in for the website's catalogue
         let renderer = OfflinePreviewRenderer(diskCacheDirectory: nil)
         let studio = StudioModel(renderer: renderer, library: library, cameraRenderService: UnvalidatedCameraRenderService(isCameraConnected: { false }))
         await studio.select(try #require(library.assets.first))
@@ -302,7 +303,7 @@ struct StudioModelTests {
     @Test("Compare grid renders each recipe on the same photo at the same size")
     func compare() async throws {
         let studio = try await makeStudio()
-        let ids = Array(StarterRecipes.all.prefix(4).map(\.id))
+        let ids = Array(TestRecipes.all.prefix(4).map(\.id))
         studio.setCompare(ids)
         studio.setCompare(Array(ids.prefix(2)))   // supersede: obsolete request cancelled
         await studio.waitForCompare()
@@ -314,13 +315,13 @@ struct StudioModelTests {
     @Test("Save as new recipe persists and works offline")
     func save() async throws {
         let studio = try await makeStudio()
-        studio.load(StarterRecipes.all[2])
+        studio.load(TestRecipes.all[2])
         studio.recipe.settings.color = .value(3)
         #expect(studio.isDirty)
-        #expect(!studio.canSaveInPlace) // starter recipes are never overwritten
+        #expect(!studio.canSaveInPlace) // not in the library: nothing to overwrite
         let saved = studio.saveAsNew(name: "My Kitchen")
         #expect(!studio.isDirty)
-        #expect(saved.provenance.derivedFrom == StarterRecipes.all[2].id)
+        #expect(saved.provenance.derivedFrom == TestRecipes.all[2].id)
         let reloaded = LibraryStore(paths: studio.library.paths)
         #expect(reloaded.recipes.first { $0.id == saved.id }?.settings.color == .value(3))
         #expect(studio.canSaveInPlace)

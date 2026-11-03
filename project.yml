@@ -8,7 +8,7 @@ options:
   developmentLanguage: en
 settings:
   base:
-    SWIFT_VERSION: "5.0"
+    SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
     MARKETING_VERSION: "0.1.0"
     CURRENT_PROJECT_VERSION: "1"
@@ -33,6 +33,10 @@ targets:
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.photography
         # Apple: tethering from an iOS app via ImageCaptureCore requires NSCameraUsageDescription.
+        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "FilmLab uses Bluetooth to find your FUJIFILM camera, pair with it, keep its clock and geotags in sync, and fire the remote shutter."
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: "When you turn on location sharing, FilmLab sends your location to your paired camera so photos are geotagged."
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "FilmLab connects to your FUJIFILM camera's own Wi‑Fi network to browse and import your photos."
+        INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription: "FilmLab saves the photos you import from your camera to your library."
         INFOPLIST_KEY_NSCameraUsageDescription: "FilmLab connects to your USB camera to read and back up custom settings, and — only when you choose — to write a recipe to a slot."
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor

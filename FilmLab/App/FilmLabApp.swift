@@ -1,38 +1,22 @@
 import SwiftUI
-#if os(iOS)
-import UIKit
-#endif
 
 @main
 struct FilmLabApp: App {
     @State private var env = AppEnvironment.live()
+    @Environment(\.scenePhase) private var scenePhase
 
-    init() {
-        #if os(iOS)
-        // Navigation titles in the website's display style: light weight, tight tracking, ink.
-        let ink = UIColor(red: 12 / 255, green: 12 / 255, blue: 12 / 255, alpha: 1)
-        let large: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 40, weight: .regular), .kern: -1.6, .foregroundColor: ink]
-        let inline: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 17, weight: .semibold), .kern: -0.3, .foregroundColor: ink]
-        let scrolled = UINavigationBarAppearance()
-        scrolled.configureWithDefaultBackground()
-        let edge = UINavigationBarAppearance()
-        edge.configureWithTransparentBackground()
-        for a in [scrolled, edge] {
-            a.largeTitleTextAttributes = large
-            a.titleTextAttributes = inline
-        }
-        let bar = UINavigationBar.appearance()
-        bar.standardAppearance = scrolled
-        bar.compactAppearance = scrolled
-        bar.scrollEdgeAppearance = edge
-        bar.tintColor = ink
-        #endif
-    }
-
+    // Navigation bars use the system appearance: Liquid Glass with scroll-edge effects on
+    // iOS 26+, and titles that follow Light/Dark Mode.
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environment(env)
+                .onChange(of: scenePhase) { _, phase in
+                    // Back in the foreground: pick up a camera plugged in meanwhile, refresh web recipes.
+                    guard phase == .active else { return }
+                    Task { await env.autoDetectCamera() }
+                    Task { await env.refreshWebRecipes() }
+                }
         }
     }
 }

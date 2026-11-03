@@ -70,6 +70,8 @@ final class CameraController {
     private(set) var setOutcomes: [CameraSlot: SlotWriteOutcome] = [:]
     private(set) var isInstallingSet = false
     private var stopRequested = false
+    /// Set when the user taps Disconnect, so the Camera tab stops looking for cameras until asked.
+    private(set) var autoDetectPaused = false
 
     let settings: AppSettings
     let backupStore: CameraBackupStore
@@ -116,9 +118,31 @@ final class CameraController {
         await attach(t)
     }
 
+    /// Starts looking for a USB camera (unless the user paused it), so plugging one in is
+    /// recognised without tapping Connect. Identifying a body only reads its device info;
+    /// slots are never read or written automatically.
+    func autoDetect() async {
+        #if canImport(ImageCaptureCore)
+        guard ImageCaptureCameraBrowser.isSupported else { return }
+        #endif
+        guard mode == .none, state == .disconnected, !autoDetectPaused else { return }
+        await startUSB()
+    }
+
+    /// Disconnect from the UI: also pauses automatic detection.
+    func disconnectByUser() async {
+        await disconnect()
+        autoDetectPaused = true
+    }
+
     func startUSB() async {
         #if canImport(ImageCaptureCore)
         await disconnect()
+        guard ImageCaptureCameraBrowser.isSupported else {
+            state = .failed("USB cameras can't connect in the iOS Simulator. Use the Demo Camera, or run FilmLab on an iPhone.")
+            return
+        }
+        autoDetectPaused = false
         mode = .usb
         state = .searching
         let b = ImageCaptureCameraBrowser()
@@ -148,8 +172,15 @@ final class CameraController {
                 self.isAttaching = false
             }
         case .removed(let device):
-            // Only react if the camera we're attached to went away.
-            if let current = usbDevice, current === device { handleUnexpectedDisconnect() }
+            if let current = usbDevice, current === device {
+                handleUnexpectedDisconnect()
+            } else if transport == nil, !isAttaching {
+                // A released camera (profile only, unsupported, wrong mode) was unplugged: keep looking.
+                switch state {
+                case .profileOnly, .unsupportedModel, .wrongMode, .failed, .connected: state = .searching
+                default: break
+                }
+            }
         case .sessionError(let m):
             state = .failed(m)
         }
@@ -267,6 +298,10 @@ final class CameraController {
         usbDevice = nil
         #endif
         state = .disconnected
+        #if canImport(ImageCaptureCore)
+        // Still browsing: plugging the camera back in reconnects it.
+        if mode == .usb, browser != nil { state = .searching }
+        #endif
         resetPerConnectionState()
         if isInstallingSet { stopRequested = true }
     }

@@ -39,7 +39,8 @@ struct LibraryDocument: Codable, Equatable, Sendable {
     var recipes: [FilmRecipe] = []
     var sets: [RecipeSet] = []
     var assets: [PhotoAsset] = []
-    /// IDs of starter recipes the user has hidden from Explore.
+    /// Legacy (bundled starter recipes hidden from Explore). Always written empty; kept so the
+    /// file still decodes in older builds, whose synthesized decoder requires the key.
     var hiddenStarterIDs: [UUID] = []
 }
 

@@ -117,6 +117,7 @@ enum FujiRecipeCodec {
 
     static func u16(_ v: UInt16) -> Data { var w = PTPWriter(); w.u16(v); return w.data }
     static func i16(_ v: Int16) -> Data { var w = PTPWriter(); w.i16(v); return w.data }
+    static func u32(_ v: UInt32) -> Data { var w = PTPWriter(); w.u32(v); return w.data }
     static func tenths(_ v: Double) -> Data { i16(Int16((v * 10).rounded())) }
 
     /// Encodes a normalized recipe into an ordered write plan.

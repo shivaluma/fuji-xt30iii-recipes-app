@@ -139,9 +139,9 @@ struct FujiCodecTests {
         #expect(p[.dynamicRange] == nil && p[.highlight] == nil && p[.shadow] == nil)
     }
 
-    @Test("Encode → decode roundtrip for every starter recipe")
+    @Test("Encode → decode roundtrip for every fixture recipe")
     func roundtrip() throws {
-        for r in StarterRecipes.all {
+        for r in TestRecipes.all {
             let p = try FujiRecipeCodec.encode(r.settings, name: "X")
             let decoded = FujiRecipeCodec.decode(Dictionary(uniqueKeysWithValues: p.map { ($0.property.rawValue, $0.bytes) }))
             let d = try #require(decoded.settings)
@@ -325,7 +325,7 @@ struct TransportTests {
         let (cam, t) = await make()
         _ = try await t.connect()
         let before = await cam.rawSlot(.c1)
-        let recipe = StarterRecipes.all[3] // ACROS+R
+        let recipe = TestRecipes.all[3] // ACROS+R
         let report = try await t.writeSlot(.c5, settings: recipe.settings, name: "PAPER MOON")
         #expect(report.outcome == .verified, "\(report.mismatches.map(\.description))")
         #expect(report.after.name == "PAPER MOON")
@@ -362,7 +362,7 @@ struct TransportTests {
         var f = SimulatedFujiCamera.Faults(); f.disconnectAfterTransactions = 4
         await cam.setFaults(f)
         do {
-            _ = try await t.writeSlot(.c2, settings: StarterRecipes.all[1].settings, name: "X")
+            _ = try await t.writeSlot(.c2, settings: TestRecipes.all[1].settings, name: "X")
             Issue.record("expected failure")
         } catch CameraError.outcomeUnknown(let slot, _) {
             #expect(slot == .c2)

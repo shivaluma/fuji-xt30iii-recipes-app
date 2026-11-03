@@ -16,15 +16,18 @@ FilmLab/
     Camera/       CameraSlot, CameraProfile (+RecipeValidator), CameraSlotSnapshot, SlotDiff, backups
     Rendering/    PreviewFidelity, PhotoAsset, RenderCacheKey, RenderedPreview
   Services/
-    Storage/      LibraryPersistence (versioned JSON + migrations), RecipeTransfer, StarterRecipes
-    Imports/      PhotoImporter (immutable originals), DemoImageFactory (synthetic test images)
+    Storage/      LibraryPersistence (versioned JSON + migrations), RecipeTransfer. No bundled recipes:
+                  the catalogue is the website (Web/WebRecipeFeed); LibraryStore removes leftover
+                  unedited starters from earlier builds once.
+    Imports/      PhotoImporter (immutable originals), DemoImageFactory (Mt Fuji sample photo + synthetic test images)
     Preview/      FilmLookEngine, FilmLookProfiles/FilmLUTBuilder, OfflinePreviewRenderer, caches, Histogram
     CameraPTP/    PTPCore, PTPSession, FujiRecipeCodec, CameraTransport, SimulatedFujiCamera, ImageCaptureAdapter
     CameraRAW/    CameraRenderService (+ Unvalidated / Demo implementations, JPEG validator)
+    Web/          FilmLabWebClient (admin: AI extraction, publish), WebRecipeFeed (public GET /api/recipes → Explore, cached)
   SharedUI/       Theme tokens, platform shims, components (FidelityBadge, HistogramView, …)
-  Resources/      Asset catalog only. There are no third-party photos; demo images are generated at runtime.
-FilmLabTests/     Swift Testing unit/integration tests (+ Fixtures/golden-*.json)
-FilmLabUITests/   XCUITest acceptance flows
+  Resources/      Asset catalog and the Mt Fuji sample photo (by the project owner). No third-party photos.
+FilmLabTests/     Swift Testing unit/integration tests (+ Fixtures/golden-*.json, Fixtures/TestRecipes.swift)
+FilmLabUITests/   XCUITest acceptance flows (offline; the catalogue comes from FILMLAB_WEB_RECIPES_JSON)
 ```
 
 The app uses MVVM with `@Observable` (iOS 17) models isolated to `@MainActor`. Long-running work
@@ -51,27 +54,33 @@ aside, not deleted. Swapping in SwiftData later only touches `LibraryStore`.
 
 ## Design system (`SharedUI/Theme.swift`, `SharedUI/DesignSystem.swift`)
 
-The app uses the same light, editorial system as the website (`web/src/app/globals.css`), so the
-two read as one product. The page is white (`#fff`), with warm grey panels (`#f3f3f1`) and
-hairlines (`#e6e6e3`). Text is ink (`#0c0c0c`) and primary actions are ink-black pills with white
-text. Photos carry the colour; the UI stays neutral. Display text is SF Pro at a regular weight
-with negative tracking, standing in for the web's Inter Tight. Small labels are uppercase and
-tracked. Grouped lists and forms sit on the grey page, so their white rows read as cards. The token
-values are mirrored in `Theme` and in the web CSS, so change them in both places.
+The minimum is iOS 17; the app is built and tuned with the iOS 27 SDK (iPhone 18 Pro).
+
+- **Chrome is native.** A system `TabView`, navigation bars with large titles and toolbars,
+  `.searchable`, and system sheets. On iOS 26+ they render as **Liquid Glass**, the tab bar
+  collapses while scrolling, and titles get a subtitle line. No `UINavigationBar` appearance
+  overrides: they would turn off the glass bar and its scroll-edge effect.
+- **Controls** use glass button styles on iOS 26+ (`.glass` / `.glassProminent`) and fall back to
+  `.bordered` / `.borderedProminent` capsules on iOS 17–25. The helpers in `Theme.swift`
+  (`primaryActionStyle`, `secondaryActionStyle`, `chipStyle`, `floatingCapsule`,
+  `GlassButtonShape`) hold every availability check, so feature code has no `#available`.
+  Glass code sits behind `#if compiler(>=6.2)` so `scripts/typecheck.sh` still builds with older
+  Command Line Tools SDKs (they compile the fallback).
+- **Colour.** Light mode keeps the website's palette (white page, warm grey `#f3f3f1` panels,
+  ink `#0c0c0c` for primary actions and selection). Every token has a Dark Mode value; the
+  accent flips to paper-white with ink text. Pills over photos ignore the appearance because
+  they sit on the image.
 
 | Component | Used for |
 |---|---|
-| `Wordmark` | The web nav's grey "©FilmLab" box, top-left on root screens |
-| `ScreenHeader` | Wordmark and `CircleIconButton`s on top, then a large light title (52 pt, −2.6 tracking) |
-| `SectionHeader` | Uppercase display title + subtitle + an `ArrowLink` ("SEE ALL ↗") |
-| `CircleIconButton` | Soft grey round buttons; `isOn` fills them ink-black (toggles, the primary +) |
-| `PillChip` / `FilterChip` | Grey capsule chips; selected chips are ink-black with white text |
-| `PhotoRecipeCard` | 4:3 rounded photo card with a white "Approximate" pill, a black X-Trans pill and a status pill. The status pill shows only real state (In Library or Favorite), never invented counts. Grid cells use a compact variant with one pill. |
-| `PhotoPill` | White label / black tag pills laid over photos (fidelity, before/after, compare) |
-| `FloatingTabBar` | Frosted white capsule with uppercase labels. The selected tab sits on an ink pill. The system tab bar is hidden. |
-| `TunePanel` / `ParameterCard` | Horizontal parameter cards: grey, or ink-black when selected, each with a thin strip of its colour (COLOR is a rainbow). Below them is a large −/+ stepper with VoiceOver adjustable actions. Every step is clamped to the profile's range, and inapplicable cards are dimmed with a reason. |
-| `DestinationCard` | DESTINATION eyebrow, a white slot row ("C1", name, simulation, picker chevron) and a full-width ink CTA. Used for "Review Changes for Cn" and then "Write to Cn" once acknowledged. |
-| `PrimaryButton(Label)` / `SecondaryButtonLabel` | The web's `pillDark` / `pillSoft` |
+| `SectionHeader` | Bold title + subtitle + an `ArrowLink` ("See all ›") |
+| `CircleIconButton` | Round glass button (the Tune −/+ stepper); `isOn` makes it prominent |
+| `PillChip` / `FilterChip` | Glass capsule chips; the selected chip is prominent (ink) |
+| `PhotoRecipeCard` | 4:3 rounded photo card with an "Approximate" pill, an X-Trans tag and a status pill. The status pill shows only real state (In Library or Favorite), never invented counts. Grid cells use a compact variant with one pill. |
+| `PhotoPill` / `FidelityBadge` | Clear (or dark-tinted) glass capsules laid over photos |
+| `TunePanel` / `ParameterCard` | Horizontal parameter cards: grey, or ink when selected, each with a thin strip of its colour (COLOR is a rainbow). Below them is a large −/+ stepper with VoiceOver adjustable actions. Every step is clamped to the profile's range, and inapplicable cards are dimmed with a reason. |
+| `DestinationCard` | DESTINATION eyebrow, a slot row ("C1", name, simulation, picker chevron) and a full-width prominent CTA. Used for "Review Changes for Cn" and then "Write to Cn" once acknowledged. |
+| `PrimaryButton(Label)` / `SecondaryButtonLabel` | Full-width prominent / secondary actions; the label also styles `PhotosPicker` and `ShareLink` |
 
 Names, layout details, content and iconography are FilmLab's own.
 

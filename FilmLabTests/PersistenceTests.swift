@@ -11,7 +11,7 @@ struct PersistenceTests {
 
     @Test("Export → import roundtrip")
     func transferRoundtrip() throws {
-        let recipes = Array(StarterRecipes.all.prefix(3))
+        let recipes = Array(TestRecipes.all.prefix(3))
         let data = try RecipeTransfer.export(recipes, appVersion: "1.0")
         let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         #expect(json?["format"] as? String == "filmlab.recipes")
@@ -33,7 +33,7 @@ struct PersistenceTests {
 
     @Test("Merge never overwrites local recipes")
     func merge() {
-        let local = StarterRecipes.all[0]
+        let local = TestRecipes.all[0]
         var changed = local
         changed.settings.highlight = .value(3)
         let fresh = FilmRecipe(name: "New", settings: .neutral())
@@ -130,6 +130,36 @@ struct PersistenceTests {
         #expect(first.baseLabel == "Original")
     }
 
+    @Test("Sample photos: Mt Fuji first, replaces the legacy landscape once, stays removed")
+    @MainActor
+    func samplePhotos() throws {
+        // The Mt Fuji JPEG is an app resource; CLI test builds have no bundle and use the fallback.
+        guard DemoImageFactory.samplePhotoData() != nil else {
+            let store = LibraryStore(paths: .temporary())
+            store.ensureDemoAssets()
+            #expect(store.assets.map(\.originalFileName) == ["Synthetic Landscape.jpg", "Synthetic Colour Chart.jpg"])
+            return
+        }
+        let fresh = LibraryStore(paths: .temporary())
+        fresh.ensureDemoAssets()
+        #expect(fresh.assets.map(\.originalFileName) == [DemoImageFactory.samplePhotoFileName, "Synthetic Colour Chart.jpg"])
+        #expect(fresh.assets.allSatisfy { $0.source == .demo })
+
+        // A library from an older version: synthetic landscape + chart.
+        let legacy = LibraryStore(paths: .temporary())
+        for scene in DemoImageFactory.scenes.reversed() {
+            let data = try #require(DemoImageFactory.jpegData(for: scene, size: CGSize(width: 300, height: 200)))
+            _ = legacy.addAsset(try legacy.importer.importData(data, fileName: "\(scene.name).jpg", typeHint: .jpeg, source: .demo))
+        }
+        legacy.ensureDemoAssets()
+        #expect(legacy.assets.map(\.originalFileName) == [DemoImageFactory.samplePhotoFileName, "Synthetic Colour Chart.jpg"])
+
+        // Removing Mt Fuji sticks across launches.
+        legacy.removeAsset(legacy.assets[0])
+        legacy.ensureDemoAssets()
+        #expect(legacy.assets.map(\.originalFileName) == ["Synthetic Colour Chart.jpg"])
+    }
+
     @Test("Camera backups save and load")
     func backups() throws {
         let store = CameraBackupStore(directory: AppPaths.temporary().backups)
@@ -140,5 +170,49 @@ struct PersistenceTests {
         let loaded = store.loadAll()
         #expect(loaded == [backup])
         #expect(loaded[0].snapshots[0].rawValues[0].bytes == Data([7, 0])) // raw bytes preserved
+    }
+
+    @Test("Bundled starters left over from earlier versions are removed once; edited copies stay")
+    @MainActor
+    func legacyStarters() throws {
+        let paths = AppPaths.temporary()
+        try paths.createDirectories()
+        let untouched = TestRecipes.all[0]                       // saved as shipped (e.g. favourited)
+        var edited = TestRecipes.all[1]
+        edited.updatedAt = edited.createdAt.addingTimeInterval(60) // renamed/tuned by the user
+        let mine = FilmRecipe(name: "Mine", settings: .neutral())
+        var set = RecipeSet(name: "Trip")
+        set.assign(untouched.id, to: .c1); set.assign(mine.id, to: .c2)
+        try LibraryPersistence.save(LibraryDocument(recipes: [untouched, edited, mine], sets: [set]), to: paths.libraryFile)
+        #expect(LibraryStore.legacyStarterIDs.count == 12)
+        #expect(TestRecipes.all.allSatisfy { LibraryStore.legacyStarterIDs.contains($0.id) })
+
+        let store = LibraryStore(paths: paths)
+        #expect(store.recipes.map(\.name) == [edited.name, "Mine"])
+        #expect(store.sets.first?.slots[0] == nil)                 // C1 pointed at the removed starter
+        #expect(store.sets.first?.slots[1] == mine.id)
+
+        // Runs once: a starter re-imported later from an old export is left alone.
+        _ = try store.importRecipes(from: RecipeTransfer.export([untouched]))
+        #expect(LibraryStore(paths: paths).recipes.contains { $0.id == untouched.id })
+    }
+
+    @Test("Studio adopts the first web recipes once they load, but never replaces the user's pick")
+    @MainActor
+    func studioWebDefaults() {
+        let library = LibraryStore(paths: .temporary())
+        let studio = StudioModel(renderer: OfflinePreviewRenderer(diskCacheDirectory: nil), library: library,
+                                 cameraRenderService: UnvalidatedCameraRenderService(isCameraConnected: { false }))
+        #expect(studio.recipe.name == "New Recipe")
+        studio.adoptWebDefaults([])                                 // offline: stays neutral, no crash
+        #expect(studio.compareRecipeIDs.isEmpty)
+        library.webRecipes = TestRecipes.all
+        studio.adoptWebDefaults(TestRecipes.all)
+        #expect(studio.recipe.id == TestRecipes.all[0].id)
+        #expect(studio.compareRecipeIDs == Array(TestRecipes.all.prefix(4).map(\.id)))
+        studio.load(TestRecipes.all[5])
+        studio.adoptWebDefaults(Array(TestRecipes.all.reversed()))
+        #expect(studio.recipe.id == TestRecipes.all[5].id)
+        #expect(studio.compareRecipeIDs == Array(TestRecipes.all.prefix(4).map(\.id)))
     }
 }

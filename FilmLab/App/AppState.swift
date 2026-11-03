@@ -13,6 +13,8 @@ final class AppSettings {
     var experimentalSlotWrites: Bool { didSet { defaults.set(experimentalSlotWrites, forKey: "experimentalSlotWrites") } }
     var showHistogram: Bool { didSet { defaults.set(showHistogram, forKey: "showHistogram") } }
     var hapticsEnabled: Bool { didSet { defaults.set(hapticsEnabled, forKey: "hapticsEnabled") } }
+    /// Send the phone's location to the paired camera for geotags (camera asks over Bluetooth).
+    var shareLocationWithCamera: Bool { didSet { defaults.set(shareLocationWithCamera, forKey: "shareLocationWithCamera") } }
     var hasSeenOnboarding: Bool { didSet { defaults.set(hasSeenOnboarding, forKey: "hasSeenOnboarding") } }
     /// After on-device reading, automatically ask the web server's AI when the result is incomplete.
     var autoAIExtraction: Bool { didSet { defaults.set(autoAIExtraction, forKey: "autoAIExtraction") } }
@@ -29,6 +31,13 @@ final class AppSettings {
     var myCamera: CameraModelInfo { CameraCatalog.info(id: myCameraID) ?? CameraCatalog.reference }
     var myProfile: CameraProfile { myCamera.profile }
 
+    /// Where public recipes are read from: the Web showcase URL if set, else the FilmLab site.
+    var webFeedBaseURL: URL {
+        guard let url = URL(string: webBaseURL.trimmingCharacters(in: .whitespaces)), url.scheme?.hasPrefix("http") == true,
+              url.host() != nil else { return WebRecipeFeed.defaultBaseURL }
+        return url
+    }
+
     var webClient: FilmLabWebClient? {
         _ = webTokenRevision
         guard let url = URL(string: webBaseURL.trimmingCharacters(in: .whitespaces)), url.scheme?.hasPrefix("http") == true,
@@ -40,6 +49,7 @@ final class AppSettings {
         self.defaults = defaults
         experimentalSlotWrites = defaults.bool(forKey: "experimentalSlotWrites")
         showHistogram = defaults.object(forKey: "showHistogram") as? Bool ?? true
+        shareLocationWithCamera = defaults.bool(forKey: "shareLocationWithCamera")
         hapticsEnabled = defaults.object(forKey: "hapticsEnabled") as? Bool ?? true
         hasSeenOnboarding = defaults.bool(forKey: "hasSeenOnboarding")
         webBaseURL = defaults.string(forKey: "webBaseURL") ?? ""
@@ -56,7 +66,6 @@ final class LibraryStore {
     private(set) var recipes: [FilmRecipe] = []
     private(set) var sets: [RecipeSet] = []
     private(set) var assets: [PhotoAsset] = []
-    private(set) var hiddenStarterIDs: Set<UUID> = []
     private(set) var loadResult: LibraryLoadResult = .fresh
     private(set) var lastSaveError: String?
 
@@ -75,12 +84,31 @@ final class LibraryStore {
         recipes = doc.recipes
         sets = doc.sets
         assets = doc.assets.filter { FileManager.default.fileExists(atPath: importer.url(for: $0).path) }
-        hiddenStarterIDs = Set(doc.hiddenStarterIDs)
+        removeLegacyStarterRecipes()
+    }
+
+    /// Earlier builds shipped 12 starter recipes; the catalogue is now the FilmLab website. Starters
+    /// never were seeded into the library — they got there only when the user saved or favourited
+    /// one — so this runs once and is conservative: it removes a starter only while it is still
+    /// exactly as shipped (FilmLab-original provenance and `updatedAt` == `createdAt`, i.e. never
+    /// saved through `save(_:)`, which bumps `updatedAt` on any edit, rename or re-tag). Edited
+    /// copies are the user's own work and stay. Set slots pointing at removed starters are cleared.
+    /// A marker file keeps it from ever running again (e.g. on a re-imported old export).
+    static let legacyStarterIDs: Set<UUID> = Set((1...12).map { UUID(uuidString: String(format: "6F1C2A10-%04X-4A6B-9C11-%012X", $0, $0))! })
+
+    private func removeLegacyStarterRecipes() {
+        let marker = paths.root.appendingPathComponent(".legacy-starters-removed")
+        guard !isReadOnly, !FileManager.default.fileExists(atPath: marker.path) else { return }
+        let stale = Set(recipes.filter {
+            Self.legacyStarterIDs.contains($0.id) && $0.provenance.kind == .filmLabOriginal && $0.updatedAt == $0.createdAt
+        }.map(\.id))
+        if !stale.isEmpty { delete(stale) }
+        FileManager.default.createFile(atPath: marker.path, contents: Data())
     }
 
     private func persist() {
         guard !isReadOnly else { return }
-        let doc = LibraryDocument(recipes: recipes, sets: sets, assets: assets, hiddenStarterIDs: Array(hiddenStarterIDs))
+        let doc = LibraryDocument(recipes: recipes, sets: sets, assets: assets)
         do {
             try LibraryPersistence.save(doc, to: paths.libraryFile)
             lastSaveError = nil
@@ -91,11 +119,17 @@ final class LibraryStore {
 
     // MARK: Recipes
 
-    var catalog: [FilmRecipe] { StarterRecipes.all.filter { !hiddenStarterIDs.contains($0.id) } }
+    /// The recipe catalogue: recipes published on the FilmLab website (`WebRecipeFeed`, cached
+    /// for offline use). FilmLab ships no recipes of its own; nothing here is in the library until
+    /// the user saves or favourites it.
+    var webRecipes: [FilmRecipe] = []
+
+    /// Web recipes not saved in the library (for pickers that list "yours, then the rest").
+    var unsavedWebRecipes: [FilmRecipe] { webRecipes.filter { !isSaved($0.id) } }
 
     func recipe(_ id: UUID?) -> FilmRecipe? {
         guard let id else { return nil }
-        return recipes.first { $0.id == id } ?? StarterRecipes.all.first { $0.id == id }
+        return recipes.first { $0.id == id } ?? webRecipes.first { $0.id == id }
     }
 
     func isSaved(_ id: UUID) -> Bool { recipes.contains { $0.id == id } }
@@ -111,7 +145,8 @@ final class LibraryStore {
         return r
     }
 
-    /// Saves a starter recipe into the library unchanged (keeps its provenance).
+    /// Saves a web recipe into the library unchanged (keeps its provenance and link to the site),
+    /// so it stays available offline even if the website later removes it.
     func saveToLibrary(_ recipe: FilmRecipe) {
         guard !isSaved(recipe.id) else { return }
         recipes.insert(recipe, at: 0)
@@ -135,15 +170,12 @@ final class LibraryStore {
         if let i = recipes.firstIndex(where: { $0.id == id }) {
             recipes[i].isFavorite.toggle()
             persist()
-        } else if var starter = StarterRecipes.all.first(where: { $0.id == id }) {
-            starter.isFavorite = true
-            recipes.insert(starter, at: 0)
+        } else if var web = webRecipes.first(where: { $0.id == id }) {
+            web.isFavorite = true
+            recipes.insert(web, at: 0)
             persist()
         }
     }
-
-    func hideStarter(_ id: UUID) { hiddenStarterIDs.insert(id); persist() }
-    func restoreStarters() { hiddenStarterIDs.removeAll(); persist() }
 
     func exportData(_ ids: Set<UUID>) throws -> Data {
         let chosen = ids.isEmpty ? recipes : recipes.filter { ids.contains($0.id) }
@@ -201,15 +233,30 @@ final class LibraryStore {
         persist()
     }
 
-    /// Creates the synthetic demo photos on first launch (never third-party images).
+    /// Sample photos on first launch: Mt Fuji (the default Studio and thumbnail photo) plus the
+    /// synthetic colour chart. Libraries from older versions swap their synthetic landscape for
+    /// Mt Fuji once; if the user later removes Mt Fuji it stays removed.
     func ensureDemoAssets() {
-        guard !assets.contains(where: { $0.source == .demo }) else { return }
-        for scene in DemoImageFactory.scenes.reversed() {
-            guard let data = DemoImageFactory.jpegData(for: scene),
-                  let asset = try? importer.importData(data, fileName: "\(scene.name).jpg", typeHint: .jpeg,
-                                                       source: .demo, note: "FilmLab synthetic test image")
-            else { continue }
-            _ = addAsset(asset)
+        let demos = assets.filter { $0.source == .demo }
+        let legacyLandscape = demos.filter { $0.originalFileName == "Synthetic Landscape.jpg" }
+        let fuji = DemoImageFactory.samplePhotoData()
+        if demos.isEmpty {
+            let fallback = fuji == nil ? DemoImageFactory.scenes : DemoImageFactory.scenes.filter { $0.name != "Synthetic Landscape" }
+            for scene in fallback.reversed() {
+                if let data = DemoImageFactory.jpegData(for: scene) {
+                    addDemoAsset(data, fileName: "\(scene.name).jpg", note: DemoImageFactory.syntheticNote)
+                }
+            }
         }
+        // Added last so it's first: the default Studio photo and thumbnail reference.
+        if let fuji, demos.isEmpty || !legacyLandscape.isEmpty {
+            addDemoAsset(fuji, fileName: DemoImageFactory.samplePhotoFileName, note: DemoImageFactory.samplePhotoNote)
+            legacyLandscape.forEach(removeAsset)
+        }
+    }
+
+    private func addDemoAsset(_ data: Data, fileName: String, note: String) {
+        guard let asset = try? importer.importData(data, fileName: fileName, typeHint: .jpeg, source: .demo, note: note) else { return }
+        _ = addAsset(asset)
     }
 }

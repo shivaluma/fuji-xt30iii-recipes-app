@@ -1,11 +1,15 @@
 import Foundation
+#if !FILMLAB_CLI
+@testable import FilmLab
+#endif
 
-/// FilmLab's own starter recipes for Explore.
+/// Recipe fixtures for unit tests. The app ships no recipes: its catalogue is the FilmLab
+/// website's `GET /api/recipes` (`WebRecipeFeed`). These are the former bundled starters, kept
+/// with their original IDs so tests (and the legacy-starter migration test) stay meaningful.
 ///
-/// Written for this project (not copied from any website, blog or app) and released with the
-/// app under the project licence. Names and settings are original; any resemblance to a
-/// community recipe is coincidental because the setting space is small.
-enum StarterRecipes {
+/// Written for this project (not copied from any website, blog or app). Names and settings are
+/// original; any resemblance to a community recipe is coincidental because the setting space is small.
+enum TestRecipes {
     static let author = "FilmLab"
     static let license = "Same licence as the FilmLab project"
 

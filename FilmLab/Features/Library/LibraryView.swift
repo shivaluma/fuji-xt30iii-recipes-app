@@ -48,7 +48,7 @@ struct LibraryView: View {
                 }
                 Section("Recipes") {
                     if recipes.isEmpty {
-                        Text(env.library.recipes.isEmpty ? "Save recipes from Explore or Studio. They stay on this iPhone." : "No matches.")
+                        Text(env.library.recipes.isEmpty ? "Save recipes from Explore (they come from the FilmLab website) or create your own in Studio. Saved recipes stay on this iPhone, offline too." : "No matches.")
                             .foregroundStyle(Theme.textSecondary)
                     }
                     ForEach(recipes) { r in
@@ -113,7 +113,7 @@ struct LibraryView: View {
                 Text(r.name).font(.body).tracking(-0.3)
                 if r.isFavorite { Image(systemName: "heart.fill").font(.caption).foregroundStyle(Theme.accent) }
             }
-            Text("\(r.filmSimulation.displayName)\(r.inferredGeneration.map { " · \($0.displayName)" } ?? "") · \(r.provenance.kind == .filmLabOriginal ? "FilmLab" : "Yours")")
+            Text("\(r.filmSimulation.displayName)\(r.inferredGeneration.map { " · \($0.displayName)" } ?? "") · \(env.webFeed.isPublished(r) ? "FilmLab website" : "Yours")")
                 .font(.caption).foregroundStyle(Theme.textSecondary)
         }
     }

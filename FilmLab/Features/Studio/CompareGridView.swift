@@ -73,7 +73,7 @@ private struct CompareChooser: View {
     @State private var selection: [UUID] = []
 
     var body: some View {
-        let all = env.library.recipes + env.library.catalog.filter { !env.library.isSaved($0.id) }
+        let all = env.library.recipes + env.library.unsavedWebRecipes
         NavigationStack {
             List(all) { r in
                 Button {

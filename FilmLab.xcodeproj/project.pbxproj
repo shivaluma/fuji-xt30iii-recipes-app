@@ -7,25 +7,35 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0252F5D33F09CE96287519DE /* CameraCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1185704F66C4156D453A5E17 /* CameraCatalogTests.swift */; };
+		02B89A6D5F5247A13BA94072 /* FujiBLEProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = E63C29F19FFF5C2E2E63429A /* FujiBLEProtocol.swift */; };
 		04B0EBC263706B69804605DF /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EB0907E4856A1A70BA4112C /* ExploreView.swift */; };
 		05B0908BE9F24A2BB34E5246 /* CameraProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D344087A0BBEDB3D31422766 /* CameraProfile.swift */; };
 		0A67B0F6D8FDBE7AEEA891D0 /* SetsViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E8446254AC72ABF4CB4A8B /* SetsViews.swift */; };
 		0FECB17B9E297652A7BF68BB /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 763DCEF2D03EE3C71317567F /* PersistenceTests.swift */; };
 		108C4402F36F97DA7A369669 /* RecipeModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F778E22A100DFEAE0A4C48A /* RecipeModelTests.swift */; };
+		18326093CC36483D4737C8AD /* PhotoLibrarySaver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 070111BEF7C26B9084F79401 /* PhotoLibrarySaver.swift */; };
+		19F6BE7BD97F75D8B9E9181F /* SimulatedWiFiCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C204449A7EA1A5551544F06 /* SimulatedWiFiCamera.swift */; };
 		1A70DC7A1C13BCDEF3A55FCB /* PTPSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8098A190E1593D88137A7F3A /* PTPSession.swift */; };
 		1D2E06C862E70FC8FF988C98 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 184F2ED52B95C943357C5480 /* KeychainStore.swift */; };
+		206AC29BAD06C8E4C42FEF53 /* WebRecipeFeedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1840916FB8A0C26E7C9DB60A /* WebRecipeFeedTests.swift */; };
 		2904A8C628A31E637F72F490 /* StudioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6E426E3DAE6ABF2DA5D119D /* StudioView.swift */; };
 		2C856FFD17D405E6734762D0 /* CameraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E609DD07D2EDBCD0A994D67E /* CameraView.swift */; };
 		3609CDC9435126BFBFC52B6B /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D4BBC0881CB9576BDE4CF28 /* AppState.swift */; };
+		367FB60CB4D8FB07D955B516 /* TCPStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C247C6FA88E90C44CA8C71F /* TCPStream.swift */; };
 		37FDE4A6EDC2D8BC6506131B /* PhotoImporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C898046AFCED376BC268BAD /* PhotoImporter.swift */; };
+		3894ED2F72972821D9840304 /* TestRecipes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86115601BC9638E3C4BFD4AB /* TestRecipes.swift */; };
 		3FC35EAC0110D1D52C53CE9B /* CameraModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE578A2A24791C0530DFBEA7 /* CameraModels.swift */; };
 		40346C5251AAC5DA3DAC4A3A /* RecipeField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0474D396A2823B68371A99CE /* RecipeField.swift */; };
 		418F9123872745394BB0760D /* PTPTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 660DBC521EAF34FB4D17E5AB /* PTPTests.swift */; };
+		449E5EDAD705EDA88F5ABAA6 /* WebRecipeFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11DD63E71236ED6A901C742E /* WebRecipeFeed.swift */; };
 		44A4CB61B711E644AE79D830 /* LibraryPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69EC6D6E78BAE58347C0A30 /* LibraryPersistence.swift */; };
+		4A0BC74365F090E0316B7E9E /* WiFiImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA5920FC6954FF0B8E013608 /* WiFiImportView.swift */; };
+		4C4B9ED22E1A4D36F337FBF0 /* WiFiTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB7F46A2D5035777F6C0B83A /* WiFiTests.swift */; };
 		4D0B55DFCE652FBE621D2036 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = E43F3C8C5C2C16E03C9920C2 /* Theme.swift */; };
 		59015544F357B797289A9E81 /* PTPCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17E0C83533D0BA9518983116 /* PTPCore.swift */; };
 		5C5FFDDB25C3DAA08D80677E /* RecipeCardOCR.swift in Sources */ = {isa = PBXBuildFile; fileRef = F916E3F3514950A087D7A2E6 /* RecipeCardOCR.swift */; };
-		617B22B1C5CC35E54450E7F0 /* StarterRecipes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81CB23737E3202F51E2E8E39 /* StarterRecipes.swift */; };
+		618D988F1D0516CBFD785484 /* CameraCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83BCE2D743A30A3E442B070A /* CameraCatalog.swift */; };
 		63D906FCB5A09C5117DEDBDF /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842E3552BD8347445A98DF47 /* DesignSystem.swift */; };
 		64D66578D83B323FB797225B /* FujiRecipeCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF4BA39E6604108C0BB3D684 /* FujiRecipeCodec.swift */; };
 		670A075F31FE9C5B117F5D05 /* PreviewCaches.swift in Sources */ = {isa = PBXBuildFile; fileRef = E64DAEDB53757B14066EE378 /* PreviewCaches.swift */; };
@@ -37,20 +47,30 @@
 		7113397FB8DB40F55DAE5DEE /* FilmLabWebClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6E5ACD875E89392F1887F67 /* FilmLabWebClient.swift */; };
 		7C43E42CF88C61CC2F467110 /* RecipeImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70A9629EF91ED8BF8417B30 /* RecipeImportView.swift */; };
 		8008802845A7E35CCCE09F20 /* ocr-card-a.json in Resources */ = {isa = PBXBuildFile; fileRef = BA164D5EFF9B17E259FAB817 /* ocr-card-a.json */; };
+		870619E8242E5571CB27B135 /* BluetoothViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4917333FBEB638911604E4F5 /* BluetoothViews.swift */; };
+		87F4240E2926F4A69D3A499F /* FujiWiFiSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09F1EB8DF437D34D355655BE /* FujiWiFiSession.swift */; };
 		8A3563CDC2186410B6CF9F0F /* ocr-card-b.json in Resources */ = {isa = PBXBuildFile; fileRef = 168656A4B39AD36BBACAEC00 /* ocr-card-b.json */; };
 		8DAFC0F0D8ED00BE11B17349 /* OfflinePreviewRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A128D418AB431FFB3AC9C31 /* OfflinePreviewRenderer.swift */; };
+		91D4E3CE3D535304588D1346 /* CameraHotspot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A633CE29B04A6D08080DA41 /* CameraHotspot.swift */; };
 		91EA2EA20F1C658619F99F06 /* DemoImageFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6569016F7B6C4FB6DC0811A0 /* DemoImageFactory.swift */; };
+		94A99D20C02380F9E950E26C /* PhoneLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59F3DC09BDAF90D1DC61FCC7 /* PhoneLocation.swift */; };
 		9A3E069C935496CA6D0D920D /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0E24853FE96BD4B25EEFC8F /* LibraryView.swift */; };
+		9A88727D271B700763D24DED /* SampleMtFuji.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 592CB4546198FCC2AE4F1161 /* SampleMtFuji.jpg */; };
 		A148D620A183E6B418F97F28 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 24C9B79385735683F383E923 /* Assets.xcassets */; };
+		A71D0409331DEAA37CC80D31 /* FujiWiFiProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EFC23BA973A21FD240B7D2D /* FujiWiFiProtocol.swift */; };
 		A986215445FC769443143669 /* CameraFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 255DE2F81E243E4BAB6311FF /* CameraFlowTests.swift */; };
 		ABD7FC44A59F09F9698E2F35 /* RenderingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 915CFB8A9A857A25EC5E7AC7 /* RenderingModels.swift */; };
 		AFC52A1184DA1C8C7E28981A /* SimulatedFujiCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = A76EC531CCC67611E4665EDE /* SimulatedFujiCamera.swift */; };
 		B11BA98586F2632914FC8105 /* SendToCameraSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE9118B741BB33A137253CA /* SendToCameraSheet.swift */; };
 		BB73F93CF998204A9A65DEBB /* FilmLookEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01DBD41372F2C868D9FB52AF /* FilmLookEngine.swift */; };
 		BBF13452771A20E832249770 /* FilmLabUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FC6F22A10B5A6973EB4AEB /* FilmLabUITests.swift */; };
+		BDB12CD37526A353A8D3B0DE /* FujiBluetooth.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F48A0FA7ADB8B7CEB999E5 /* FujiBluetooth.swift */; };
 		BE4F4235D65C83318D0F94A9 /* PreviewCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = B621E925E396BEEB1EFA3EE1 /* PreviewCanvas.swift */; };
 		C1EEAC401F5D0C9D7DD242CE /* FilmLabApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EDD276BBC703F0E93D856E7 /* FilmLabApp.swift */; };
 		D3407DD083FEE0244A08EF45 /* CameraTransport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68ED0574F299027CB3DA396B /* CameraTransport.swift */; };
+		D5E04E8F679C5BC9DF911974 /* BluetoothTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F998346C2A2FFB502043CE42 /* BluetoothTests.swift */; };
+		D7B303035DD9767399CF3393 /* CameraIllustration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6CE6BCB13760DFA343EE3E7 /* CameraIllustration.swift */; };
+		DB893BB92E65927CA16AA827 /* WiFiImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4788EC95252CAAE33B3E88C3 /* WiFiImport.swift */; };
 		DC6CEC022E1C57B46A59F6AC /* RecipeImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C859F12C2BD745C55C47F2A /* RecipeImportTests.swift */; };
 		DCB80453A2EB2CC97849B049 /* CompareGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A8C3A791A08EFAAF8FA791 /* CompareGridView.swift */; };
 		DE89058E4EF2ECE9E532D44B /* PreviewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B615ECFE3EE3FFAAF5AAEAD5 /* PreviewTests.swift */; };
@@ -86,10 +106,15 @@
 		01DBD41372F2C868D9FB52AF /* FilmLookEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmLookEngine.swift; sourceTree = "<group>"; };
 		0474D396A2823B68371A99CE /* RecipeField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeField.swift; sourceTree = "<group>"; };
 		068556A52D9CE47BC8255097 /* FilmLab.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FilmLab.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		070111BEF7C26B9084F79401 /* PhotoLibrarySaver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibrarySaver.swift; sourceTree = "<group>"; };
+		09F1EB8DF437D34D355655BE /* FujiWiFiSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FujiWiFiSession.swift; sourceTree = "<group>"; };
 		0F778E22A100DFEAE0A4C48A /* RecipeModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeModelTests.swift; sourceTree = "<group>"; };
+		1185704F66C4156D453A5E17 /* CameraCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraCatalogTests.swift; sourceTree = "<group>"; };
+		11DD63E71236ED6A901C742E /* WebRecipeFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRecipeFeed.swift; sourceTree = "<group>"; };
 		168656A4B39AD36BBACAEC00 /* ocr-card-b.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "ocr-card-b.json"; sourceTree = "<group>"; };
 		17E0C83533D0BA9518983116 /* PTPCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTPCore.swift; sourceTree = "<group>"; };
 		17E8446254AC72ABF4CB4A8B /* SetsViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetsViews.swift; sourceTree = "<group>"; };
+		1840916FB8A0C26E7C9DB60A /* WebRecipeFeedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebRecipeFeedTests.swift; sourceTree = "<group>"; };
 		184F2ED52B95C943357C5480 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
 		1C859F12C2BD745C55C47F2A /* RecipeImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeImportTests.swift; sourceTree = "<group>"; };
 		24C9B79385735683F383E923 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -97,21 +122,30 @@
 		28520A0E89CA141940E6CA49 /* golden-filmlab-approx-1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "golden-filmlab-approx-1.json"; sourceTree = "<group>"; };
 		2BDC987E8C7F6C90D93DEA76 /* FilmLookProfiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmLookProfiles.swift; sourceTree = "<group>"; };
 		3EB0907E4856A1A70BA4112C /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
+		4788EC95252CAAE33B3E88C3 /* WiFiImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiFiImport.swift; sourceTree = "<group>"; };
+		4917333FBEB638911604E4F5 /* BluetoothViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothViews.swift; sourceTree = "<group>"; };
 		49A8C3A791A08EFAAF8FA791 /* CompareGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompareGridView.swift; sourceTree = "<group>"; };
 		4A5E2899611F733CF7D20BD8 /* RecipeCardParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeCardParser.swift; sourceTree = "<group>"; };
 		4EDD276BBC703F0E93D856E7 /* FilmLabApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmLabApp.swift; sourceTree = "<group>"; };
 		57EA690D046A3C694955F503 /* FilmRecipe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmRecipe.swift; sourceTree = "<group>"; };
+		592CB4546198FCC2AE4F1161 /* SampleMtFuji.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = SampleMtFuji.jpg; sourceTree = "<group>"; };
+		59F3DC09BDAF90D1DC61FCC7 /* PhoneLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneLocation.swift; sourceTree = "<group>"; };
 		5A128D418AB431FFB3AC9C31 /* OfflinePreviewRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflinePreviewRenderer.swift; sourceTree = "<group>"; };
+		5A633CE29B04A6D08080DA41 /* CameraHotspot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraHotspot.swift; sourceTree = "<group>"; };
+		5C204449A7EA1A5551544F06 /* SimulatedWiFiCamera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatedWiFiCamera.swift; sourceTree = "<group>"; };
 		5C898046AFCED376BC268BAD /* PhotoImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoImporter.swift; sourceTree = "<group>"; };
 		5D4BBC0881CB9576BDE4CF28 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		6569016F7B6C4FB6DC0811A0 /* DemoImageFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoImageFactory.swift; sourceTree = "<group>"; };
 		660DBC521EAF34FB4D17E5AB /* PTPTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTPTests.swift; sourceTree = "<group>"; };
 		68EBC253B8BAA44CC20A665F /* CameraRenderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraRenderService.swift; sourceTree = "<group>"; };
 		68ED0574F299027CB3DA396B /* CameraTransport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraTransport.swift; sourceTree = "<group>"; };
+		6C247C6FA88E90C44CA8C71F /* TCPStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TCPStream.swift; sourceTree = "<group>"; };
+		6EFC23BA973A21FD240B7D2D /* FujiWiFiProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FujiWiFiProtocol.swift; sourceTree = "<group>"; };
 		763DCEF2D03EE3C71317567F /* PersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceTests.swift; sourceTree = "<group>"; };
 		8098A190E1593D88137A7F3A /* PTPSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTPSession.swift; sourceTree = "<group>"; };
-		81CB23737E3202F51E2E8E39 /* StarterRecipes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StarterRecipes.swift; sourceTree = "<group>"; };
+		83BCE2D743A30A3E442B070A /* CameraCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraCatalog.swift; sourceTree = "<group>"; };
 		842E3552BD8347445A98DF47 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		86115601BC9638E3C4BFD4AB /* TestRecipes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestRecipes.swift; sourceTree = "<group>"; };
 		8727BCDF1D4E98D01A7C5527 /* StudioModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudioModel.swift; sourceTree = "<group>"; };
 		915CFB8A9A857A25EC5E7AC7 /* RenderingModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderingModels.swift; sourceTree = "<group>"; };
 		99E338310555375BE3E04A3E /* ImageCaptureAdapter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCaptureAdapter.swift; sourceTree = "<group>"; };
@@ -122,24 +156,30 @@
 		A7E3AB47A0494601B481987C /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
 		B615ECFE3EE3FFAAF5AAEAD5 /* PreviewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewTests.swift; sourceTree = "<group>"; };
 		B621E925E396BEEB1EFA3EE1 /* PreviewCanvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewCanvas.swift; sourceTree = "<group>"; };
+		B6CE6BCB13760DFA343EE3E7 /* CameraIllustration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraIllustration.swift; sourceTree = "<group>"; };
 		B6E426E3DAE6ABF2DA5D119D /* StudioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudioView.swift; sourceTree = "<group>"; };
 		B9C7D39578F9C899C906CDB1 /* RecipeSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeSettings.swift; sourceTree = "<group>"; };
 		BA164D5EFF9B17E259FAB817 /* ocr-card-a.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "ocr-card-a.json"; sourceTree = "<group>"; };
+		BB7F46A2D5035777F6C0B83A /* WiFiTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiFiTests.swift; sourceTree = "<group>"; };
 		BF50D009BD88A19C25F2BBAA /* FilmLabUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FilmLabUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C1AC3EBDFC7937551EA53714 /* SlotDiff.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlotDiff.swift; sourceTree = "<group>"; };
 		C842A3B2AFB6762CC9CE74C4 /* TunePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunePanel.swift; sourceTree = "<group>"; };
 		CDE9118B741BB33A137253CA /* SendToCameraSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendToCameraSheet.swift; sourceTree = "<group>"; };
+		D2F48A0FA7ADB8B7CEB999E5 /* FujiBluetooth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FujiBluetooth.swift; sourceTree = "<group>"; };
 		D344087A0BBEDB3D31422766 /* CameraProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraProfile.swift; sourceTree = "<group>"; };
 		DE578A2A24791C0530DFBEA7 /* CameraModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraModels.swift; sourceTree = "<group>"; };
 		E1AC569498413CFB5E8E5B4C /* CameraController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraController.swift; sourceTree = "<group>"; };
 		E43F3C8C5C2C16E03C9920C2 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		E609DD07D2EDBCD0A994D67E /* CameraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraView.swift; sourceTree = "<group>"; };
+		E63C29F19FFF5C2E2E63429A /* FujiBLEProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FujiBLEProtocol.swift; sourceTree = "<group>"; };
 		E64DAEDB53757B14066EE378 /* PreviewCaches.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewCaches.swift; sourceTree = "<group>"; };
 		E6E5ACD875E89392F1887F67 /* FilmLabWebClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmLabWebClient.swift; sourceTree = "<group>"; };
 		F3FC6F22A10B5A6973EB4AEB /* FilmLabUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmLabUITests.swift; sourceTree = "<group>"; };
 		F47AD01B79FC70B702E5B2B5 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		F722F515C6A959A32B292402 /* FilmLabTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FilmLabTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F916E3F3514950A087D7A2E6 /* RecipeCardOCR.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeCardOCR.swift; sourceTree = "<group>"; };
+		F998346C2A2FFB502043CE42 /* BluetoothTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothTests.swift; sourceTree = "<group>"; };
+		FA5920FC6954FF0B8E013608 /* WiFiImportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WiFiImportView.swift; sourceTree = "<group>"; };
 		FB2DB4886A67B66D58E30C1C /* FilmSimulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmSimulation.swift; sourceTree = "<group>"; };
 		FF4BA39E6604108C0BB3D684 /* FujiRecipeCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FujiRecipeCodec.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -166,8 +206,10 @@
 		0481FDAACCC1691F5C692CBC /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				92471EC3592164BDD24D68E3 /* CameraBLE */,
 				E55FD3E3EB4AF14830F0282E /* CameraPTP */,
 				7D7AC4418EC7A137BF8B160F /* CameraRAW */,
+				34A1CF2D7B1B7F2A38E2EDE2 /* CameraWiFi */,
 				DDF213A5B4B418D247402A3A /* Imports */,
 				C29B42F7635A9FE21F7B8C92 /* Preview */,
 				5061FC69DBBD031501BCEA30 /* Storage */,
@@ -204,6 +246,7 @@
 			children = (
 				E6E5ACD875E89392F1887F67 /* FilmLabWebClient.swift */,
 				184F2ED52B95C943357C5480 /* KeychainStore.swift */,
+				11DD63E71236ED6A901C742E /* WebRecipeFeed.swift */,
 			);
 			path = Web;
 			sourceTree = "<group>";
@@ -215,6 +258,19 @@
 				A70A9629EF91ED8BF8417B30 /* RecipeImportView.swift */,
 			);
 			path = Library;
+			sourceTree = "<group>";
+		};
+		34A1CF2D7B1B7F2A38E2EDE2 /* CameraWiFi */ = {
+			isa = PBXGroup;
+			children = (
+				5A633CE29B04A6D08080DA41 /* CameraHotspot.swift */,
+				6EFC23BA973A21FD240B7D2D /* FujiWiFiProtocol.swift */,
+				09F1EB8DF437D34D355655BE /* FujiWiFiSession.swift */,
+				070111BEF7C26B9084F79401 /* PhotoLibrarySaver.swift */,
+				5C204449A7EA1A5551544F06 /* SimulatedWiFiCamera.swift */,
+				6C247C6FA88E90C44CA8C71F /* TCPStream.swift */,
+			);
+			path = CameraWiFi;
 			sourceTree = "<group>";
 		};
 		3E54D3F2E160CA59AAE04617 /* App */ = {
@@ -241,7 +297,6 @@
 			isa = PBXGroup;
 			children = (
 				A69EC6D6E78BAE58347C0A30 /* LibraryPersistence.swift */,
-				81CB23737E3202F51E2E8E39 /* StarterRecipes.swift */,
 			);
 			path = Storage;
 			sourceTree = "<group>";
@@ -263,6 +318,7 @@
 				28520A0E89CA141940E6CA49 /* golden-filmlab-approx-1.json */,
 				BA164D5EFF9B17E259FAB817 /* ocr-card-a.json */,
 				168656A4B39AD36BBACAEC00 /* ocr-card-b.json */,
+				86115601BC9638E3C4BFD4AB /* TestRecipes.swift */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -292,6 +348,7 @@
 		73BE3775A4EDD84AB95F0EE6 /* Camera */ = {
 			isa = PBXGroup;
 			children = (
+				83BCE2D743A30A3E442B070A /* CameraCatalog.swift */,
 				DE578A2A24791C0530DFBEA7 /* CameraModels.swift */,
 				D344087A0BBEDB3D31422766 /* CameraProfile.swift */,
 				C1AC3EBDFC7937551EA53714 /* SlotDiff.swift */,
@@ -307,15 +364,29 @@
 			path = CameraRAW;
 			sourceTree = "<group>";
 		};
+		92471EC3592164BDD24D68E3 /* CameraBLE */ = {
+			isa = PBXGroup;
+			children = (
+				E63C29F19FFF5C2E2E63429A /* FujiBLEProtocol.swift */,
+				D2F48A0FA7ADB8B7CEB999E5 /* FujiBluetooth.swift */,
+				59F3DC09BDAF90D1DC61FCC7 /* PhoneLocation.swift */,
+			);
+			path = CameraBLE;
+			sourceTree = "<group>";
+		};
 		9A84B423C41925F64D3960D9 /* FilmLabTests */ = {
 			isa = PBXGroup;
 			children = (
+				F998346C2A2FFB502043CE42 /* BluetoothTests.swift */,
+				1185704F66C4156D453A5E17 /* CameraCatalogTests.swift */,
 				255DE2F81E243E4BAB6311FF /* CameraFlowTests.swift */,
 				763DCEF2D03EE3C71317567F /* PersistenceTests.swift */,
 				B615ECFE3EE3FFAAF5AAEAD5 /* PreviewTests.swift */,
 				660DBC521EAF34FB4D17E5AB /* PTPTests.swift */,
 				1C859F12C2BD745C55C47F2A /* RecipeImportTests.swift */,
 				0F778E22A100DFEAE0A4C48A /* RecipeModelTests.swift */,
+				1840916FB8A0C26E7C9DB60A /* WebRecipeFeedTests.swift */,
+				BB7F46A2D5035777F6C0B83A /* WiFiTests.swift */,
 				568B956AB894304CA1F2B921 /* Fixtures */,
 			);
 			path = FilmLabTests;
@@ -324,9 +395,13 @@
 		A321411C70C5D06277FD6016 /* Camera */ = {
 			isa = PBXGroup;
 			children = (
+				4917333FBEB638911604E4F5 /* BluetoothViews.swift */,
 				E1AC569498413CFB5E8E5B4C /* CameraController.swift */,
+				B6CE6BCB13760DFA343EE3E7 /* CameraIllustration.swift */,
 				E609DD07D2EDBCD0A994D67E /* CameraView.swift */,
 				CDE9118B741BB33A137253CA /* SendToCameraSheet.swift */,
+				4788EC95252CAAE33B3E88C3 /* WiFiImport.swift */,
+				FA5920FC6954FF0B8E013608 /* WiFiImportView.swift */,
 			);
 			path = Camera;
 			sourceTree = "<group>";
@@ -335,6 +410,7 @@
 			isa = PBXGroup;
 			children = (
 				24C9B79385735683F383E923 /* Assets.xcassets */,
+				592CB4546198FCC2AE4F1161 /* SampleMtFuji.jpg */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -519,6 +595,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A148D620A183E6B418F97F28 /* Assets.xcassets in Resources */,
+				9A88727D271B700763D24DED /* SampleMtFuji.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -539,12 +616,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D5E04E8F679C5BC9DF911974 /* BluetoothTests.swift in Sources */,
+				0252F5D33F09CE96287519DE /* CameraCatalogTests.swift in Sources */,
 				A986215445FC769443143669 /* CameraFlowTests.swift in Sources */,
 				418F9123872745394BB0760D /* PTPTests.swift in Sources */,
 				0FECB17B9E297652A7BF68BB /* PersistenceTests.swift in Sources */,
 				DE89058E4EF2ECE9E532D44B /* PreviewTests.swift in Sources */,
 				DC6CEC022E1C57B46A59F6AC /* RecipeImportTests.swift in Sources */,
 				108C4402F36F97DA7A369669 /* RecipeModelTests.swift in Sources */,
+				3894ED2F72972821D9840304 /* TestRecipes.swift in Sources */,
+				206AC29BAD06C8E4C42FEF53 /* WebRecipeFeedTests.swift in Sources */,
+				4C4B9ED22E1A4D36F337FBF0 /* WiFiTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -562,7 +644,11 @@
 			files = (
 				70E0D8C610C0F92A1FB053EB /* AppEnvironment.swift in Sources */,
 				3609CDC9435126BFBFC52B6B /* AppState.swift in Sources */,
+				870619E8242E5571CB27B135 /* BluetoothViews.swift in Sources */,
+				618D988F1D0516CBFD785484 /* CameraCatalog.swift in Sources */,
 				E9B0E283AD3B92517D0D142D /* CameraController.swift in Sources */,
+				91D4E3CE3D535304588D1346 /* CameraHotspot.swift in Sources */,
+				D7B303035DD9767399CF3393 /* CameraIllustration.swift in Sources */,
 				3FC35EAC0110D1D52C53CE9B /* CameraModels.swift in Sources */,
 				05B0908BE9F24A2BB34E5246 /* CameraProfile.swift in Sources */,
 				E70EA62E493C743F16B12D47 /* CameraRenderService.swift in Sources */,
@@ -579,7 +665,11 @@
 				F5C34BD4DB15E1888401E0CF /* FilmLookProfiles.swift in Sources */,
 				F37CD58E6B0B01DF53E836E4 /* FilmRecipe.swift in Sources */,
 				6BCD5B913B0755037B2D9641 /* FilmSimulation.swift in Sources */,
+				02B89A6D5F5247A13BA94072 /* FujiBLEProtocol.swift in Sources */,
+				BDB12CD37526A353A8D3B0DE /* FujiBluetooth.swift in Sources */,
 				64D66578D83B323FB797225B /* FujiRecipeCodec.swift in Sources */,
+				A71D0409331DEAA37CC80D31 /* FujiWiFiProtocol.swift in Sources */,
+				87F4240E2926F4A69D3A499F /* FujiWiFiSession.swift in Sources */,
 				6AB9C4514D77D16FC06B5D86 /* ImageCaptureAdapter.swift in Sources */,
 				1D2E06C862E70FC8FF988C98 /* KeychainStore.swift in Sources */,
 				44A4CB61B711E644AE79D830 /* LibraryPersistence.swift in Sources */,
@@ -587,7 +677,9 @@
 				8DAFC0F0D8ED00BE11B17349 /* OfflinePreviewRenderer.swift in Sources */,
 				59015544F357B797289A9E81 /* PTPCore.swift in Sources */,
 				1A70DC7A1C13BCDEF3A55FCB /* PTPSession.swift in Sources */,
+				94A99D20C02380F9E950E26C /* PhoneLocation.swift in Sources */,
 				37FDE4A6EDC2D8BC6506131B /* PhotoImporter.swift in Sources */,
+				18326093CC36483D4737C8AD /* PhotoLibrarySaver.swift in Sources */,
 				670A075F31FE9C5B117F5D05 /* PreviewCaches.swift in Sources */,
 				BE4F4235D65C83318D0F94A9 /* PreviewCanvas.swift in Sources */,
 				5C5FFDDB25C3DAA08D80677E /* RecipeCardOCR.swift in Sources */,
@@ -599,12 +691,16 @@
 				B11BA98586F2632914FC8105 /* SendToCameraSheet.swift in Sources */,
 				0A67B0F6D8FDBE7AEEA891D0 /* SetsViews.swift in Sources */,
 				AFC52A1184DA1C8C7E28981A /* SimulatedFujiCamera.swift in Sources */,
+				19F6BE7BD97F75D8B9E9181F /* SimulatedWiFiCamera.swift in Sources */,
 				E9F5CCA61F1A945B27884344 /* SlotDiff.swift in Sources */,
-				617B22B1C5CC35E54450E7F0 /* StarterRecipes.swift in Sources */,
 				E9D7C1B468BC9293C3DB1E7B /* StudioModel.swift in Sources */,
 				2904A8C628A31E637F72F490 /* StudioView.swift in Sources */,
+				367FB60CB4D8FB07D955B516 /* TCPStream.swift in Sources */,
 				4D0B55DFCE652FBE621D2036 /* Theme.swift in Sources */,
 				FAD669A8D4F8BAFEC28C15D7 /* TunePanel.swift in Sources */,
+				449E5EDAD705EDA88F5ABAA6 /* WebRecipeFeed.swift in Sources */,
+				DB893BB92E65927CA16AA827 /* WiFiImport.swift in Sources */,
+				4A0BC74365F090E0316B7E9E /* WiFiImportView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -634,7 +730,11 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = FilmLab;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "FilmLab uses Bluetooth to find your FUJIFILM camera, pair with it, keep its clock and geotags in sync, and fire the remote shutter.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "FilmLab connects to your USB camera to read and back up custom settings, and — only when you choose — to write a recipe to a slot.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "FilmLab connects to your FUJIFILM camera's own Wi‑Fi network to browse and import your photos.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "When you turn on location sharing, FilmLab sends your location to your paired camera so photos are geotagged.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "FilmLab saves the photos you import from your camera to your library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -747,7 +847,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Debug;
 		};
@@ -761,7 +861,11 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = FilmLab;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.photography";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "FilmLab uses Bluetooth to find your FUJIFILM camera, pair with it, keep its clock and geotags in sync, and fire the remote shutter.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "FilmLab connects to your USB camera to read and back up custom settings, and — only when you choose — to write a recipe to a slot.";
+				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "FilmLab connects to your FUJIFILM camera's own Wi‑Fi network to browse and import your photos.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "When you turn on location sharing, FilmLab sends your location to your paired camera so photos are geotagged.";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "FilmLab saves the photos you import from your camera to your library.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -833,7 +937,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_STRICT_CONCURRENCY = complete;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 			};
 			name = Release;
 		};

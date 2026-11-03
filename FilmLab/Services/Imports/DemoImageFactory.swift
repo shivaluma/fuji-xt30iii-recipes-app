@@ -3,10 +3,21 @@ import CoreGraphics
 import ImageIO
 import UniformTypeIdentifiers
 
-/// Generates ORIGINAL synthetic test images at runtime, so the app ships no third-party
-/// photos. They contain sky gradients, foliage, skin-tone and saturated patches and a grey
-/// ramp — enough to see how each look treats colour, contrast and highlights.
+/// Sample photos. The default is a bundled photo of Mt Fuji taken by the FilmLab project owner
+/// (the same photo as the website's hero). The original synthetic test images are generated at
+/// runtime: a colour chart ships alongside Mt Fuji, and the synthetic landscape stands in for it
+/// where the bundle has no photo (unit tests built with `scripts/test-cli.sh`). The app ships no
+/// third-party photos.
 enum DemoImageFactory {
+    static let samplePhotoFileName = "Mt Fuji.jpg"
+    static let samplePhotoNote = "FilmLab sample photo · Mt Fuji, by the FilmLab project owner"
+    static let syntheticNote = "FilmLab synthetic test image"
+
+    /// The bundled Mt Fuji JPEG, or nil when the bundle doesn't include it.
+    static func samplePhotoData(bundle: Bundle = .main) -> Data? {
+        bundle.url(forResource: "SampleMtFuji", withExtension: "jpg").flatMap { try? Data(contentsOf: $0) }
+    }
+
     struct Scene: Sendable {
         var name: String
         var draw: @Sendable (CGContext, CGSize) -> Void

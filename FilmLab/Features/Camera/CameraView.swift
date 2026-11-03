@@ -10,8 +10,13 @@ struct CameraView: View {
         let camera = env.camera
         NavigationStack {
             List {
-                statusSection
-                if camera.state.identity == nil { setupGuide }
+                Section { CameraHeroCard() }
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
+                noticesSection
+                photosSection
+                BluetoothDetailsSection()
+                if camera.transport == nil && camera.identity == nil { usbSection; setupGuide }
                 if camera.transport != nil { slotsSection; actionsSection }
                 if !camera.backups.isEmpty { backupsSection }
                 Section {
@@ -33,6 +38,9 @@ struct CameraView: View {
             }
             .groupedListStyle()
             .navigationTitle("Camera")
+            .task { await env.autoDetectCamera() }
+            .onAppear { env.setBluetoothListening(true) }
+            .onDisappear { env.setBluetoothListening(false) }
             .themedNavigationBar()
             .sheet(item: Binding(get: { sendRecipeID.map(IdentifiedUUID.init) }, set: { sendRecipeID = $0?.id })) { item in
                 SendToCameraSheet(recipeID: item.id)
@@ -60,70 +68,92 @@ struct CameraView: View {
 
     // MARK: Sections
 
-    private var statusSection: some View {
+    /// Wi‑Fi: browse the card and import originals into Photos.
+    private var photosSection: some View {
+        let wifi = env.wifiImport
+        return Section {
+            NavigationLink {
+                WiFiImportView()
+            } label: {
+                Label {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Import Photos").font(.body.weight(.semibold))
+                        Text(wifi.isTransferring ? "Importing \(min(wifi.batchDone + 1, wifi.batchTotal)) of \(wifi.batchTotal)…"
+                             : wifi.isConnected ? "Connected over Wi‑Fi" : "Full-size originals over Wi‑Fi, straight to Photos")
+                            .font(.caption).foregroundStyle(Theme.textSecondary)
+                    }
+                } icon: {
+                    Image(systemName: "photo.stack").foregroundStyle(Theme.accent)
+                }
+            }
+            .accessibilityIdentifier("importPhotos")
+        } header: {
+            Text("Photos · Wi‑Fi")
+        }
+    }
+
+    /// USB cable: the route for installing recipes into C1–C7.
+    private var usbSection: some View {
         let camera = env.camera
         return Section {
-            HStack(spacing: 12) {
-                Image(systemName: camera.transport == nil ? "camera" : "camera.fill")
-                    .font(.title2)
-                    .foregroundStyle(camera.transport == nil ? Theme.textSecondary : Theme.authentic)
-                VStack(alignment: .leading, spacing: 2) {
-                    HStack {
-                        Text(camera.state.title).font(.headline)
-                        if camera.isDemo { DemoBadge() }
-                    }
-                    if let id = camera.identity {
-                        Text("\(id.model) · firmware \(id.firmwareVersion ?? "unknown")").font(.caption).foregroundStyle(Theme.textSecondary)
-                    }
-                    if let a = camera.activity { Text(a).font(.caption).foregroundStyle(Theme.accent) }
+            LabeledContent("Status", value: camera.state.title)
+                .accessibilityIdentifier("cameraStatus")
+            if camera.state != .searching {
+                Button("Look for USB Camera", systemImage: "cable.connector") { Task { await camera.startUSB() } }
+                    .accessibilityIdentifier("connectUSB")
+            } else {
+                Button("Stop Looking", systemImage: "stop.circle") { Task { await camera.disconnectByUser() } }
+            }
+            Button("Use Demo Camera", systemImage: "sparkles") { Task { await camera.connectDemo() } }
+                .accessibilityIdentifier("connectDemo")
+        } header: {
+            Text("USB cable · install recipes")
+        } footer: {
+            Text("Reading and writing C1–C7 needs the cable. Plugged-in cameras are recognised automatically.")
+        }
+    }
+
+    /// Warnings and explanations for the current connection state (the hero shows the status).
+    @ViewBuilder private var noticesSection: some View {
+        let camera = env.camera
+        let hasNotice: Bool = {
+            switch camera.state {
+            case .wrongMode, .unsupportedModel, .profileOnly, .permissionDenied, .failed: return true
+            default: return camera.lastError != nil || camera.mode == .usb || !camera.slotsNeedingVerification.isEmpty
+            }
+        }()
+        if hasNotice {
+            Section {
+                if case .wrongMode(let m) = camera.state { Label(m, systemImage: "cable.connector").foregroundStyle(Theme.warning).font(.footnote) }
+                if case .unsupportedModel(let m) = camera.state {
+                    Label("\(m) isn't in FilmLab's camera list yet. Recipes still work on it, but FilmLab can't connect to it.", systemImage: "xmark.octagon").font(.footnote)
                 }
-                Spacer()
-                if camera.activity != nil { ProgressView() }
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityIdentifier("cameraStatus")
-            if case .wrongMode(let m) = camera.state { Label(m, systemImage: "cable.connector").foregroundStyle(Theme.warning).font(.footnote) }
-            if case .unsupportedModel(let m) = camera.state {
-                Label("\(m) isn't in FilmLab's camera list yet. Recipes still work on it, but FilmLab can't connect to it.", systemImage: "xmark.octagon").font(.footnote)
-            }
-            if case .profileOnly(let id) = camera.state {
-                Label("FilmLab recognises the \(id.model) (\(camera.profile.generation.displayName)) and uses its profile for checks, but reading or writing C1–C7 over USB is only offered on the X-T30 III — the one body with community reports of the protocol working. The camera was released.",
-                      systemImage: "info.circle").font(.footnote)
-            }
-            if case .permissionDenied = camera.state {
-                Label("Camera control permission was denied. Enable it for FilmLab in iOS Settings.", systemImage: "lock").font(.footnote)
-            }
-            if case .failed(let m) = camera.state { Label(m, systemImage: "exclamationmark.triangle").foregroundStyle(Theme.danger).font(.footnote) }
-            if let e = camera.lastError { Text(e).font(.footnote).foregroundStyle(Theme.danger) }
-            if camera.mode == .usb {
-                ExperimentalBanner(text: "Experimental hardware integration — not yet verified on a physical camera by FilmLab.")
-            }
-            if !camera.slotsNeedingVerification.isEmpty {
-                Label("Verify \(camera.slotsNeedingVerification.sorted().map(\.label).joined(separator: ", ")): last write outcome unknown. Reconnect and read.", systemImage: "questionmark.diamond")
-                    .foregroundStyle(Theme.warning).font(.footnote)
-            }
-            HStack {
-                if camera.transport == nil {
-                    if case .profileOnly = camera.state, camera.profile.catalogID != env.settings.myCameraID {
-                        Button("Set as My Camera") { env.settings.myCameraID = camera.profile.catalogID }.buttonStyle(.bordered)
-                    }
-                    Button("Connect via USB") { Task { await camera.startUSB() } }.buttonStyle(.borderedProminent)
-                        .accessibilityIdentifier("connectUSB")
-                    Button("Use Demo Camera") { Task { await camera.connectDemo() } }.buttonStyle(.bordered)
-                        .accessibilityIdentifier("connectDemo")
-                } else {
-                    Button("Disconnect", role: .destructive) { Task { await camera.disconnect() } }.buttonStyle(.bordered)
+                if case .profileOnly(let id) = camera.state {
+                    Label("FilmLab recognises the \(id.model) (\(camera.profile.generation.displayName)) and uses its profile for checks, but reading or writing C1–C7 over USB is only offered on the X-T30 III — the one body with community reports of the protocol working. The camera was released.",
+                          systemImage: "info.circle").font(.footnote)
+                }
+                if case .permissionDenied = camera.state {
+                    Label("Camera control permission was denied. Enable it for FilmLab in iOS Settings.", systemImage: "lock").font(.footnote)
+                }
+                if case .failed(let m) = camera.state { Label(m, systemImage: "exclamationmark.triangle").foregroundStyle(Theme.danger).font(.footnote) }
+                if let e = camera.lastError { Text(e).font(.footnote).foregroundStyle(Theme.danger) }
+                if camera.mode == .usb {
+                    ExperimentalBanner(text: "Experimental hardware integration — not yet verified on a physical camera by FilmLab.")
+                }
+                if !camera.slotsNeedingVerification.isEmpty {
+                    Label("Verify \(camera.slotsNeedingVerification.sorted().map(\.label).joined(separator: ", ")): last write outcome unknown. Reconnect and read.", systemImage: "questionmark.diamond")
+                        .foregroundStyle(Theme.warning).font(.footnote)
                 }
             }
         }
     }
 
     private var setupGuide: some View {
-        Section("Connect your camera") {
+        Section("Connect with a USB cable") {
             Label("Charge the camera and use a USB-C cable that carries data (not charge-only).", systemImage: "battery.100")
             Label("Camera menu: USB POWER SUPPLY/COMM SETTING → AUTO or POWER SUPPLY OFF/COMM ON.", systemImage: "bolt.horizontal")
             Label("Camera menu: CONNECTION MODE → USB RAW CONV./BACKUP RESTORE.", systemImage: "gearshape.2")
-            Label("Connect to the iPhone, turn the camera on, then tap Connect via USB.", systemImage: "cable.connector")
+            Label("Connect to the iPhone, turn the camera on, then tap Look for USB Camera.", systemImage: "cable.connector")
             Text("If nothing is found: try another cable, check the connection mode, and make sure the camera isn't in movie mode or asleep.")
                 .font(.footnote).foregroundStyle(Theme.textSecondary)
         }

@@ -8,7 +8,7 @@ iPhone, no camera). Nothing below has been run.
 
 | # | Scenario | Steps | Expected | Result | Date | iPhone / iOS | Cam fw |
 |---|---|---|---|---|---|---|---|
-| D1 | Build & launch on simulator | `xcodegen generate`, then run the FilmLab scheme on an iPhone simulator | App launches. Studio shows a synthetic photo with the *Approximate · On-device* badge | | | | |
+| D1 | Build & launch on simulator | `xcodegen generate`, then run the FilmLab scheme on an iPhone simulator | App launches. Studio shows the Mt Fuji sample photo with the *Approximate · On-device* badge | | | | |
 | D2 | Offline vertical slice | Photos › pick a JPEG and a HEIF; tap 5 simulations; drag sliders; press and hold; split view | Preview changes on every tap. *Original* is shown while held. No stalls | | | | |
 | D3 | Compare grid | Compare › 3×3 › choose 9 › tap a cell | Same crop on every cell; tapping loads that recipe | | | | |
 | D4 | Persistence | Save a recipe, force-quit, relaunch | The recipe is still in Library | | | | |

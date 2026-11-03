@@ -55,11 +55,15 @@ struct RecipeImportView: View {
             PhotosPicker(selection: $pickerItem, matching: .images) {
                 PrimaryButtonLabel(title: "Choose Screenshot or Photo", systemImage: "photo.on.rectangle")
             }
+            .tint(Theme.accent)
+            .foregroundStyle(Theme.onAccent)
+            .primaryActionStyle()
             .accessibilityIdentifier("importPickPhoto")
             Button { showFiles = true } label: {
                 SecondaryButtonLabel(title: "Choose from Files", systemImage: "folder")
             }
-            .buttonStyle(PressScaleStyle())
+            .foregroundStyle(Theme.textPrimary)
+            .secondaryActionStyle()
             VStack(alignment: .leading, spacing: 8) {
                 Text("Or paste text").eyebrowStyle()
                 TextEditor(text: $pastedText)

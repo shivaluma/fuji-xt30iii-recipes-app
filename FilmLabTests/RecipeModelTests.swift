@@ -101,7 +101,7 @@ struct RecipeModelTests {
 
     @Test("Duplicating gives a new identity with provenance")
     func duplicate() {
-        let r = StarterRecipes.all[0]
+        let r = TestRecipes.all[0]
         let d = r.duplicated()
         #expect(d.id != r.id)
         #expect(d.provenance.kind == .duplicated)
@@ -121,14 +121,14 @@ struct RecipeModelTests {
         #expect(RecipeSet(name: "x", slots: Array(repeating: UUID(), count: 10)).slots.count == 7)
     }
 
-    @Test("All starter recipes validate cleanly for the X-T30 III")
-    func starterRecipesValid() {
+    @Test("All fixture recipes validate cleanly for the X-T30 III")
+    func fixtureRecipesValid() {
         let v = RecipeValidator(profile: .xt30III)
-        for r in StarterRecipes.all {
+        for r in TestRecipes.all {
             let errors = v.validate(r.settings).filter { $0.severity == .error }
             #expect(errors.isEmpty, "\(r.name): \(errors.map(\.message))")
         }
-        #expect(Set(StarterRecipes.all.map(\.id)).count == StarterRecipes.all.count)
+        #expect(Set(TestRecipes.all.map(\.id)).count == TestRecipes.all.count)
     }
 }
 

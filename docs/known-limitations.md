@@ -1,20 +1,32 @@
 # Known Limitations, Blockers & Unverified Assumptions
 
-## Blockers in the build environment
-- **No Xcode was installed** on the build machine (only Command Line Tools for Swift 6.0.3). As a
-  result:
-  - The iOS app target has **not been compiled for iOS** or run on a simulator.
-  - All app sources *were* type-checked against the macOS 14 SDK, including all SwiftUI views,
-    with strict concurrency on.
-  - The 115 unit tests ran on macOS through `scripts/test-cli.sh`.
-  - Code inside `#if os(iOS)` has **not** been compiled:
-    - ImageCaptureCore authorization;
-    - navigation-bar modifiers;
-    - `EditButton`.
-- The UI tests (`FilmLabUITests`) are written but **have not run**.
+## Build environment
+- The app was first built with Xcode 27.2 (iOS 27.2 SDK, Swift 6 language mode) on 2026‑11‑03.
+  On the iPhone 18 Pro simulator, the 115 unit tests and the 3 UI tests pass.
+- It has **not** run on a physical iPhone yet, and the iOS 17–25 fallback styling has only been
+  compiled, not viewed on those OS versions.
+- `scripts/typecheck.sh` / `scripts/test-cli.sh` still work with only the Command Line Tools.
+- **USB cameras can't be tested in the iOS Simulator.** ImageCaptureCore there doesn't implement
+  control authorization (calling it crashed the app). FilmLab now detects this: automatic
+  detection is skipped and "Look for USB Camera" explains why. Use the Demo Camera.
 - The CLT install has a stale duplicate `usr/include/swift/module.modulemap` that breaks every
   `import Foundation` ("redefinition of module 'SwiftBridging'"). The scripts mask it with a
   `-vfsoverlay` and do not modify system files. Xcode is unaffected.
+
+## Bluetooth (nothing verified)
+- Pairing, clock/location sync and the remote shutter follow furble and libfuji (3P). None of
+  it has run against a camera from FilmLab yet: see `wireless.md` checks B1–B7.
+- Recipes, settings and backups are not sent over Bluetooth (protocol and file format
+  unpublished).
+- Bluetooth only runs in the foreground, and the iOS Simulator has no Bluetooth.
+
+## Wi‑Fi photo import (nothing verified)
+- Follows libfuji/camlib/ptp-ip (3P); only tested against FilmLab's own emulated camera over
+  real sockets. Hardware checks W1–W8 in `wireless.md`.
+- JPEG/HEIF only in practice: RAF over Wi‑Fi isn't offered by the camera outside PC AutoSave.
+- Foreground only (the screen is kept awake during an import). Joining the camera network
+  from inside the app needs the Hotspot Configuration capability (paid account).
+- "Faster than XApp" is a design goal, not yet measured (check W8).
 
 ## Hardware (nothing verified)
 - No iPhone or X‑T30 III was available. **Every camera capability is NV/3P.** See `research.md`

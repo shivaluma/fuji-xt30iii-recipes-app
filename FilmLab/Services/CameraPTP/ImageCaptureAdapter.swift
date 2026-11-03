@@ -72,7 +72,7 @@ final class ImageCapturePTPChannel: PTPCommandChannel {
 private final class ResumeOnce<T> {
     private var continuation: CheckedContinuation<T, Error>?
     init(_ c: CheckedContinuation<T, Error>) { continuation = c }
-    func resume(returning value: T) { continuation?.resume(returning: value); continuation = nil }
+    func resume(returning value: sending T) { continuation?.resume(returning: value); continuation = nil }
     func resume(throwing error: Error) { continuation?.resume(throwing: error); continuation = nil }
 }
 
@@ -91,6 +91,18 @@ final class ImageCaptureCameraBrowser: NSObject {
 
     enum AuthorizationState: Equatable {
         case notDetermined, authorized, denied, restricted, notRequired
+    }
+
+    /// USB camera control is unavailable in the iOS Simulator: ImageCaptureCore there doesn't
+    /// implement control authorization (calling it raises "unrecognized selector").
+    nonisolated static var isSupported: Bool {
+        #if targetEnvironment(simulator)
+        false
+        #elseif os(iOS)
+        ICDeviceBrowser.instancesRespond(to: NSSelectorFromString("requestControlAuthorizationWithCompletion:"))
+        #else
+        true
+        #endif
     }
 
     var onEvent: ((Event) -> Void)?

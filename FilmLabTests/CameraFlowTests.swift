@@ -32,7 +32,7 @@ struct CameraFlowTests {
         let (c, _) = makeController()
         await c.connectDemo()
         await c.demoCamera?.setFaults(.init())
-        let plan = try await c.prepareWrite(recipe: StarterRecipes.all[0], slot: .c3)
+        let plan = try await c.prepareWrite(recipe: TestRecipes.all[0], slot: .c3)
         #expect(c.backups.count == 1)
         #expect(c.backups[0].snapshots.count == 7)
         #expect(plan.backupID == c.backups[0].id)
@@ -45,18 +45,18 @@ struct CameraFlowTests {
     func execute() async throws {
         let (c, _) = makeController()
         await c.connectDemo()
-        let plan = try await c.prepareWrite(recipe: StarterRecipes.all[5], slot: .c7)
+        let plan = try await c.prepareWrite(recipe: TestRecipes.all[5], slot: .c7)
         let outcome = await c.execute(plan)
         #expect(outcome == .verified)
-        #expect(c.snapshots[.c7]?.settings?.filmSimulation == StarterRecipes.all[5].filmSimulation)
-        #expect(c.snapshots[.c7]?.name == FujiRecipeCodec.suggestedSlotName(for: StarterRecipes.all[5].name))
+        #expect(c.snapshots[.c7]?.settings?.filmSimulation == TestRecipes.all[5].filmSimulation)
+        #expect(c.snapshots[.c7]?.name == FujiRecipeCodec.suggestedSlotName(for: TestRecipes.all[5].name))
     }
 
     @Test("A plan without a backup is refused")
     func noBackup() async throws {
         let (c, _) = makeController()
         await c.connectDemo()
-        var plan = try await c.prepareWrite(recipe: StarterRecipes.all[0], slot: .c1)
+        var plan = try await c.prepareWrite(recipe: TestRecipes.all[0], slot: .c1)
         plan.backupID = nil
         let outcome = await c.execute(plan)
         if case .failed = outcome {} else { Issue.record("expected failure, got \(outcome)") }
@@ -66,7 +66,7 @@ struct CameraFlowTests {
     func stalePlanAfterReconnect() async throws {
         let (c, _) = makeController()
         await c.connectDemo()
-        let plan = try await c.prepareWrite(recipe: StarterRecipes.all[0], slot: .c2)
+        let plan = try await c.prepareWrite(recipe: TestRecipes.all[0], slot: .c2)
         await c.disconnect()
         #expect(c.snapshots.isEmpty && c.sessionBackupID == nil)
         await c.connectDemo()
@@ -90,7 +90,7 @@ struct CameraFlowTests {
     func blocking() async throws {
         let (c, _) = makeController()
         await c.connectDemo()
-        let plan = try await c.prepareWrite(recipe: StarterRecipes.all[0], slot: .c1, slotName: "Bad ☕️ name")
+        let plan = try await c.prepareWrite(recipe: TestRecipes.all[0], slot: .c1, slotName: "Bad ☕️ name")
         #expect(plan.hasBlockingIssues)
         let before = await c.demoCamera?.setCount
         _ = await c.execute(plan)
@@ -102,7 +102,7 @@ struct CameraFlowTests {
         let (c, _) = makeController()
         await c.connectDemo()
         var plans: [SlotWritePlan] = []
-        for (i, r) in StarterRecipes.all.prefix(3).enumerated() {
+        for (i, r) in TestRecipes.all.prefix(3).enumerated() {
             plans.append(try await c.prepareWrite(recipe: r, slot: CameraSlot(index: i)!))
         }
         var f = SimulatedFujiCamera.Faults(); f.failNextWrite = .invalidDevicePropValue
@@ -119,7 +119,7 @@ struct CameraFlowTests {
         let (c, _) = makeController()
         await c.connectDemo()
         var plans: [SlotWritePlan] = []
-        for (i, r) in StarterRecipes.all.prefix(3).enumerated() {
+        for (i, r) in TestRecipes.all.prefix(3).enumerated() {
             plans.append(try await c.prepareWrite(recipe: r, slot: CameraSlot(index: i)!))
         }
         var f = SimulatedFujiCamera.Faults(); f.disconnectAfterTransactions = 5
@@ -152,7 +152,7 @@ struct CameraFlowTests {
         let renderer = OfflinePreviewRenderer(diskCacheDirectory: nil)
         let studio = StudioModel(renderer: renderer, library: library, cameraRenderService: DemoCameraRenderService(renderer: renderer, simulatedLatency: .milliseconds(1)))
         await studio.select(try #require(library.assets.first))
-        for r in StarterRecipes.all.prefix(4) { studio.load(r); await studio.waitForRender() }
+        for r in TestRecipes.all.prefix(4) { studio.load(r); await studio.waitForRender() }
         studio.renderWithCamera()
         try await Task.sleep(for: .milliseconds(300))
         #expect(studio.cameraPreview?.fidelity == .demoSimulatedCamera) // never authentic in demo

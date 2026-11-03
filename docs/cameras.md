@@ -58,7 +58,7 @@ label for browsing and tagging.
   2. REALA ACE / NOSTALGIC Neg. ⇒ V;
   3. otherwise the generation of the first recognised camera in `compatibleCameras`. "X‑T30 III" counts only when it is the sole entry, because older recipes always had it added by default. So `["X-T30 III", "X100V"]` → IV;
   4. otherwise unknown.
-- **Starter recipes** are tagged IV unless they use a V-only simulation.
+- **Website recipes** carry the tag the website publishes (`xTransGeneration`); without one, the inference above applies.
 - **Imports** record the camera the source names, and any "X‑Trans IV/V" text it contains.
 
 ## Model recognition

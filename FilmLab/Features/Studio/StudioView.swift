@@ -18,7 +18,6 @@ struct StudioView: View {
         let studio = env.studio
         NavigationStack {
             VStack(spacing: 12) {
-                header
                 PreviewCanvas(
                     processed: studio.displayedPreview,
                     original: studio.original,
@@ -32,14 +31,18 @@ struct StudioView: View {
                     .clipShape(RoundedRectangle(cornerRadius: Theme.corner, style: .continuous))
                     .padding(.horizontal, 12)
                     .frame(maxHeight: .infinity)
-                    .layoutPriority(1)
                     .overlay(alignment: .center) { emptyState }
 
+                // The preview is greedy; the controls always keep a usable band above the tab bar.
                 controls
-                    .frame(maxHeight: 390)
+                    .frame(minHeight: 320, maxHeight: 400)
             }
+            .padding(.top, 4)
             .background(Theme.background)
-            .hiddenNavigationBar()
+            .navigationTitle(env.studio.recipe.name + (env.studio.isDirty ? " •" : ""))
+            .navigationSubtitleIfAvailable("Tune · \(env.studio.recipe.filmSimulation.shortName)")
+            .inlineNavigationTitle()
+            .toolbar { toolbar }
             .photosPicker(isPresented: $showPhotoLibrary, selection: $pickerItem, matching: .images, photoLibrary: .shared())
             .fileImporter(isPresented: $showFileImporter, allowedContentTypes: [.image, .rawImage]) { result in
                 if case .success(let url) = result { importFile(url) }
@@ -58,33 +61,24 @@ struct StudioView: View {
         }
     }
 
-    // MARK: Header
+    // MARK: Toolbar
 
-    private var header: some View {
-        HStack(spacing: 12) {
-            photoMenu
-            VStack(alignment: .leading, spacing: 2) {
-                Text(env.studio.recipe.name + (env.studio.isDirty ? " •" : ""))
-                    .font(.system(size: 22, weight: .regular)).tracking(-0.7).foregroundStyle(Theme.textPrimary).lineLimit(1)
-                Text("Tune · \(env.studio.recipe.filmSimulation.shortName)").eyebrowStyle()
+    @ToolbarContentBuilder private var toolbar: some ToolbarContent {
+        ToolbarItem(placement: .leadingBar) { photoMenu }
+        ToolbarItemGroup(placement: .trailingBar) {
+            Button { splitEnabled.toggle() } label: {
+                Image(systemName: splitEnabled ? "rectangle.split.2x1.fill" : "rectangle.split.2x1")
             }
-            .accessibilityElement(children: .combine)
-            Spacer(minLength: 4)
-            CircleIconButton(systemName: splitEnabled ? "rectangle.split.2x1.fill" : "rectangle.split.2x1",
-                             size: 44, isOn: splitEnabled,
-                             accessibilityLabel: splitEnabled ? "Hide before and after split" : "Show before and after split") {
-                splitEnabled.toggle()
+            .accessibilityLabel(splitEnabled ? "Hide before and after split" : "Show before and after split")
+            .accessibilityAddTraits(splitEnabled ? .isSelected : [])
+            Button { showOriginal.toggle() } label: {
+                Image(systemName: showOriginal ? "eye.slash" : "eye")
             }
-            CircleIconButton(systemName: showOriginal ? "eye.slash" : "eye",
-                             size: 44, isOn: showOriginal,
-                             accessibilityLabel: showOriginal ? "Show recipe preview" : "Show original") {
-                showOriginal.toggle()
-            }
+            .accessibilityLabel(showOriginal ? "Show recipe preview" : "Show original")
+            .accessibilityAddTraits(showOriginal ? .isSelected : [])
             .accessibilityIdentifier("toggleOriginal")
-            recipeMenu
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 6)
+        ToolbarItem(placement: .trailingBar) { recipeMenu }
     }
 
     private var photoMenu: some View {
@@ -99,7 +93,7 @@ struct StudioView: View {
                 }
             }
         } label: {
-            CircleIconLabel(systemName: "photo.badge.plus", size: 44)
+            Image(systemName: "photo.badge.plus")
         }
         .accessibilityLabel("Choose photo")
         .accessibilityIdentifier("photoMenu")
@@ -128,7 +122,7 @@ struct StudioView: View {
                 env.router.tab = .camera
             }
         } label: {
-            CircleIconLabel(systemName: "ellipsis", size: 44)
+            Image(systemName: "ellipsis")
         }
         .accessibilityLabel("Recipe actions")
         .accessibilityIdentifier("recipeMenu")
@@ -160,23 +154,23 @@ struct StudioView: View {
                     .padding(.horizontal, Theme.gutter)
             }
             .padding(.vertical, 8)
-            .padding(.bottom, 96) // room for the floating tab bar
         }
     }
 
     private var modeBar: some View {
         @Bindable var studio = env.studio
         return VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 10) {
-                HStack(spacing: 4) {
-                    modeSegment("Approximate", .approximate, enabled: true)
-                    modeSegment(env.camera.isDemo ? "Camera (Demo)" : "Camera", .camera, enabled: studio.cameraPreview != nil)
+            // Side by side when it fits; stacked on narrow widths or larger text sizes.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) {
+                    modePicker
+                    Spacer(minLength: 0)
+                    cameraButton
                 }
-                .padding(4)
-                .background(Theme.surface, in: Capsule())
-                .accessibilityIdentifier("renderModePicker")
-                Spacer(minLength: 0)
-                cameraButton
+                VStack(alignment: .leading, spacing: 8) {
+                    modePicker
+                    cameraButton
+                }
             }
             if case .failed(let m) = studio.cameraRenderState {
                 Text(m).font(.caption2).foregroundStyle(Theme.danger).lineLimit(3)
@@ -184,17 +178,18 @@ struct StudioView: View {
         }
     }
 
-    private func modeSegment(_ title: String, _ mode: StudioModel.DisplayMode, enabled: Bool) -> some View {
-        let selected = env.studio.displayMode == mode
-        return Button { env.studio.displayMode = mode } label: {
-            Text(title).font(.footnote.weight(.semibold))
-                .padding(.horizontal, 12).padding(.vertical, 7)
-                .foregroundStyle(selected ? Theme.onAccent : (enabled ? Theme.textPrimary : Theme.textTertiary))
-                .background(selected ? Theme.accent : .clear, in: Capsule())
+    private var modePicker: some View {
+        let studio = env.studio
+        // The camera segment only takes effect once a camera render exists.
+        return Picker("Preview", selection: Binding(
+            get: { studio.displayMode },
+            set: { mode in if mode == .approximate || studio.cameraPreview != nil { studio.displayMode = mode } })) {
+            Text("Approximate").tag(StudioModel.DisplayMode.approximate)
+            Text(env.camera.isDemo ? "Camera (Demo)" : "Camera").tag(StudioModel.DisplayMode.camera)
         }
-        .buttonStyle(.plain)
-        .disabled(!enabled)
-        .accessibilityAddTraits(selected ? .isSelected : [])
+        .pickerStyle(.segmented)
+        .fixedSize()
+        .accessibilityIdentifier("renderModePicker")
     }
 
     @ViewBuilder private var cameraButton: some View {
@@ -215,12 +210,11 @@ struct StudioView: View {
             Button { studio.renderWithCamera() } label: {
                 Label("Render with Camera", systemImage: "camera.aperture")
                     .font(.footnote.weight(.semibold))
-                    .padding(.horizontal, 12).padding(.vertical, 9)
-                    .foregroundStyle(enabled ? Theme.textPrimary : Theme.textTertiary)
-                    .background(Theme.surface, in: Capsule())
-                    .overlay(Capsule().stroke(Theme.hairline, lineWidth: 1))
+                    .lineLimit(1)
+                    .fixedSize()
             }
-            .buttonStyle(PressScaleStyle())
+            .foregroundStyle(Theme.textPrimary)
+            .chipStyle(selected: false)
             .disabled(!enabled)
             .accessibilityIdentifier("renderWithCamera")
             .accessibilityHint(studio.cameraAvailability.message)
@@ -269,7 +263,7 @@ struct StudioView: View {
     }
 
     private var recipeCarousel: some View {
-        let recipes = env.library.recipes + env.library.catalog.filter { !env.library.isSaved($0.id) }
+        let recipes = env.library.recipes + env.library.unsavedWebRecipes
         return VStack(alignment: .leading, spacing: 12) {
             SectionHeader(title: "Recipes", subtitle: "Tap to preview on this photo",
                           actionTitle: "Compare", action: { showCompare = true })
@@ -354,6 +348,9 @@ struct ExportSheet: View {
                 ShareLink(item: url) {
                     PrimaryButtonLabel(title: "Share JPEG", systemImage: "square.and.arrow.up")
                 }
+                .tint(Theme.accent)
+                .foregroundStyle(Theme.onAccent)
+                .primaryActionStyle()
             }
             .padding(24)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
